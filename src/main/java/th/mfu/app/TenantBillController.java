@@ -27,7 +27,6 @@ import th.mfu.domain.Tenant;
 import th.mfu.service.BillingService;
 import th.mfu.service.CurrentUserService;
 import th.mfu.service.PaymentService;
-import th.mfu.service.PromptPay;
 
 @Controller
 public class TenantBillController {
@@ -72,6 +71,7 @@ public class TenantBillController {
         model.addAttribute("unpaid", unpaid);
         model.addAttribute("history", history);
         model.addAttribute("promptpayId", props.getPromptpayId());
+        model.addAttribute("promptpayName", props.getPromptpayName());
         return "app/bills";
     }
 
@@ -100,10 +100,7 @@ public class TenantBillController {
     }
 
     private TenantBillView view(Bill bill) {
-        double share = billingService.shareOf(bill);
-        double outstanding = billingService.outstanding(bill);
-        String qr = outstanding > 0 ? PromptPay.payload(props.getPromptpayId(), Math.min(share, outstanding)) : null;
-        return new TenantBillView(bill, billingService.occupants(bill.getRoom()), share, outstanding, qr,
-                paymentRepository.findByBillOrderBySubmittedAtDesc(bill));
+        return new TenantBillView(bill, billingService.occupants(bill.getRoom()), billingService.shareOf(bill),
+                billingService.outstanding(bill), paymentRepository.findByBillOrderBySubmittedAtDesc(bill));
     }
 }

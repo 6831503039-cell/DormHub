@@ -42,8 +42,8 @@ public class SlipVerificationService {
         if (!gemini.isConfigured()) {
             return new SlipCheck(PaymentStatus.PENDING, "รอแอดมินตรวจสอบ (ยังไม่ได้เปิดใช้ AI ตรวจสลิป)");
         }
-        String question = String.format("ยอดที่ผู้เช่าแจ้งว่าโอน: %.2f บาท ผู้รับควรเป็นพร้อมเพย์ %s (%s)",
-                expectedAmount, props.getPromptpayId(), props.getDormName());
+        String question = String.format("ยอดที่ผู้เช่าแจ้งว่าโอน: %.2f บาท ผู้รับควรเป็น %s พร้อมเพย์ %s",
+                expectedAmount, props.getPromptpayName(), props.getPromptpayId());
         Optional<String> answer = gemini.generate(PROMPT, List.of(GeminiClient.content("user",
                 List.of(GeminiClient.textPart(question), GeminiClient.imagePart(image, contentType)))), true);
         if (answer.isEmpty()) {

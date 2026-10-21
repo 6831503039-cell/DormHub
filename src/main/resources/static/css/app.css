@@ -130,6 +130,7 @@ a.card:hover { transform: translateY(-1px); box-shadow: var(--dh-shadow-lg); }
     width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
     background: linear-gradient(135deg, #5aa2ff, var(--dh-primary)); color: #fff;
 }
+.brand-logo { width: 36px; height: 36px; border-radius: 10px; object-fit: cover; border: 1px solid var(--dh-border); }
 .side-nav .nav-link {
     color: var(--dh-muted); border-radius: var(--dh-radius-sm); padding: .55rem .75rem; display: flex; align-items: center; gap: .65rem;
 }
@@ -225,4 +226,5 @@ a.card:hover { transform: translateY(-1px); box-shadow: var(--dh-shadow-lg); }
 .star-on { color: var(--dh-accent); fill: var(--dh-accent); }
 .star-off { color: #d5dbe4; }
 .qr-box { background: #fff; padding: 10px; border-radius: 12px; border: 1px solid var(--dh-border); display: inline-block; }
+.qr-box img { width: 200px; height: 200px; display: block; }
 .slip-thumb { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; border: 1px solid var(--dh-border); }

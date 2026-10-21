@@ -14,7 +14,9 @@ public class DormProperties {
     private String contactPhone = "081-234-5678";
     private String rules = "งดส่งเสียงดังหลัง 22:00 น., ห้ามเลี้ยงสัตว์, แขกค้างคืนต้องแจ้งสำนักงานก่อน, "
             + "ทิ้งขยะที่จุดทิ้งขยะชั้น 1, ห้ามสูบบุหรี่ในอาคาร";
-    private String promptpayId = "0812345678";
+    private String promptpayId = "0628307781";
+    // account holder name shown under the PromptPay QR
+    private String promptpayName = "ญาณวุฒิ ทิศหนองแวง";
     // bills for month M are due on this day of month M+1
     private int dueDay = 5;
 
@@ -109,6 +111,13 @@ public class DormProperties {
     }
     public void setPromptpayId(String promptpayId) {
         this.promptpayId = promptpayId;
+    }
+
+    public String getPromptpayName() {
+        return promptpayName;
+    }
+    public void setPromptpayName(String promptpayName) {
+        this.promptpayName = promptpayName;
     }
 
     public int getDueDay() {

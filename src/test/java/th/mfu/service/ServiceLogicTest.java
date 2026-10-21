@@ -76,17 +76,6 @@ public class ServiceLogicTest {
     }
 
     @Test
-    public void promptPayCrcAndPayload() {
-        assertEquals("29B1", PromptPay.crc16("123456789")); // CRC-16/CCITT-FALSE check value
-        String payload = PromptPay.payload("081-234-5678", 1500);
-        assertTrue(payload.startsWith("000201010212"));
-        assertTrue(payload.contains("0066812345678"));
-        assertTrue(payload.contains("54071500.00"));
-        String body = payload.substring(0, payload.length() - 4);
-        assertEquals(PromptPay.crc16(body), payload.substring(payload.length() - 4));
-    }
-
-    @Test
     public void slipDecisionRules() {
         SlipVerificationService service = new SlipVerificationService(null, new ObjectMapper(), new DormProperties());
         assertEquals(PaymentStatus.APPROVED, service.decide(
