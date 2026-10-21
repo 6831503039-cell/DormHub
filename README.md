@@ -1,5 +1,17 @@
 # DormHub
 
+ต้องเอาไปรันใน Vs code นะ Jdk version 17 ขึ้น
+
+ถ้าไม่มี Maven ในเครื่อง พิมพ์ใน terminal .\mvnw.cmd spring-boot:run
+ถ้ามี Maven ในเครื่อง พิมพ์ใน terminal mvn spring-boot:run
+
+
+
+
+
+
+
+
 ระบบจัดการหอพักนักศึกษา: Web App สำหรับเจ้าของหอ และแอป (มือถือ) สำหรับผู้เช่า
 Spring Boot + Thymeleaf + Spring Security + H2, deploy ขึ้น Google Cloud Run ผ่าน Cloud Build
 
