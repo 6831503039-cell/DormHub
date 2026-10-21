@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('ห้องพัก')}"></head>
+<body>
+<nav th:replace="~{fragments :: navbar('rooms')}"></nav>
+<main class="container pb-5">
+    <div th:replace="~{fragments :: flash}"></div>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">ห้องพัก</h2>
+        <a class="btn btn-primary" th:href="@{/rooms/new}"><i class="bi bi-plus-lg"></i> เพิ่มห้อง</a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>เลขห้อง</th><th>ชั้น</th><th>ประเภท</th>
+                        <th class="text-end">ค่าเช่า/เดือน (บาท)</th><th>สถานะ</th><th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="r : ${rooms}">
+                        <td class="fw-semibold" th:text="${r.roomNumber}"></td>
+                        <td th:text="${r.floor}"></td>
+                        <td th:text="${r.roomType}"></td>
+                        <td class="text-end" th:text="${r.monthlyRent != null} ? ${#numbers.formatDecimal(r.monthlyRent, 1, 'COMMA', 2, 'POINT')} : '-'"></td>
+                        <td><span th:class="'badge text-bg-' + ${r.status.badge}" th:text="${r.status.label}"></span></td>
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-sm btn-outline-primary" th:href="@{/rooms/{id}(id=${r.id})}"><i class="bi bi-pencil"></i> แก้ไข</a>
+                            <a class="btn btn-sm btn-outline-danger" th:href="@{/rooms/{id}/delete(id=${r.id})}"
+                               onclick="return confirm('ยืนยันการลบห้องนี้?')"><i class="bi bi-trash"></i> ลบ</a>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(rooms)}">
+                        <td colspan="6" class="text-center text-muted py-4">ยังไม่มีข้อมูลห้อง</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+<script th:replace="~{fragments :: scripts}"></script>
+</body>
+</html>

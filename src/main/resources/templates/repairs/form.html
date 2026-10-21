@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('ข้อมูลแจ้งซ่อม')}"></head>
+<body>
+<nav th:replace="~{fragments :: navbar('repairs')}"></nav>
+<main class="container pb-5" style="max-width: 720px">
+    <h2 class="mb-3" th:text="${repair.id == null} ? 'แจ้งซ่อม' : 'แก้ไขรายการแจ้งซ่อม'">แจ้งซ่อม</h2>
+
+    <form class="card card-body shadow-sm" th:action="@{/repairs}" th:object="${repair}" method="post">
+        <input type="hidden" th:field="*{id}">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label" for="room">ห้อง</label>
+                <select class="form-select" id="room" name="room" required>
+                    <option value="">-- เลือกห้อง --</option>
+                    <option th:each="r : ${rooms}" th:value="${r.id}" th:text="${r.roomNumber}"
+                            th:selected="${repair.room != null and repair.room.id == r.id}"></option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="reportedDate">วันที่แจ้ง</label>
+                <input class="form-control" type="date" th:field="*{reportedDate}" required>
+            </div>
+            <div class="col-12">
+                <label class="form-label" for="title">เรื่อง</label>
+                <input class="form-control" th:field="*{title}" placeholder="เช่น แอร์ไม่เย็น, ก๊อกน้ำรั่ว" required>
+            </div>
+            <div class="col-12">
+                <label class="form-label" for="description">รายละเอียด</label>
+                <textarea class="form-control" rows="3" th:field="*{description}"></textarea>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="status">สถานะ</label>
+                <select class="form-select" th:field="*{status}">
+                    <option th:each="s : ${T(th.mfu.domain.RepairStatus).values()}" th:value="${s}" th:text="${s.label}"></option>
+                </select>
+            </div>
+        </div>
+        <div class="mt-4">
+            <button class="btn btn-primary" type="submit"><i class="bi bi-save"></i> บันทึก</button>
+            <a class="btn btn-outline-secondary" th:href="@{/repairs}">ยกเลิก</a>
+        </div>
+    </form>
+</main>
+<script th:replace="~{fragments :: scripts}"></script>
+</body>
+</html>
