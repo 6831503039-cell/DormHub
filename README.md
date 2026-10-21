@@ -2,6 +2,8 @@
 
 ต้องเอาไปรันใน Vs code นะ Jdk version 17 ขึ้นไป
 
+วิธีรัน:
+
 ถ้าไม่มี Maven ในเครื่อง พิมพ์ใน terminal .\mvnw.cmd spring-boot:run
 ถ้ามี Maven ในเครื่อง พิมพ์ใน terminal mvn spring-boot:run
 
