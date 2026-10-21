@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout('ฟีดแบ็ก', 'feedback', ~{::main})}">
+<body>
+<main>
+    <h1 class="page-title">ฟีดแบ็กจากผู้เช่า</h1>
+    <p class="page-sub">ความคิดเห็นที่ผู้เช่าส่งจากแอป</p>
+    <div class="row g-3">
+        <div class="col-md-6 col-xl-4" th:each="f : ${feedbacks}">
+            <div class="card h-100" th:style="${!f.readByOwner} ? 'border-color:#9cc3f7'">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="badge soft-primary" th:text="${f.category}"></span>
+                        <span class="rating"><i th:each="s : ${#numbers.sequence(1, 5)}" data-lucide="star" th:class="${s <= f.rating} ? 'star-on' : 'star-off'"></i></span>
+                    </div>
+                    <p class="mb-3" th:text="${f.message}"></p>
+                    <div class="d-flex justify-content-between align-items-center small text-muted">
+                        <span>
+                            <span th:text="${f.author.fullName}"></span>
+                            <span th:if="${f.room != null}" th:text="'· ห้อง ' + ${f.room.roomNumber}"></span>
+                            <br><span th:text="${#temporals.format(f.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
+                        </span>
+                        <a class="btn btn-sm" th:classappend="${f.readByOwner} ? 'btn-light' : 'btn-soft'" th:href="@{/admin/feedback/{id}/read(id=${f.id})}"
+                           th:text="${f.readByOwner} ? 'อ่านแล้ว' : 'ทำเครื่องหมายว่าอ่านแล้ว'"></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 text-center text-muted py-5" th:if="${#lists.isEmpty(feedbacks)}">ยังไม่มีฟีดแบ็ก</div>
+    </div>
+</main>
+</body>
+</html>

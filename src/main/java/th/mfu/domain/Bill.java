@@ -1,10 +1,14 @@
 package th.mfu.domain;
 
+import java.time.LocalDate;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
 public class Bill {
@@ -24,6 +28,9 @@ public class Bill {
     private Integer electricUnits = 0;
     private Double electricRate = 8.0;
     private boolean paid;
+
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate dueDate;
 
     public double getWaterCost() {
         return value(waterUnits) * value(waterRate);
@@ -102,5 +109,12 @@ public class Bill {
     }
     public void setPaid(boolean paid) {
         this.paid = paid;
+    }
+
+    public LocalDate getDueDate() {
+        return dueDate;
+    }
+    public void setDueDate(LocalDate dueDate) {
+        this.dueDate = dueDate;
     }
 }

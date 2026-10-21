@@ -1,0 +1,103 @@
+package th.mfu.admin;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import th.mfu.RoomRepository;
+import th.mfu.TenantRepository;
+import th.mfu.domain.Room;
+import th.mfu.domain.Tenant;
+
+@Controller
+@RequestMapping("/admin")
+public class RoomController {
+
+    private final RoomRepository repository;
+    private final TenantRepository tenantRepository;
+
+    public RoomController(RoomRepository repository, TenantRepository tenantRepository) {
+        this.repository = repository;
+        this.tenantRepository = tenantRepository;
+    }
+
+    @GetMapping("/rooms")
+    public String listRooms(Model model) {
+        model.addAttribute("rooms", repository.findAllByOrderByRoomNumberAsc());
+        model.addAttribute("occupants", occupantsByRoom());
+        return "admin/rooms/list";
+    }
+
+    /** Floor plan: rooms grouped by floor, coloured by status. */
+    @GetMapping("/layout")
+    public String layout(Model model) {
+        Map<Integer, List<Room>> floors = new TreeMap<>();
+        for (Room room : repository.findAllByOrderByRoomNumberAsc()) {
+            int floor = room.getFloor() == null ? 0 : room.getFloor();
+            floors.computeIfAbsent(floor, f -> new java.util.ArrayList<>()).add(room);
+        }
+        model.addAttribute("floors", floors);
+        model.addAttribute("occupants", occupantsByRoom());
+        return "admin/rooms/layout";
+    }
+
+    @GetMapping("/rooms/new")
+    public String addRoomForm(Model model) {
+        model.addAttribute("room", new Room());
+        return "admin/rooms/form";
+    }
+
+    @GetMapping("/rooms/{id}")
+    public String editRoomForm(Model model, @PathVariable Long id) {
+        Room room = repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        model.addAttribute("room", room);
+        model.addAttribute("tenants", tenantRepository.findByRoomOrderByFirstNameAsc(room));
+        return "admin/rooms/form";
+    }
+
+    @PostMapping("/rooms")
+    public String saveRoom(@ModelAttribute Room room, RedirectAttributes redirect) {
+        try {
+            repository.save(room);
+        } catch (DataIntegrityViolationException e) {
+            redirect.addFlashAttribute("error", "เลขห้อง " + room.getRoomNumber() + " มีอยู่แล้ว");
+            return room.getId() == null ? "redirect:/admin/rooms/new" : "redirect:/admin/rooms/" + room.getId();
+        }
+        redirect.addFlashAttribute("success", "บันทึกห้อง " + room.getRoomNumber() + " แล้ว");
+        return "redirect:/admin/rooms";
+    }
+
+    @GetMapping("/rooms/{id}/delete")
+    public String deleteRoom(@PathVariable Long id, RedirectAttributes redirect) {
+        try {
+            repository.deleteById(id);
+            redirect.addFlashAttribute("success", "ลบห้องแล้ว");
+        } catch (DataIntegrityViolationException e) {
+            redirect.addFlashAttribute("error", "ลบไม่ได้ เพราะห้องนี้ยังมีผู้เช่า บิล หรือรายการแจ้งซ่อมอยู่");
+        }
+        return "redirect:/admin/rooms";
+    }
+
+    private Map<Long, Long> occupantsByRoom() {
+        Map<Long, Long> counts = new HashMap<>();
+        for (Tenant t : tenantRepository.findAll()) {
+            if (t.getRoom() != null) {
+                counts.merge(t.getRoom().getId(), 1L, Long::sum);
+            }
+        }
+        return counts;
+    }
+}

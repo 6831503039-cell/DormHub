@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/app :: layout('ซักผ้า', 'laundry', ~{::main})}">
+<body>
+<main>
+    <div class="d-flex justify-content-between align-items-center mb-1">
+        <h1 class="h5 mb-0">ห้องซักผ้า (พื้นที่ส่วนกลาง)</h1>
+        <span class="badge soft-secondary">จำลอง</span>
+    </div>
+    <p class="small text-muted mb-3">สถานะเป็นข้อมูลจำลอง กด "เริ่มใช้งาน" เพื่อจำลองการใช้เครื่อง</p>
+
+    <div class="d-grid gap-2 mb-4">
+        <div class="card machine" th:each="m : ${machines}" th:classappend="${m.isAvailableAt(now)} ? '' : 'busy'">
+            <span class="ring"><i th:data-lucide="${m.type.name() == 'WASHER'} ? 'washing-machine' : 'wind'"></i></span>
+            <div class="flex-grow-1">
+                <div class="fw-medium" th:text="${m.name}"></div>
+                <div class="small" th:if="${m.isAvailableAt(now)}"><span class="text-success">ว่าง</span> · รอบละ <span th:text="${m.type.minutes}"></span> นาที</div>
+                <div class="small text-muted" th:unless="${m.isAvailableAt(now)}">
+                    กำลังใช้งาน · เหลือ <b th:text="${m.minutesLeftAt(now)}"></b> นาที <span th:if="${m.usedBy != null}" th:text="'(' + ${m.usedBy} + ')'"></span>
+                </div>
+            </div>
+            <form th:if="${m.isAvailableAt(now)}" th:action="@{/app/laundry/{id}/start(id=${m.id})}" method="post">
+                <button class="btn btn-soft btn-sm" type="submit">เริ่มใช้งาน</button>
+            </form>
+        </div>
+    </div>
+</main>
+</body>
+</html>

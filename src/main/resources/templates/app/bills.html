@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/app :: layout('บิล', 'bills', ~{::main})}">
+<body>
+<main>
+    <h1 class="h5 mb-3">บิลและการชำระเงิน</h1>
+
+    <div th:if="${tenant == null or tenant.room == null}" class="alert alert-info">
+        บัญชียังไม่ผูกกับห้องพัก จึงยังไม่มีบิล แจ้งเจ้าของหอให้บันทึกอีเมลของคุณในข้อมูลผู้เช่า
+    </div>
+
+    <th:block th:if="${unpaid != null}">
+        <div class="card mb-3" th:each="v : ${unpaid}">
+            <div class="card-header d-flex justify-content-between">
+                <span th:text="'บิลเดือน ' + ${v.bill.billMonth}"></span>
+                <span class="badge soft-danger">ค้างชำระ</span>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between small"><span class="text-muted">ค่าเช่า</span><span th:text="${#numbers.formatDecimal(v.bill.rent, 1, 'COMMA', 2, 'POINT')}"></span></div>
+                <div class="d-flex justify-content-between small"><span class="text-muted" th:text="'ค่าไฟ ' + ${v.bill.electricUnits} + ' หน่วย'"></span><span th:text="${#numbers.formatDecimal(v.bill.electricCost, 1, 'COMMA', 2, 'POINT')}"></span></div>
+                <div class="d-flex justify-content-between small"><span class="text-muted" th:text="'ค่าน้ำ ' + ${v.bill.waterUnits} + ' หน่วย'"></span><span th:text="${#numbers.formatDecimal(v.bill.waterCost, 1, 'COMMA', 2, 'POINT')}"></span></div>
+                <div class="d-flex justify-content-between fw-medium border-top mt-2 pt-2"><span>รวมทั้งห้อง</span><span th:text="'฿' + ${#numbers.formatDecimal(v.bill.total, 1, 'COMMA', 2, 'POINT')}"></span></div>
+                <div class="d-flex justify-content-between small text-muted"><span>ชำระแล้ว (อนุมัติ)</span><span th:text="'฿' + ${#numbers.formatDecimal(v.bill.total - v.outstanding, 1, 'COMMA', 2, 'POINT')}"></span></div>
+
+                <div class="alert alert-warning mt-3 mb-3 py-2 d-flex justify-content-between align-items-center">
+                    <span>หาร <b th:text="${v.occupants}"></b> คน · ส่วนของคุณ</span>
+                    <b class="fs-5" th:text="'฿' + ${#numbers.formatDecimal(v.share, 1, 'COMMA', 2, 'POINT')}"></b>
+                </div>
+                <div class="small text-muted mb-3" th:if="${v.bill.dueDate != null}" th:text="'ครบกำหนด ' + ${#temporals.format(v.bill.dueDate, 'dd/MM/yyyy')}"></div>
+
+                <div class="text-center mb-3" th:if="${v.qrPayload != null}">
+                    <div class="qr-box"><div class="qr" th:data-payload="${v.qrPayload}"></div></div>
+                    <div class="small text-muted mt-2">สแกนด้วยแอปธนาคาร · พร้อมเพย์ <span th:text="${promptpayId}"></span></div>
+                </div>
+
+                <form th:action="@{/app/bills/{id}/pay(id=${v.bill.id})}" method="post" enctype="multipart/form-data">
+                    <div class="row g-2">
+                        <div class="col-5">
+                            <label class="form-label">ยอดที่โอน</label>
+                            <input class="form-control" type="number" name="amount" min="1" step="0.01" th:value="${v.share < v.outstanding ? v.share : v.outstanding}" required>
+                        </div>
+                        <div class="col-7">
+                            <label class="form-label">รูปสลิป</label>
+                            <input class="form-control" type="file" name="slip" accept="image/*" required>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary w-100 mt-3" type="submit"><i data-lucide="upload"></i> ส่งสลิป (AI ตรวจอัตโนมัติ)</button>
+                </form>
+
+                <div class="mt-3" th:unless="${#lists.isEmpty(v.payments)}">
+                    <div class="small text-muted mb-1">สลิปที่ส่งแล้ว</div>
+                    <div class="d-flex justify-content-between align-items-center small py-1" th:each="p : ${v.payments}">
+                        <span th:text="${#temporals.format(p.submittedAt, 'dd/MM HH:mm')} + ' · ' + (${p.tenant != null} ? ${p.tenant.firstName} : '-') + ' · ฿' + ${#numbers.formatDecimal(p.amount, 1, 'COMMA', 2, 'POINT')}"></span>
+                        <span th:class="'badge soft-' + ${p.status.badge}" th:text="${p.status.label}"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3" th:if="${#lists.isEmpty(unpaid)}">
+            <div class="card-body text-center py-4">
+                <i data-lucide="badge-check" style="width:2.5rem;height:2.5rem;color:#22a565"></i>
+                <div class="mt-2 fw-medium">ไม่มียอดค้างชำระ</div>
+            </div>
+        </div>
+
+        <h2 class="h6 text-muted mt-4">ประวัติการชำระ</h2>
+        <div class="card mb-4">
+            <div class="list-group list-group-flush">
+                <div class="list-group-item px-3 d-flex justify-content-between" th:each="v : ${history}">
+                    <span><span th:text="${v.bill.billMonth}"></span> <span class="small text-muted" th:text="'· ไฟ ' + ${v.bill.electricUnits} + ' หน่วย'"></span></span>
+                    <span><span th:text="'฿' + ${#numbers.formatDecimal(v.bill.total, 1, 'COMMA', 2, 'POINT')}"></span> <span class="badge soft-success ms-1">ชำระแล้ว</span></span>
+                </div>
+                <div class="list-group-item text-muted px-3" th:if="${#lists.isEmpty(history)}">ยังไม่มีประวัติ</div>
+            </div>
+        </div>
+    </th:block>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        document.querySelectorAll('.qr').forEach(el => new QRCode(el, { text: el.dataset.payload, width: 180, height: 180 }));
+    </script>
+</main>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout('ข้อมูลผู้เช่า', 'tenants', ~{::main})}">
+<body>
+<main style="max-width: 760px">
+    <h1 class="page-title mb-3" th:text="${tenant.id == null} ? 'เพิ่มผู้เช่า' : 'แก้ไขข้อมูลผู้เช่า'">เพิ่มผู้เช่า</h1>
+
+    <form class="card card-body" th:action="@{/admin/tenants}" th:object="${tenant}" method="post">
+        <input type="hidden" th:field="*{id}">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label" for="firstName">ชื่อ</label>
+                <input class="form-control" th:field="*{firstName}" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="lastName">นามสกุล</label>
+                <input class="form-control" th:field="*{lastName}" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="phone">โทรศัพท์</label>
+                <input class="form-control" type="tel" th:field="*{phone}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="email">อีเมล (ใช้เชื่อมกับบัญชีแอปของผู้เช่า)</label>
+                <input class="form-control" type="email" th:field="*{email}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="room">ห้อง</label>
+                <select class="form-select" id="room" name="room">
+                    <option value="">ยังไม่ระบุห้อง</option>
+                    <option th:each="r : ${rooms}" th:value="${r.id}"
+                            th:text="${r.roomNumber} + ' · ' + ${r.status.label} + ' · รับได้ ' + ${r.capacity} + ' คน'"
+                            th:selected="${tenant.room != null and tenant.room.id == r.id}"></option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="checkInDate">วันที่เข้าพัก</label>
+                <input class="form-control" type="date" th:field="*{checkInDate}">
+            </div>
+        </div>
+        <div class="mt-4">
+            <button class="btn btn-primary" type="submit"><i data-lucide="check"></i> บันทึก</button>
+            <a class="btn btn-light" th:href="@{/admin/tenants}">ยกเลิก</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>
