@@ -1,0 +1,106 @@
+package th.mfu.domain;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+
+@Entity
+public class Bill {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(optional = false)
+    private Room room;
+
+    // format yyyy-MM, matches <input type="month">
+    private String billMonth;
+    private Double rent;
+    private Integer waterUnits = 0;
+    private Double waterRate = 18.0;
+    private Integer electricUnits = 0;
+    private Double electricRate = 8.0;
+    private boolean paid;
+
+    public double getWaterCost() {
+        return value(waterUnits) * value(waterRate);
+    }
+
+    public double getElectricCost() {
+        return value(electricUnits) * value(electricRate);
+    }
+
+    public double getTotal() {
+        return value(rent) + getWaterCost() + getElectricCost();
+    }
+
+    private static double value(Number n) {
+        return n == null ? 0 : n.doubleValue();
+    }
+
+    public Long getId() {
+        return id;
+    }
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Room getRoom() {
+        return room;
+    }
+    public void setRoom(Room room) {
+        this.room = room;
+    }
+
+    public String getBillMonth() {
+        return billMonth;
+    }
+    public void setBillMonth(String billMonth) {
+        this.billMonth = billMonth;
+    }
+
+    public Double getRent() {
+        return rent;
+    }
+    public void setRent(Double rent) {
+        this.rent = rent;
+    }
+
+    public Integer getWaterUnits() {
+        return waterUnits;
+    }
+    public void setWaterUnits(Integer waterUnits) {
+        this.waterUnits = waterUnits;
+    }
+
+    public Double getWaterRate() {
+        return waterRate;
+    }
+    public void setWaterRate(Double waterRate) {
+        this.waterRate = waterRate;
+    }
+
+    public Integer getElectricUnits() {
+        return electricUnits;
+    }
+    public void setElectricUnits(Integer electricUnits) {
+        this.electricUnits = electricUnits;
+    }
+
+    public Double getElectricRate() {
+        return electricRate;
+    }
+    public void setElectricRate(Double electricRate) {
+        this.electricRate = electricRate;
+    }
+
+    public boolean isPaid() {
+        return paid;
+    }
+    public void setPaid(boolean paid) {
+        this.paid = paid;
+    }
+}
