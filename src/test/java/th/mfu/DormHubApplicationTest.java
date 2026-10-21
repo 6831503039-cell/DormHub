@@ -138,6 +138,21 @@ public class DormHubApplicationTest {
     }
 
     @Test
+    public void billPageShowsDormPromptPayQr() throws Exception {
+        mvc.perform(get("/app/bills").with(tenant()))
+                .andExpect(content().string(containsString("/img/promptpay-qr.png")))
+                .andExpect(content().string(containsString("ญาณวุฒิ ทิศหนองแวง")))
+                .andExpect(content().string(containsString("0628307781")));
+    }
+
+    @Test
+    public void logoAndQrImagesArePublic() throws Exception {
+        // the login page shows the logo before anyone is signed in
+        mvc.perform(get("/img/logo.png")).andExpect(status().isOk());
+        mvc.perform(get("/img/logo-icon.png")).andExpect(status().isOk());
+    }
+
+    @Test
     public void unlinkedAccountStillSeesTheApp() throws Exception {
         mvc.perform(post("/register").with(csrf())
                 .param("fullName", "ยังไม่มี ห้อง").param("email", "noroom@example.com")

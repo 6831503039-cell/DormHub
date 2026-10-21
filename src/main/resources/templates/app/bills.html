@@ -27,9 +27,13 @@
                 </div>
                 <div class="small text-muted mb-3" th:if="${v.bill.dueDate != null}" th:text="'ครบกำหนด ' + ${#temporals.format(v.bill.dueDate, 'dd/MM/yyyy')}"></div>
 
-                <div class="text-center mb-3" th:if="${v.qrPayload != null}">
-                    <div class="qr-box"><div class="qr" th:data-payload="${v.qrPayload}"></div></div>
-                    <div class="small text-muted mt-2">สแกนด้วยแอปธนาคาร · พร้อมเพย์ <span th:text="${promptpayId}"></span></div>
+                <div class="text-center mb-3" th:if="${v.outstanding > 0}">
+                    <div class="qr-box"><img th:src="@{/img/promptpay-qr.png}" alt="QR พร้อมเพย์"></div>
+                    <div class="small mt-2">
+                        <div class="text-muted">สแกนด้วยแอปธนาคาร แล้วกรอกยอดเงินเอง</div>
+                        <div class="fw-medium" th:text="${promptpayName}">ชื่อบัญชี</div>
+                        <div class="text-muted" th:text="'พร้อมเพย์ ' + ${promptpayId}"></div>
+                    </div>
                 </div>
 
                 <form th:action="@{/app/bills/{id}/pay(id=${v.bill.id})}" method="post" enctype="multipart/form-data">
@@ -75,10 +79,6 @@
         </div>
     </th:block>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script>
-        document.querySelectorAll('.qr').forEach(el => new QRCode(el, { text: el.dataset.payload, width: 180, height: 180 }));
-    </script>
 </main>
 </body>
 </html>
