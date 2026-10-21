@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout('วิเคราะห์ค่าไฟ', 'analytics', ~{::main})}">
+<body>
+<main>
+    <h1 class="page-title">วิเคราะห์ค่าไฟและค่าใช้จ่าย</h1>
+    <p class="page-sub">แนวโน้ม 12 เดือนล่าสุด และเปรียบเทียบตาม 3 ฤดูของไทย</p>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-4" th:each="entry : ${seasonAverages}">
+            <div class="card stat h-100">
+                <span class="stat-icon" th:classappend="${entry.key.name() == 'HOT'} ? 'red' : (${entry.key.name() == 'COOL'} ? '' : 'green')">
+                    <i th:data-lucide="${entry.key.name() == 'HOT'} ? 'sun' : (${entry.key.name() == 'COOL'} ? 'snowflake' : 'cloud-rain')"></i>
+                </span>
+                <div>
+                    <div class="stat-value"><span th:text="${entry.value}">0</span> <span class="fs-6 text-muted">หน่วย</span></div>
+                    <div class="stat-label" th:text="${entry.key.label} + ' (' + ${entry.key.months} + ') · เฉลี่ยต่อห้อง/เดือน'"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="card h-100">
+                <div class="card-header">ค่าไฟรวมทุกห้องรายเดือน (หน่วย) แยกสีตามฤดู</div>
+                <div class="card-body"><canvas id="monthlyChart" height="140"></canvas></div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header">เฉลี่ยต่อห้องตามฤดู</div>
+                <div class="card-body"><canvas id="seasonChart" height="220"></canvas></div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">ยอดเรียกเก็บรวม vs ค่าไฟ (บาท)</div>
+                <div class="card-body"><canvas id="costChart" height="90"></canvas></div>
+            </div>
+        </div>
+        <div class="col-12" th:unless="${#lists.isEmpty(abnormal)}">
+            <div class="alert alert-warning mb-0">
+                <i data-lucide="zap"></i> ห้องที่ใช้ไฟสูงกว่าค่าเฉลี่ย 3 เดือนก่อนหน้าเกิน 30%:
+                <span th:each="a, st : ${abnormal}"><b th:text="${a.room.roomNumber}"></b> (+<span th:text="${a.percentAbove}"></span>%)<span th:unless="${st.last}">, </span></span>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script th:inline="javascript">
+        const months = /*[[${months}]]*/ [];
+        const units = /*[[${units}]]*/ [];
+        const electricCost = /*[[${electricCost}]]*/ [];
+        const totalBilled = /*[[${totalBilled}]]*/ [];
+        const monthSeasons = /*[[${monthSeasons}]]*/ [];
+        const seasonLabels = /*[[${seasonLabels}]]*/ [];
+        const seasonValues = /*[[${seasonValues}]]*/ [];
+
+        const seasonColor = { HOT: '#f5b301', RAINY: '#2f80ed', COOL: '#7cc4f8' };
+        Chart.defaults.font.family = "'IBM Plex Sans Thai', sans-serif";
+        Chart.defaults.color = '#6b7686';
+        const grid = { color: '#eef1f6' };
+
+        new Chart(document.getElementById('monthlyChart'), {
+            type: 'bar',
+            data: { labels: months, datasets: [{ label: 'หน่วยไฟฟ้า', data: units,
+                backgroundColor: monthSeasons.map(s => seasonColor[s]), borderRadius: 6 }] },
+            options: { plugins: { legend: { display: false } }, scales: { y: { grid }, x: { grid: { display: false } } } }
+        });
+        new Chart(document.getElementById('seasonChart'), {
+            type: 'bar',
+            data: { labels: seasonLabels, datasets: [{ label: 'หน่วย/ห้อง/เดือน', data: seasonValues,
+                backgroundColor: ['#f5b301', '#2f80ed', '#7cc4f8'], borderRadius: 8 }] },
+            options: { plugins: { legend: { display: false } }, scales: { y: { grid, beginAtZero: true }, x: { grid: { display: false } } } }
+        });
+        new Chart(document.getElementById('costChart'), {
+            type: 'line',
+            data: { labels: months, datasets: [
+                { label: 'ยอดเรียกเก็บรวม', data: totalBilled, borderColor: '#2f80ed', backgroundColor: 'rgba(47,128,237,.08)', fill: true, tension: .35 },
+                { label: 'ค่าไฟ', data: electricCost, borderColor: '#f5b301', tension: .35 }
+            ] },
+            options: { scales: { y: { grid }, x: { grid: { display: false } } } }
+        });
+    </script>
+</main>
+</body>
+</html>

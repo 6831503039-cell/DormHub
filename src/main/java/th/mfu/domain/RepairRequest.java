@@ -34,6 +34,16 @@ public class RepairRequest {
     @Enumerated(EnumType.STRING)
     private RepairStatus status = RepairStatus.PENDING;
 
+    // name of the tenant who reported it from the tenant app (blank when the admin adds it)
+    private String reportedBy;
+
+    public String getReportedBy() {
+        return reportedBy;
+    }
+    public void setReportedBy(String reportedBy) {
+        this.reportedBy = reportedBy;
+    }
+
     public Long getId() {
         return id;
     }

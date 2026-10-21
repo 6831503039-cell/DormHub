@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout('ภาพรวม', 'dashboard', ~{::main})}">
+<body>
+<main>
+    <h1 class="page-title">ภาพรวมหอพัก</h1>
+    <p class="page-sub">สรุปสถานะห้อง การเงิน และเสียงจากผู้เช่า</p>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-xl-3">
+            <a class="card stat h-100" th:href="@{/admin/layout}">
+                <span class="stat-icon green"><i data-lucide="door-open"></i></span>
+                <div><div class="stat-value"><span th:text="${availableCount}">0</span><span class="fs-6 text-muted">/<span th:text="${roomCount}"></span></span></div>
+                    <div class="stat-label">ห้องว่าง / ทั้งหมด</div></div>
+            </a>
+        </div>
+        <div class="col-6 col-xl-3">
+            <a class="card stat h-100" th:href="@{/admin/tenants}">
+                <span class="stat-icon"><i data-lucide="users"></i></span>
+                <div><div class="stat-value" th:text="${tenantCount}">0</div><div class="stat-label">ผู้เช่า</div></div>
+            </a>
+        </div>
+        <div class="col-6 col-xl-3">
+            <a class="card stat h-100" th:href="@{/admin/payments}">
+                <span class="stat-icon accent"><i data-lucide="scan-line"></i></span>
+                <div><div class="stat-value" th:text="${slipsToReview}">0</div><div class="stat-label">สลิปรอตรวจ</div></div>
+            </a>
+        </div>
+        <div class="col-6 col-xl-3">
+            <a class="card stat h-100" th:href="@{/admin/repairs}">
+                <span class="stat-icon red"><i data-lucide="wrench"></i></span>
+                <div><div class="stat-value" th:text="${openRepairCount}">0</div><div class="stat-label">แจ้งซ่อมค้าง</div></div>
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-7">
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i data-lucide="message-square"></i> ฟีดแบ็กจากผู้เช่า</span>
+                    <span class="d-flex align-items-center gap-2">
+                        <span class="badge soft-warning" th:text="'คะแนนเฉลี่ย ' + ${#numbers.formatDecimal(averageRating, 1, 1)}"></span>
+                        <span class="badge soft-danger" th:if="${unreadFeedback > 0}" th:text="${unreadFeedback} + ' ยังไม่อ่าน'"></span>
+                    </span>
+                </div>
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item px-3 py-3" th:each="f : ${latestFeedback}">
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-medium">
+                                <span th:text="${f.author.fullName}"></span>
+                                <span class="text-muted small" th:if="${f.room != null}" th:text="'· ห้อง ' + ${f.room.roomNumber}"></span>
+                            </span>
+                            <span class="rating text-nowrap">
+                                <i th:each="s : ${#numbers.sequence(1, 5)}" data-lucide="star" th:class="${s <= f.rating} ? 'star-on' : 'star-off'"></i>
+                            </span>
+                        </div>
+                        <div class="small"><span class="badge soft-primary me-1" th:text="${f.category}"></span><span th:text="${f.message}"></span></div>
+                    </div>
+                    <div class="list-group-item text-muted text-center py-4" th:if="${#lists.isEmpty(latestFeedback)}">ยังไม่มีฟีดแบ็ก</div>
+                </div>
+                <div class="card-footer bg-transparent text-end"><a th:href="@{/admin/feedback}">ดูทั้งหมด</a></div>
+            </div>
+
+            <div class="card">
+                <div class="card-header d-flex justify-content-between">
+                    <span><i data-lucide="receipt"></i> บิลที่ยังไม่ชำระ</span>
+                    <span class="text-danger" th:text="'รวม ฿' + ${#numbers.formatDecimal(unpaidTotal, 1, 'COMMA', 2, 'POINT')}"></span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead><tr><th>เดือน</th><th>ห้อง</th><th>ครบกำหนด</th><th class="text-end">ยอด (บาท)</th></tr></thead>
+                        <tbody>
+                        <tr th:each="b : ${unpaidBills}">
+                            <td th:text="${b.billMonth}"></td>
+                            <td class="fw-medium" th:text="${b.room.roomNumber}"></td>
+                            <td th:text="${b.dueDate != null} ? ${#temporals.format(b.dueDate, 'dd/MM/yyyy')} : '-'"></td>
+                            <td class="text-end" th:text="${#numbers.formatDecimal(b.total, 1, 'COMMA', 2, 'POINT')}"></td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(unpaidBills)}"><td colspan="4" class="text-center text-muted py-4">ไม่มีบิลค้างชำระ</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card mb-3">
+                <div class="card-header"><i data-lucide="zap"></i> ค่าไฟสูงผิดปกติ</div>
+                <div class="card-body">
+                    <div th:each="a : ${abnormal}" class="d-flex justify-content-between align-items-center mb-2">
+                        <span>ห้อง <b th:text="${a.room.roomNumber}"></b> <span class="text-muted small" th:text="'(' + ${a.billMonth} + ')'"></span></span>
+                        <span class="badge soft-danger" th:text="${a.units} + ' หน่วย · +' + ${a.percentAbove} + '%'"></span>
+                    </div>
+                    <div th:if="${#lists.isEmpty(abnormal)}" class="text-muted">ไม่มีห้องที่ใช้ไฟผิดปกติ</div>
+                    <a class="btn btn-soft btn-sm mt-2" th:href="@{/admin/analytics}">ดูกราฟวิเคราะห์ค่าไฟ</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><i data-lucide="washing-machine"></i> พื้นที่ส่วนกลาง: ห้องซักผ้า <span class="badge soft-secondary ms-1">จำลอง</span></div>
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-3" th:each="m : ${machines}">
+                        <span th:text="${m.name}"></span>
+                        <span th:if="${m.isAvailableAt(now)}" class="badge soft-success">ว่าง</span>
+                        <span th:unless="${m.isAvailableAt(now)}" class="badge soft-warning" th:text="'ใช้งาน · อีก ' + ${m.minutesLeftAt(now)} + ' นาที'"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

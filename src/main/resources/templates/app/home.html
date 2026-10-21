@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/app :: layout('หน้าแรก', 'home', ~{::main})}">
+<body>
+<main>
+    <div th:if="${tenant == null or tenant.room == null}" class="alert alert-info">
+        <b>บัญชียังไม่ผูกกับห้องพัก</b><br>
+        แจ้งเจ้าของหอให้บันทึกอีเมล <b th:text="${currentUser.email}"></b> ในข้อมูลผู้เช่า แล้วระบบจะแสดงห้องและบิลของคุณอัตโนมัติ
+        ระหว่างนี้ยังใช้ถาม AI, ดูเครื่องซักผ้า และส่งความคิดเห็นได้
+    </div>
+
+    <th:block th:if="${tenant != null and tenant.room != null}">
+        <div class="hero mb-3">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="small opacity-75" th:text="'ห้อง ' + ${tenant.room.roomNumber} + ' · ' + ${tenant.room.roomType}"></div>
+                    <div class="small opacity-75 mt-2">ยอดที่ต้องชำระ (ส่วนของคุณ)</div>
+                    <div class="amount" th:text="'฿' + ${#numbers.formatDecimal(myOutstanding, 1, 'COMMA', 2, 'POINT')}">฿0</div>
+                </div>
+                <i data-lucide="wallet" style="width:2rem;height:2rem;opacity:.7"></i>
+            </div>
+            <a class="btn btn-light btn-sm mt-3" th:href="@{/app/bills}"><i data-lucide="scan-line"></i> สแกนจ่าย / แนบสลิป</a>
+        </div>
+    </th:block>
+
+    <div class="quick-grid mb-3">
+        <a class="quick" th:href="@{/app/bills}"><i data-lucide="receipt"></i>บิล</a>
+        <a class="quick" th:href="@{/app/chat}"><i data-lucide="sparkles"></i>ถาม AI</a>
+        <a class="quick" th:href="@{/app/laundry}"><i data-lucide="washing-machine"></i>ซักผ้า</a>
+        <a class="quick" th:href="@{/app/requests}"><i data-lucide="wrench"></i>แจ้งซ่อม</a>
+    </div>
+
+    <h2 class="h6 text-muted mt-4 mb-2" th:if="${notices != null and !#lists.isEmpty(notices)}">การแจ้งเตือน</h2>
+    <div class="d-grid gap-2 mb-3" th:if="${notices != null}">
+        <div th:each="n : ${notices}" class="notice" th:classappend="${n.level}">
+            <span class="ic"><i th:data-lucide="${n.icon}"></i></span>
+            <div>
+                <div class="fw-medium" th:text="${n.title}"></div>
+                <div class="small text-muted" th:text="${n.message}"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-2 mb-3">
+        <div class="col-6">
+            <a class="card stat h-100" th:href="@{/app/laundry}">
+                <span class="stat-icon green"><i data-lucide="washing-machine"></i></span>
+                <div><div class="stat-value" th:text="${laundryAvailable} + '/' + ${laundryTotal}"></div><div class="stat-label">เครื่องว่าง</div></div>
+            </a>
+        </div>
+        <div class="col-6" th:if="${latestBill != null}">
+            <a class="card stat h-100" th:href="@{/app/bills}">
+                <span class="stat-icon accent"><i data-lucide="zap"></i></span>
+                <div><div class="stat-value" th:text="${latestBill.electricUnits}"></div><div class="stat-label" th:text="'หน่วยไฟ ' + ${latestBill.billMonth}"></div></div>
+            </a>
+        </div>
+    </div>
+
+    <div class="card mb-4" th:if="${roommates != null}">
+        <div class="card-header"><i data-lucide="users"></i> เพื่อนร่วมห้อง <span class="text-muted fw-normal small" th:text="'(' + ${#lists.size(roommates)} + '/' + ${tenant.room.capacity} + ' คน · หารค่าห้องเท่ากัน)'"></span></div>
+        <div class="list-group list-group-flush">
+            <div class="list-group-item px-3 d-flex justify-content-between" th:each="m : ${roommates}">
+                <span th:text="${m.fullName}"></span>
+                <span class="text-muted small" th:if="${m.id == tenant.id}">คุณ</span>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

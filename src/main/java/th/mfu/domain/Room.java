@@ -20,6 +20,8 @@ public class Room {
     private Integer floor;
     private String roomType;
     private Double monthlyRent;
+    // how many tenants can share the room (big rooms: up to 3)
+    private Integer capacity = 1;
 
     @Enumerated(EnumType.STRING)
     private RoomStatus status = RoomStatus.AVAILABLE;
@@ -57,6 +59,13 @@ public class Room {
     }
     public void setMonthlyRent(Double monthlyRent) {
         this.monthlyRent = monthlyRent;
+    }
+
+    public Integer getCapacity() {
+        return capacity;
+    }
+    public void setCapacity(Integer capacity) {
+        this.capacity = capacity;
     }
 
     public RoomStatus getStatus() {

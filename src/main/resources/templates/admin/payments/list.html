@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout('ตรวจสลิป', 'payments', ~{::main})}">
+<body>
+<main>
+    <h1 class="page-title">ตรวจสลิปการชำระเงิน</h1>
+    <p class="page-sub">AI อ่านสลิปและตัดยอดอัตโนมัติเมื่อยอดตรงและไม่พบความผิดปกติ รายการที่ไม่แน่ใจจะรอแอดมินตรวจที่นี่</p>
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th>สลิป</th><th>วันที่ส่ง</th><th>ห้อง / บิล</th><th>ผู้ส่ง</th><th class="text-end">ยอด (บาท)</th><th>ผลตรวจ</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="p : ${payments}">
+                    <td>
+                        <a th:href="@{/admin/payments/{id}/slip(id=${p.id})}" target="_blank">
+                            <img class="slip-thumb" th:src="@{/admin/payments/{id}/slip(id=${p.id})}" alt="สลิป">
+                        </a>
+                    </td>
+                    <td class="text-nowrap" th:text="${#temporals.format(p.submittedAt, 'dd/MM/yy HH:mm')}"></td>
+                    <td><b th:text="${p.bill.room.roomNumber}"></b> <span class="text-muted small" th:text="${p.bill.billMonth}"></span></td>
+                    <td th:text="${p.tenant != null} ? ${p.tenant.fullName} : '-'"></td>
+                    <td class="text-end" th:text="${#numbers.formatDecimal(p.amount, 1, 'COMMA', 2, 'POINT')}"></td>
+                    <td style="max-width: 320px">
+                        <span th:class="'badge soft-' + ${p.status.badge}" th:text="${p.status.label}"></span>
+                        <div class="small text-muted mt-1" th:text="${p.aiNote}"></div>
+                    </td>
+                    <td class="text-end text-nowrap">
+                        <th:block th:if="${p.status.name() != 'APPROVED'}">
+                            <form class="d-inline" th:action="@{/admin/payments/{id}/approve(id=${p.id})}" method="post">
+                                <button class="btn btn-sm btn-soft" type="submit"><i data-lucide="check"></i> อนุมัติ</button>
+                            </form>
+                        </th:block>
+                        <th:block th:if="${p.status.name() != 'REJECTED' and p.status.name() != 'APPROVED'}">
+                            <form class="d-inline" th:action="@{/admin/payments/{id}/reject(id=${p.id})}" method="post">
+                                <button class="btn btn-sm btn-light text-danger" type="submit"><i data-lucide="x"></i> ไม่อนุมัติ</button>
+                            </form>
+                        </th:block>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(payments)}"><td colspan="7" class="text-center text-muted py-4">ยังไม่มีสลิปที่ส่งเข้ามา</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+</body>
+</html>

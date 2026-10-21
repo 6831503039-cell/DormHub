@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout('แผนผังห้อง', 'layout', ~{::main})}">
+<body>
+<main>
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+        <div>
+            <h1 class="page-title">แผนผังห้องพัก</h1>
+            <div class="text-muted small">
+                <span class="me-3"><span class="legend-dot" style="background:#22a565"></span>ว่าง</span>
+                <span class="me-3"><span class="legend-dot" style="background:#2f80ed"></span>มีผู้เช่า</span>
+                <span><span class="legend-dot" style="background:#f5b301"></span>ปิดซ่อม</span>
+            </div>
+        </div>
+        <a class="btn btn-primary" th:href="@{/admin/rooms/new}"><i data-lucide="plus"></i> เพิ่มห้อง</a>
+    </div>
+
+    <div class="card mb-3" th:each="floor : ${floors}">
+        <div class="card-header" th:text="'ชั้น ' + ${floor.key}"></div>
+        <div class="card-body">
+            <div class="floor-row">
+                <a th:each="r : ${floor.value}" class="room-tile" th:classappend="${r.status.name()}" th:href="@{/admin/rooms/{id}(id=${r.id})}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <span class="num" th:text="${r.roomNumber}"></span>
+                        <span th:class="'badge soft-' + ${r.status.badge}" th:text="${r.status.label}"></span>
+                    </div>
+                    <div class="small text-muted" th:text="${r.roomType}"></div>
+                    <div class="small mt-1">
+                        <i data-lucide="users"></i>
+                        <span th:text="${occupants.getOrDefault(r.id, 0L)} + '/' + ${r.capacity}"></span>
+                        <span class="float-end" th:text="'฿' + ${#numbers.formatDecimal(r.monthlyRent, 1, 'COMMA', 0, 'POINT')}"></span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

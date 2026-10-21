@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout('จัดการห้อง', 'rooms', ~{::main})}">
+<body>
+<main>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="page-title mb-0">จัดการห้องพัก</h1>
+        <a class="btn btn-primary" th:href="@{/admin/rooms/new}"><i data-lucide="plus"></i> เพิ่มห้อง</a>
+    </div>
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead><tr><th>เลขห้อง</th><th>ชั้น</th><th>ประเภท</th><th>ผู้เช่า/ความจุ</th><th class="text-end">ค่าเช่า/เดือน</th><th>สถานะ</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="r : ${rooms}">
+                    <td class="fw-medium" th:text="${r.roomNumber}"></td>
+                    <td th:text="${r.floor}"></td>
+                    <td th:text="${r.roomType}"></td>
+                    <td th:text="${occupants.getOrDefault(r.id, 0L)} + ' / ' + ${r.capacity}"></td>
+                    <td class="text-end" th:text="${r.monthlyRent != null} ? ${#numbers.formatDecimal(r.monthlyRent, 1, 'COMMA', 2, 'POINT')} : '-'"></td>
+                    <td><span th:class="'badge soft-' + ${r.status.badge}" th:text="${r.status.label}"></span></td>
+                    <td class="text-end text-nowrap">
+                        <a class="btn btn-light btn-icon" th:href="@{/admin/rooms/{id}(id=${r.id})}" title="แก้ไข"><i data-lucide="pencil"></i></a>
+                        <a class="btn btn-light btn-icon text-danger" th:href="@{/admin/rooms/{id}/delete(id=${r.id})}" title="ลบ"
+                           onclick="return confirm('ยืนยันการลบห้องนี้?')"><i data-lucide="trash-2"></i></a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+</body>
+</html>

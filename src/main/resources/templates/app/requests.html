@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/app :: layout('คำร้อง', 'requests', ~{::main})}">
+<body>
+<main>
+    <ul class="nav nav-pills nav-fill mb-3" role="tablist">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tabRepair" type="button">แจ้งซ่อม</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tabFeedback" type="button">ความคิดเห็น</button></li>
+    </ul>
+
+    <div class="tab-content mb-4">
+        <div class="tab-pane fade show active" id="tabRepair">
+            <div th:if="${tenant == null or tenant.room == null}" class="alert alert-info">บัญชียังไม่ผูกกับห้องพัก จึงยังแจ้งซ่อมไม่ได้</div>
+            <form class="card card-body mb-3" th:if="${tenant != null and tenant.room != null}" th:action="@{/app/repairs}" method="post">
+                <div class="mb-2 small text-muted" th:text="'แจ้งซ่อมสำหรับห้อง ' + ${tenant.room.roomNumber}"></div>
+                <div class="mb-2">
+                    <label class="form-label" for="title">เรื่อง</label>
+                    <input class="form-control" id="title" name="title" placeholder="เช่น แอร์ไม่เย็น, ก๊อกน้ำรั่ว" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="description">รายละเอียด</label>
+                    <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                </div>
+                <button class="btn btn-primary" type="submit"><i data-lucide="send"></i> ส่งเรื่อง</button>
+            </form>
+            <div class="card" th:if="${repairs != null}">
+                <div class="card-header">รายการแจ้งซ่อมของห้อง</div>
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item px-3" th:each="r : ${repairs}">
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-medium" th:text="${r.title}"></span>
+                            <span th:class="'badge soft-' + ${r.status.badge}" th:text="${r.status.label}"></span>
+                        </div>
+                        <div class="small text-muted" th:text="${#temporals.format(r.reportedDate, 'dd/MM/yyyy')} + (${r.description != null} ? ' · ' + ${r.description} : '')"></div>
+                    </div>
+                    <div class="list-group-item text-muted px-3" th:if="${#lists.isEmpty(repairs)}">ยังไม่มีรายการ</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="tabFeedback">
+            <form class="card card-body mb-3" th:action="@{/app/feedback}" method="post">
+                <div class="mb-2">
+                    <label class="form-label" for="category">หมวด</label>
+                    <select class="form-select" id="category" name="category">
+                        <option th:each="c : ${categories}" th:value="${c}" th:text="${c}"></option>
+                    </select>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label" for="rating">ความพึงพอใจ</label>
+                    <select class="form-select" id="rating" name="rating">
+                        <option value="5">5 · ดีมาก</option>
+                        <option value="4">4 · ดี</option>
+                        <option value="3">3 · พอใช้</option>
+                        <option value="2">2 · ควรปรับปรุง</option>
+                        <option value="1">1 · ไม่พอใจ</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="message">ความคิดเห็น / ข้อเสนอแนะ</label>
+                    <textarea class="form-control" id="message" name="message" rows="3" required></textarea>
+                </div>
+                <button class="btn btn-primary" type="submit"><i data-lucide="send"></i> ส่งถึงเจ้าของหอ</button>
+            </form>
+            <div class="card">
+                <div class="card-header">ความคิดเห็นที่เคยส่ง</div>
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item px-3" th:each="f : ${feedbacks}">
+                        <div class="d-flex justify-content-between small">
+                            <span class="badge soft-primary" th:text="${f.category}"></span>
+                            <span class="text-muted" th:text="${#temporals.format(f.createdAt, 'dd/MM/yyyy')} + (${f.readByOwner} ? ' · เจ้าของหออ่านแล้ว' : '')"></span>
+                        </div>
+                        <div class="mt-1" th:text="${f.message}"></div>
+                    </div>
+                    <div class="list-group-item text-muted px-3" th:if="${#lists.isEmpty(feedbacks)}">ยังไม่เคยส่ง</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>
