@@ -22,7 +22,7 @@ steps:
    - '--port'
    - '8100'
 images:
- - 'us-central1-docker.pkg.dev/${_PROJECT_ID}/webdev-dockers/dormhub'
+ - 'us-central1-docker.pkg.dev/${_PROJECT_ID}/dormhub-dockers/dormhub'
 
 substitutions:
   _PROJECT_ID: 'webdev2026-511507'
