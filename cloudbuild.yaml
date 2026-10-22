@@ -25,7 +25,7 @@ images:
  - 'us-central1-docker.pkg.dev/${_PROJECT_ID}/dormhub-dockers/dormhub'
 
 substitutions:
-  _PROJECT_ID: 'webdev2026-511507'
+  _PROJECT_ID: 'dormhub-512309'
 
 options:
   logging: CLOUD_LOGGING_ONLY
