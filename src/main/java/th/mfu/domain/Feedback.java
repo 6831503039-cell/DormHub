@@ -15,7 +15,7 @@ public class Feedback {
     public static final String[] CATEGORIES = { "ทั่วไป", "ความสะอาด", "ความปลอดภัย", "สิ่งอำนวยความสะดวก", "อินเทอร์เน็ต", "อื่นๆ" };
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @ManyToOne(optional = false)

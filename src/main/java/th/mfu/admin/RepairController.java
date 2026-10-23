@@ -1,5 +1,6 @@
 package th.mfu.admin;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,13 +20,10 @@ import th.mfu.domain.RepairRequest;
 @RequestMapping("/admin")
 public class RepairController {
 
-    private final RepairRequestRepository repository;
-    private final RoomRepository roomRepository;
-
-    public RepairController(RepairRequestRepository repository, RoomRepository roomRepository) {
-        this.repository = repository;
-        this.roomRepository = roomRepository;
-    }
+    @Autowired
+    private RepairRequestRepository repository;
+    @Autowired
+    private RoomRepository roomRepository;
 
     @GetMapping("/repairs")
     public String listRepairs(Model model) {

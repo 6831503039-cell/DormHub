@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import th.mfu.BillRepository;
@@ -25,18 +26,14 @@ public class NotificationService {
     static final int ELECTRICITY_REMINDER_DAYS = 7;
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    private final BillRepository billRepository;
-    private final BillingService billingService;
-    private final AnalyticsService analyticsService;
-    private final Clock clock;
-
-    public NotificationService(BillRepository billRepository, BillingService billingService,
-            AnalyticsService analyticsService, Clock clock) {
-        this.billRepository = billRepository;
-        this.billingService = billingService;
-        this.analyticsService = analyticsService;
-        this.clock = clock;
-    }
+    @Autowired
+    private BillRepository billRepository;
+    @Autowired
+    private BillingService billingService;
+    @Autowired
+    private AnalyticsService analyticsService;
+    @Autowired
+    private Clock clock;
 
     public List<Notice> forRoom(Room room) {
         LocalDate today = LocalDate.now(clock);

@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -15,13 +16,10 @@ import th.mfu.domain.LaundryMachine;
 @Service
 public class LaundryService {
 
-    private final LaundryMachineRepository repository;
-    private final Clock clock;
-
-    public LaundryService(LaundryMachineRepository repository, Clock clock) {
-        this.repository = repository;
-        this.clock = clock;
-    }
+    @Autowired
+    private LaundryMachineRepository repository;
+    @Autowired
+    private Clock clock;
 
     public LocalDateTime now() {
         return LocalDateTime.now(clock);

@@ -1,5 +1,6 @@
 package th.mfu.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -12,11 +13,8 @@ import th.mfu.domain.AppUser;
 @Service
 public class AppUserDetailsService implements UserDetailsService {
 
-    private final AppUserRepository repository;
-
-    public AppUserDetailsService(AppUserRepository repository) {
-        this.repository = repository;
-    }
+    @Autowired
+    private AppUserRepository repository;
 
     @Override
     public UserDetails loadUserByUsername(String email) {
