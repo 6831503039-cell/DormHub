@@ -1,6 +1,5 @@
 package th.mfu.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,12 +18,15 @@ import th.mfu.domain.Role;
 @Controller
 public class AuthController {
 
-    @Autowired
-    private AppUserRepository users;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private DormProperties props;
+    private final AppUserRepository users;
+    private final PasswordEncoder passwordEncoder;
+    private final DormProperties props;
+
+    public AuthController(AppUserRepository users, PasswordEncoder passwordEncoder, DormProperties props) {
+        this.users = users;
+        this.passwordEncoder = passwordEncoder;
+        this.props = props;
+    }
 
     // "/" is the landing page after login: admins go to the dashboard, everyone else to the tenant app
     @GetMapping("/")

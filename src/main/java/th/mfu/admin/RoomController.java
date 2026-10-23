@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -27,10 +26,13 @@ import th.mfu.domain.Tenant;
 @RequestMapping("/admin")
 public class RoomController {
 
-    @Autowired
-    private RoomRepository repository;
-    @Autowired
-    private TenantRepository tenantRepository;
+    private final RoomRepository repository;
+    private final TenantRepository tenantRepository;
+
+    public RoomController(RoomRepository repository, TenantRepository tenantRepository) {
+        this.repository = repository;
+        this.tenantRepository = tenantRepository;
+    }
 
     @GetMapping("/rooms")
     public String listRooms(Model model) {

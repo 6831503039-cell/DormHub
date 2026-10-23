@@ -3,7 +3,6 @@ package th.mfu.service;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -26,12 +25,15 @@ public class SlipVerificationService {
             + "looks_tampered ให้เป็น true ถ้าเห็นร่องรอยการตัดต่อ ตัวอักษรไม่เสมอกัน ฟอนต์ผิดปกติ ตัวเลขซ้อนทับ "
             + "หรือรูปแบบไม่เหมือนสลิปจริงของธนาคาร";
 
-    @Autowired
-    private GeminiClient gemini;
-    @Autowired
-    private ObjectMapper mapper;
-    @Autowired
-    private DormProperties props;
+    private final GeminiClient gemini;
+    private final ObjectMapper mapper;
+    private final DormProperties props;
+
+    public SlipVerificationService(GeminiClient gemini, ObjectMapper mapper, DormProperties props) {
+        this.gemini = gemini;
+        this.mapper = mapper;
+        this.props = props;
+    }
 
     public SlipCheck verify(byte[] image, String contentType, double expectedAmount) {
         if (contentType == null || !contentType.startsWith("image/")) {

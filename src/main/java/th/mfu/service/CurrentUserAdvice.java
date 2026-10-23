@@ -2,7 +2,6 @@ package th.mfu.service;
 
 import java.security.Principal;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
@@ -14,10 +13,13 @@ import th.mfu.domain.AppUser;
 @ControllerAdvice
 public class CurrentUserAdvice {
 
-    @Autowired
-    private AppUserRepository users;
-    @Autowired
-    private DormProperties props;
+    private final AppUserRepository users;
+    private final DormProperties props;
+
+    public CurrentUserAdvice(AppUserRepository users, DormProperties props) {
+        this.users = users;
+        this.props = props;
+    }
 
     @ModelAttribute("currentUser")
     public AppUser currentUser(Principal principal) {

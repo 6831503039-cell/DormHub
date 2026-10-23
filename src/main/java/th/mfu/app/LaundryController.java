@@ -3,7 +3,6 @@ package th.mfu.app;
 import java.security.Principal;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,10 +19,13 @@ import th.mfu.service.LaundryService;
 @Controller
 public class LaundryController {
 
-    @Autowired
-    private LaundryService laundryService;
-    @Autowired
-    private CurrentUserService currentUser;
+    private final LaundryService laundryService;
+    private final CurrentUserService currentUser;
+
+    public LaundryController(LaundryService laundryService, CurrentUserService currentUser) {
+        this.laundryService = laundryService;
+        this.currentUser = currentUser;
+    }
 
     @GetMapping("/app/laundry")
     public String laundry(Model model) {

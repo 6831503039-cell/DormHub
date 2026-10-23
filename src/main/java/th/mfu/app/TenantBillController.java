@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -32,18 +31,23 @@ import th.mfu.service.PaymentService;
 @Controller
 public class TenantBillController {
 
-    @Autowired
-    private CurrentUserService currentUser;
-    @Autowired
-    private BillRepository billRepository;
-    @Autowired
-    private PaymentRepository paymentRepository;
-    @Autowired
-    private BillingService billingService;
-    @Autowired
-    private PaymentService paymentService;
-    @Autowired
-    private DormProperties props;
+    private final CurrentUserService currentUser;
+    private final BillRepository billRepository;
+    private final PaymentRepository paymentRepository;
+    private final BillingService billingService;
+    private final PaymentService paymentService;
+    private final DormProperties props;
+
+    public TenantBillController(CurrentUserService currentUser, BillRepository billRepository,
+            PaymentRepository paymentRepository, BillingService billingService, PaymentService paymentService,
+            DormProperties props) {
+        this.currentUser = currentUser;
+        this.billRepository = billRepository;
+        this.paymentRepository = paymentRepository;
+        this.billingService = billingService;
+        this.paymentService = paymentService;
+        this.props = props;
+    }
 
     @GetMapping("/app/bills")
     public String bills(Principal principal, Model model) {

@@ -2,7 +2,6 @@ package th.mfu.app;
 
 import java.security.Principal;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -22,12 +21,15 @@ public class ChatController {
 
     private static final int MAX_MESSAGE_LENGTH = 1000;
 
-    @Autowired
-    private CurrentUserService currentUser;
-    @Autowired
-    private ChatbotService chatbot;
-    @Autowired
-    private GeminiClient gemini;
+    private final CurrentUserService currentUser;
+    private final ChatbotService chatbot;
+    private final GeminiClient gemini;
+
+    public ChatController(CurrentUserService currentUser, ChatbotService chatbot, GeminiClient gemini) {
+        this.currentUser = currentUser;
+        this.chatbot = chatbot;
+        this.gemini = gemini;
+    }
 
     @GetMapping("/app/chat")
     public String chat(Model model) {

@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -78,10 +77,7 @@ public class ServiceLogicTest {
 
     @Test
     public void slipDecisionRules() {
-        // fields are @Autowired, so outside Spring we set them by hand
-        SlipVerificationService service = new SlipVerificationService();
-        ReflectionTestUtils.setField(service, "mapper", new ObjectMapper());
-        ReflectionTestUtils.setField(service, "props", new DormProperties());
+        SlipVerificationService service = new SlipVerificationService(null, new ObjectMapper(), new DormProperties());
         assertEquals(PaymentStatus.APPROVED, service.decide(
                 "{\"is_transfer_slip\":true,\"amount\":2250.0,\"looks_tampered\":false,\"reason\":\"ok\"}", 2250).getStatus());
         assertEquals(PaymentStatus.PENDING, service.decide(

@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -27,14 +26,18 @@ import th.mfu.service.CurrentUserService;
 @Controller
 public class TenantRequestController {
 
-    @Autowired
-    private CurrentUserService currentUser;
-    @Autowired
-    private RepairRequestRepository repairRepository;
-    @Autowired
-    private FeedbackRepository feedbackRepository;
-    @Autowired
-    private Clock clock;
+    private final CurrentUserService currentUser;
+    private final RepairRequestRepository repairRepository;
+    private final FeedbackRepository feedbackRepository;
+    private final Clock clock;
+
+    public TenantRequestController(CurrentUserService currentUser, RepairRequestRepository repairRepository,
+            FeedbackRepository feedbackRepository, Clock clock) {
+        this.currentUser = currentUser;
+        this.repairRepository = repairRepository;
+        this.feedbackRepository = feedbackRepository;
+        this.clock = clock;
+    }
 
     @GetMapping("/app/requests")
     public String requests(Principal principal, Model model) {
