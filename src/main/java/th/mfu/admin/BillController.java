@@ -3,7 +3,6 @@ package th.mfu.admin;
 import java.time.Clock;
 import java.time.YearMonth;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,16 +24,20 @@ import th.mfu.service.BillingService;
 @RequestMapping("/admin")
 public class BillController {
 
-    @Autowired
-    private BillRepository repository;
-    @Autowired
-    private RoomRepository roomRepository;
-    @Autowired
-    private PaymentRepository paymentRepository;
-    @Autowired
-    private BillingService billingService;
-    @Autowired
-    private Clock clock;
+    private final BillRepository repository;
+    private final RoomRepository roomRepository;
+    private final PaymentRepository paymentRepository;
+    private final BillingService billingService;
+    private final Clock clock;
+
+    public BillController(BillRepository repository, RoomRepository roomRepository, PaymentRepository paymentRepository,
+            BillingService billingService, Clock clock) {
+        this.repository = repository;
+        this.roomRepository = roomRepository;
+        this.paymentRepository = paymentRepository;
+        this.billingService = billingService;
+        this.clock = clock;
+    }
 
     @GetMapping("/bills")
     public String listBills(Model model) {

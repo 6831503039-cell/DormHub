@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import th.mfu.BillRepository;
@@ -24,10 +23,13 @@ public class AnalyticsService {
     // latest usage this much above the recent average counts as abnormal
     static final double ABNORMAL_RATIO = 1.3;
 
-    @Autowired
-    private BillRepository billRepository;
-    @Autowired
-    private RoomRepository roomRepository;
+    private final BillRepository billRepository;
+    private final RoomRepository roomRepository;
+
+    public AnalyticsService(BillRepository billRepository, RoomRepository roomRepository) {
+        this.billRepository = billRepository;
+        this.roomRepository = roomRepository;
+    }
 
     /** Totals per month over all rooms, oldest first: month -> [units, electricity cost, bill total]. */
     public Map<String, double[]> monthlyTotals(int months) {

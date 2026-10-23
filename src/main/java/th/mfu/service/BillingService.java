@@ -3,7 +3,6 @@ package th.mfu.service;
 import java.time.LocalDate;
 import java.time.YearMonth;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import th.mfu.BillRepository;
@@ -18,14 +17,18 @@ import th.mfu.domain.Room;
 @Service
 public class BillingService {
 
-    @Autowired
-    private TenantRepository tenantRepository;
-    @Autowired
-    private PaymentRepository paymentRepository;
-    @Autowired
-    private BillRepository billRepository;
-    @Autowired
-    private DormProperties props;
+    private final TenantRepository tenantRepository;
+    private final PaymentRepository paymentRepository;
+    private final BillRepository billRepository;
+    private final DormProperties props;
+
+    public BillingService(TenantRepository tenantRepository, PaymentRepository paymentRepository,
+            BillRepository billRepository, DormProperties props) {
+        this.tenantRepository = tenantRepository;
+        this.paymentRepository = paymentRepository;
+        this.billRepository = billRepository;
+        this.props = props;
+    }
 
     /** People sharing the bill: the tenants in the room, at least 1. */
     public long occupants(Room room) {
