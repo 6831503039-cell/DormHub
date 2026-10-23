@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -26,13 +27,10 @@ import th.mfu.domain.Tenant;
 @RequestMapping("/admin")
 public class RoomController {
 
-    private final RoomRepository repository;
-    private final TenantRepository tenantRepository;
-
-    public RoomController(RoomRepository repository, TenantRepository tenantRepository) {
-        this.repository = repository;
-        this.tenantRepository = tenantRepository;
-    }
+    @Autowired
+    private RoomRepository repository;
+    @Autowired
+    private TenantRepository tenantRepository;
 
     @GetMapping("/rooms")
     public String listRooms(Model model) {
@@ -64,7 +62,8 @@ public class RoomController {
     public String editRoomForm(Model model, @PathVariable Long id) {
         Room room = repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         model.addAttribute("room", room);
-        model.addAttribute("tenants", tenantRepository.findByRoomOrderByFirstNameAsc(room));
+        // tenants come straight from the @OneToMany relationship (Room.tenants)
+        model.addAttribute("tenants", room.getTenants());
         return "admin/rooms/form";
     }
 

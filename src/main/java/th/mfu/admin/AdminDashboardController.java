@@ -2,6 +2,7 @@ package th.mfu.admin;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,27 +24,22 @@ import th.mfu.service.LaundryService;
 @Controller
 public class AdminDashboardController {
 
-    private final RoomRepository roomRepository;
-    private final TenantRepository tenantRepository;
-    private final BillRepository billRepository;
-    private final RepairRequestRepository repairRepository;
-    private final PaymentRepository paymentRepository;
-    private final FeedbackRepository feedbackRepository;
-    private final AnalyticsService analyticsService;
-    private final LaundryService laundryService;
-
-    public AdminDashboardController(RoomRepository roomRepository, TenantRepository tenantRepository,
-            BillRepository billRepository, RepairRequestRepository repairRepository, PaymentRepository paymentRepository,
-            FeedbackRepository feedbackRepository, AnalyticsService analyticsService, LaundryService laundryService) {
-        this.roomRepository = roomRepository;
-        this.tenantRepository = tenantRepository;
-        this.billRepository = billRepository;
-        this.repairRepository = repairRepository;
-        this.paymentRepository = paymentRepository;
-        this.feedbackRepository = feedbackRepository;
-        this.analyticsService = analyticsService;
-        this.laundryService = laundryService;
-    }
+    @Autowired
+    private RoomRepository roomRepository;
+    @Autowired
+    private TenantRepository tenantRepository;
+    @Autowired
+    private BillRepository billRepository;
+    @Autowired
+    private RepairRequestRepository repairRepository;
+    @Autowired
+    private PaymentRepository paymentRepository;
+    @Autowired
+    private FeedbackRepository feedbackRepository;
+    @Autowired
+    private AnalyticsService analyticsService;
+    @Autowired
+    private LaundryService laundryService;
 
     @GetMapping("/admin")
     public String dashboard(Model model) {

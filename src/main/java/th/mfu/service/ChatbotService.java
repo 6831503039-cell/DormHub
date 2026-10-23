@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import th.mfu.BillRepository;
@@ -24,20 +25,16 @@ public class ChatbotService {
 
     private static final int MAX_HISTORY = 10;
 
-    private final GeminiClient gemini;
-    private final DormProperties props;
-    private final BillRepository billRepository;
-    private final BillingService billingService;
-    private final LaundryService laundryService;
-
-    public ChatbotService(GeminiClient gemini, DormProperties props, BillRepository billRepository,
-            BillingService billingService, LaundryService laundryService) {
-        this.gemini = gemini;
-        this.props = props;
-        this.billRepository = billRepository;
-        this.billingService = billingService;
-        this.laundryService = laundryService;
-    }
+    @Autowired
+    private GeminiClient gemini;
+    @Autowired
+    private DormProperties props;
+    @Autowired
+    private BillRepository billRepository;
+    @Autowired
+    private BillingService billingService;
+    @Autowired
+    private LaundryService laundryService;
 
     public ChatReply reply(AppUser user, Tenant tenant, String message, List<ChatTurn> history) {
         if (gemini.isConfigured()) {

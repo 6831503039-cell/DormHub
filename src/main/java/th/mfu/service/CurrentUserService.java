@@ -3,6 +3,7 @@ package th.mfu.service;
 import java.security.Principal;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -15,13 +16,10 @@ import th.mfu.domain.Tenant;
 @Service
 public class CurrentUserService {
 
-    private final AppUserRepository users;
-    private final TenantRepository tenants;
-
-    public CurrentUserService(AppUserRepository users, TenantRepository tenants) {
-        this.users = users;
-        this.tenants = tenants;
-    }
+    @Autowired
+    private AppUserRepository users;
+    @Autowired
+    private TenantRepository tenants;
 
     public AppUser user(Principal principal) {
         return users.findByEmailIgnoreCase(principal.getName())

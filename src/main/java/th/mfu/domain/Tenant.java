@@ -8,13 +8,15 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
 public class Tenant {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String firstName;
     private String lastName;
@@ -26,6 +28,7 @@ public class Tenant {
 
     // null = not assigned to a room yet
     @ManyToOne
+    @JsonBackReference("room-tenants")
     private Room room;
 
     public String getFullName() {

@@ -1,5 +1,6 @@
 package th.mfu.admin;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,11 +16,8 @@ import th.mfu.domain.Feedback;
 @RequestMapping("/admin/feedback")
 public class FeedbackController {
 
-    private final FeedbackRepository repository;
-
-    public FeedbackController(FeedbackRepository repository) {
-        this.repository = repository;
-    }
+    @Autowired
+    private FeedbackRepository repository;
 
     @GetMapping
     public String listFeedback(Model model) {

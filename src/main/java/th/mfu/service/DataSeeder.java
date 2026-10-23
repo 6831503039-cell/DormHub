@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -39,31 +40,26 @@ public class DataSeeder implements CommandLineRunner {
 
     static final String DEMO_TENANT_PASSWORD = "tenant123";
 
-    private final AppUserRepository users;
-    private final RoomRepository rooms;
-    private final TenantRepository tenants;
-    private final BillRepository bills;
-    private final RepairRequestRepository repairs;
-    private final FeedbackRepository feedbacks;
-    private final LaundryMachineRepository machines;
-    private final PasswordEncoder passwordEncoder;
-    private final DormProperties props;
-    private final Clock clock;
-
-    public DataSeeder(AppUserRepository users, RoomRepository rooms, TenantRepository tenants, BillRepository bills,
-            RepairRequestRepository repairs, FeedbackRepository feedbacks, LaundryMachineRepository machines,
-            PasswordEncoder passwordEncoder, DormProperties props, Clock clock) {
-        this.users = users;
-        this.rooms = rooms;
-        this.tenants = tenants;
-        this.bills = bills;
-        this.repairs = repairs;
-        this.feedbacks = feedbacks;
-        this.machines = machines;
-        this.passwordEncoder = passwordEncoder;
-        this.props = props;
-        this.clock = clock;
-    }
+    @Autowired
+    private AppUserRepository users;
+    @Autowired
+    private RoomRepository rooms;
+    @Autowired
+    private TenantRepository tenants;
+    @Autowired
+    private BillRepository bills;
+    @Autowired
+    private RepairRequestRepository repairs;
+    @Autowired
+    private FeedbackRepository feedbacks;
+    @Autowired
+    private LaundryMachineRepository machines;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private DormProperties props;
+    @Autowired
+    private Clock clock;
 
     @Override
     public void run(String... args) {

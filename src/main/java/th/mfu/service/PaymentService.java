@@ -3,6 +3,7 @@ package th.mfu.service;
 import java.time.Clock;
 import java.time.LocalDateTime;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import th.mfu.PaymentRepository;
@@ -14,18 +15,14 @@ import th.mfu.domain.Tenant;
 @Service
 public class PaymentService {
 
-    private final PaymentRepository repository;
-    private final SlipVerificationService slipVerifier;
-    private final BillingService billingService;
-    private final Clock clock;
-
-    public PaymentService(PaymentRepository repository, SlipVerificationService slipVerifier,
-            BillingService billingService, Clock clock) {
-        this.repository = repository;
-        this.slipVerifier = slipVerifier;
-        this.billingService = billingService;
-        this.clock = clock;
-    }
+    @Autowired
+    private PaymentRepository repository;
+    @Autowired
+    private SlipVerificationService slipVerifier;
+    @Autowired
+    private BillingService billingService;
+    @Autowired
+    private Clock clock;
 
     /** Saves the slip, runs the AI check and closes the bill if it is now fully paid. */
     public Payment submit(Tenant tenant, Bill bill, double amount, byte[] slip, String contentType) {

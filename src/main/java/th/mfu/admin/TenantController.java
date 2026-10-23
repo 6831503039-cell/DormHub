@@ -3,6 +3,7 @@ package th.mfu.admin;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,18 +28,14 @@ import th.mfu.domain.Tenant;
 @RequestMapping("/admin")
 public class TenantController {
 
-    private final TenantRepository repository;
-    private final RoomRepository roomRepository;
-    private final PaymentRepository paymentRepository;
-    private final AppUserRepository userRepository;
-
-    public TenantController(TenantRepository repository, RoomRepository roomRepository,
-            PaymentRepository paymentRepository, AppUserRepository userRepository) {
-        this.repository = repository;
-        this.roomRepository = roomRepository;
-        this.paymentRepository = paymentRepository;
-        this.userRepository = userRepository;
-    }
+    @Autowired
+    private TenantRepository repository;
+    @Autowired
+    private RoomRepository roomRepository;
+    @Autowired
+    private PaymentRepository paymentRepository;
+    @Autowired
+    private AppUserRepository userRepository;
 
     @GetMapping("/tenants")
     public String listTenants(Model model) {

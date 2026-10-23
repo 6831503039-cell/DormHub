@@ -1,5 +1,6 @@
 package th.mfu.admin;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,13 +22,10 @@ import th.mfu.service.PaymentService;
 @RequestMapping("/admin/payments")
 public class PaymentController {
 
-    private final PaymentRepository repository;
-    private final PaymentService paymentService;
-
-    public PaymentController(PaymentRepository repository, PaymentService paymentService) {
-        this.repository = repository;
-        this.paymentService = paymentService;
-    }
+    @Autowired
+    private PaymentRepository repository;
+    @Autowired
+    private PaymentService paymentService;
 
     @GetMapping
     public String listPayments(Model model) {
