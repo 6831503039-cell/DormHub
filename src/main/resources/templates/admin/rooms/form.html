@@ -9,7 +9,13 @@
         <div class="row g-3">
             <div class="col-md-4">
                 <label class="form-label" for="roomNumber">เลขห้อง</label>
-                <input class="form-control" th:field="*{roomNumber}" required>
+                <input class="form-control" th:field="*{roomNumber}" placeholder="เช่น A101" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="building">ตึก</label>
+                <select class="form-select" th:field="*{building}">
+                    <option th:each="b : ${ {'A', 'B', 'C'} }" th:value="${b}" th:text="'ตึก ' + ${b}"></option>
+                </select>
             </div>
             <div class="col-md-4">
                 <label class="form-label" for="floor">ชั้น</label>

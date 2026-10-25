@@ -24,6 +24,8 @@ public class Room {
 
     @Column(unique = true, nullable = false)
     private String roomNumber;
+    // building of the dorm (A, B or C), shown as separate buildings on the 3D map
+    private String building = "A";
     private Integer floor;
     private String roomType;
     private Double monthlyRent;
@@ -45,6 +47,12 @@ public class Room {
     @JsonManagedReference("room-bills")
     private List<Bill> bills;
 
+    // one room -> many booking requests from people who want to rent it; BookingRequest.room owns room_id
+    @OneToMany(mappedBy = "room", fetch = FetchType.LAZY)
+    @OrderBy("createdAt DESC")
+    @JsonManagedReference("room-bookings")
+    private List<BookingRequest> bookings;
+
     public Long getId() {
         return id;
     }
@@ -57,6 +65,13 @@ public class Room {
     }
     public void setRoomNumber(String roomNumber) {
         this.roomNumber = roomNumber;
+    }
+
+    public String getBuilding() {
+        return building;
+    }
+    public void setBuilding(String building) {
+        this.building = building;
     }
 
     public Integer getFloor() {
@@ -99,6 +114,13 @@ public class Room {
     }
     public void setBills(List<Bill> bills) {
         this.bills = bills;
+    }
+
+    public List<BookingRequest> getBookings() {
+        return bookings;
+    }
+    public void setBookings(List<BookingRequest> bookings) {
+        this.bookings = bookings;
     }
 
     public RoomStatus getStatus() {
