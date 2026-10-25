@@ -112,7 +112,7 @@ public class DataSeeder implements CommandLineRunner {
         tenant("วีระ", "กล้าหาญ", "083-666-6666", "weera@example.com", today.minusMonths(13), today.plusMonths(5), r201);
         tenant("ปิติ", "ยินดี", "084-777-7777", "piti@example.com", today.minusMonths(13), today.plusDays(40), r204);
 
-        // the rest of the 3 buildings (A, B, C x 4 floors x 6 rooms) for the 3D room map
+        // the rest of the 3 buildings for the 3D room map (laid out like SJD Mansion)
         seedBuildingRooms(today);
 
         // demo tenant logins (linked to the tenant records above by email)
@@ -163,18 +163,22 @@ public class DataSeeder implements CommandLineRunner {
     private static final String[] LAST_NAMES = { "ศรีสุข", "บุญมา", "แก้วใส", "ทองดี", "สายชล", "พรหมมา", "จันทร์เพ็ญ", "วงศ์ดี" };
 
     /**
-     * Fills buildings A, B and C (4 floors x 6 rooms) with a fixed pattern of room types and statuses,
-     * skipping the rooms already created above. Rented rooms get tenants with contract end dates.
+     * Fills the buildings with a fixed pattern of room types and statuses, skipping the rooms created above:
+     * A (centre building) floors 1-5 x 6 rooms, wings B and C floors 2-5 x 10 rooms (ground floor is parking).
+     * Rented rooms get tenants with contract end dates.
      */
     private void seedBuildingRooms(LocalDate today) {
         String[] buildings = { "A", "B", "C" };
+        int[] firstFloor = { 1, 2, 2 };
+        int[] roomsPerFloor = { 6, 10, 10 };
         Room firstFree = null;
         Room secondFree = null;
         int person = 0;
         for (int b = 0; b < buildings.length; b++) {
-            for (int floor = 1; floor <= 4; floor++) {
-                for (int i = 1; i <= 6; i++) {
-                    String number = buildings[b] + floor + "0" + i;
+            int n = roomsPerFloor[b];
+            for (int floor = firstFloor[b]; floor <= 5; floor++) {
+                for (int i = 1; i <= n; i++) {
+                    String number = buildings[b] + floor + String.format("%02d", i);
                     if (rooms.findByRoomNumber(number).isPresent()) {
                         continue;
                     }
@@ -182,11 +186,11 @@ public class DataSeeder implements CommandLineRunner {
                     String type;
                     double rent;
                     int capacity;
-                    if (i == 1 || i == 6) {
+                    if (i == 1 || i == n) {
                         type = "แอร์ (ห้องใหญ่)";
                         rent = 6000;
                         capacity = 3;
-                    } else if (i == 2 || i == 5) {
+                    } else if (i % 3 != 0) {
                         type = "แอร์";
                         rent = 4500;
                         capacity = 2;
@@ -201,7 +205,7 @@ public class DataSeeder implements CommandLineRunner {
 
                     int k = (b * 31 + floor * 7 + i * 3) % 10;
                     RoomStatus status = k < 3 ? RoomStatus.AVAILABLE
-                            : (k == 3 && floor == 4) ? RoomStatus.MAINTENANCE : RoomStatus.OCCUPIED;
+                            : (k == 3 && floor == 5) ? RoomStatus.MAINTENANCE : RoomStatus.OCCUPIED;
                     Room room = room(number, buildings[b], floor, type, rent, capacity, status);
 
                     if (status == RoomStatus.AVAILABLE) {
