@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<!-- Public 3D room map: anyone can browse rooms and send a booking request (ExploreController). -->
+<html lang="th" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'ห้องว่าง · ' + ${dormName}">ห้องว่าง</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link th:href="@{/css/app.css}" rel="stylesheet">
+    <link rel="icon" type="image/png" th:href="@{/img/logo-icon.png}">
+</head>
+<body class="explore-body">
+<header class="explore-top">
+    <a class="brand" th:href="@{/explore}">
+        <img class="brand-logo" th:src="@{/img/logo-icon.png}" alt="">
+        <span th:text="${dormName}">DormHub</span>
+    </a>
+    <div class="d-flex align-items-center gap-2">
+        <span class="text-muted small d-none d-md-inline">ดูห้องว่างและจองห้องได้โดยไม่ต้องสมัครสมาชิก</span>
+        <a class="btn btn-light btn-sm" th:href="@{/login}"><i data-lucide="log-in"></i> เข้าสู่ระบบ</a>
+    </div>
+</header>
+
+<div th:if="${success}" class="alert alert-success alert-dismissible fade show explore-toast" role="status">
+    <i data-lucide="check-circle-2"></i> <span th:text="${success}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="ปิด"></button>
+</div>
+<div th:if="${error}" class="alert alert-danger alert-dismissible fade show explore-toast" role="alert">
+    <span th:text="${error}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="ปิด"></button>
+</div>
+
+<main id="dormMap" class="explore-map" aria-label="แผนผังหอพัก 3 มิติ"></main>
+
+<!-- booking form, copied into the room panel by dorm3d.js -->
+<template id="bookTpl">
+    <form class="d3-book" th:action="@{/explore/book}" method="post">
+        <div class="fw-semibold" data-field="title">จองห้อง</div>
+        <input type="hidden" name="room" data-field="room">
+        <div>
+            <label class="form-label" for="bkName">ชื่อ-นามสกุล</label>
+            <input class="form-control" id="bkName" name="fullName" maxlength="100" autocomplete="name" required>
+        </div>
+        <div>
+            <label class="form-label" for="bkPhone">เบอร์โทรศัพท์</label>
+            <input class="form-control" id="bkPhone" name="phone" type="tel" maxlength="20" placeholder="08x-xxx-xxxx" autocomplete="tel" required>
+        </div>
+        <div>
+            <label class="form-label" for="bkEmail">อีเมล (ไม่บังคับ)</label>
+            <input class="form-control" id="bkEmail" name="email" type="email" maxlength="100" autocomplete="email">
+        </div>
+        <div>
+            <label class="form-label" for="bkDate">วันที่ต้องการเข้าอยู่</label>
+            <input class="form-control" id="bkDate" name="moveInDate" type="date" data-field="date" required>
+        </div>
+        <div>
+            <label class="form-label" for="bkNote">ข้อความถึงหอ (ไม่บังคับ)</label>
+            <textarea class="form-control" id="bkNote" name="note" rows="2" maxlength="500"></textarea>
+        </div>
+        <button class="btn btn-primary w-100" type="submit"><i data-lucide="send"></i> ส่งคำขอจอง</button>
+        <div class="small text-muted">ยังไม่ต้องโอนเงิน เจ้าหน้าที่หอจะติดต่อกลับเพื่อยืนยันการจอง</div>
+    </form>
+</template>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script th:src="@{/js/dorm3d.js}"></script>
+<script th:inline="javascript">
+    if (window.lucide) lucide.createIcons();
+    Dorm3D.mount({
+        root: document.getElementById('dormMap'),
+        dataUrl: /*[[@{/explore/rooms}]]*/ '/explore/rooms',
+        mode: 'public',
+        soonDays: /*[[${soonDays}]]*/ 60,
+        bookTemplate: document.getElementById('bookTpl'),
+        initialRoom: /*[[${param.room != null ? param.room[0] : null}]]*/ null
+    });
+</script>
+</body>
+</html>

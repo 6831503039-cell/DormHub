@@ -39,6 +39,14 @@ Spring Boot + Thymeleaf + Spring Security + H2, deploy ขึ้น Google Cloud
 - วิเคราะห์ค่าไฟ: กราฟรายเดือน 12 เดือน และค่าเฉลี่ยตาม 3 ฤดู (ร้อน/ฝน/หนาว)
 - ตรวจสลิป: ดูรูปสลิป ผลตรวจจาก AI และกดอนุมัติ/ไม่อนุมัติ
 
+**แผนผังหอพัก 3D (หน้าจองห้อง)**
+- หน้า `/explore` เปิดได้โดยไม่ต้องล็อกอิน: โมเดล 3 มิติของตึก A, B, C (วางเป็นรูปตัว U รอบส่วนกลาง) หมุน/ซูมได้
+- กดตึก → ห้องทุกห้องเปลี่ยนสีตามสถานะ: ว่าง / ใกล้หมดสัญญา (เหลือ ≤ 60 วัน คิดจากวันหมดสัญญาของผู้เช่า) / มีผู้เช่า / ปิดซ่อม
+- เลือกชั้น → ชั้นด้านบนค่อยๆ ยกออก เห็นห้องในชั้นนั้น กดห้องดูราคา รายละเอียด และ **ห้องแบบ 3D** (จัดเฟอร์นิเจอร์ตามประเภทห้องและจำนวนคน)
+- ส่ง **คำขอจอง** (ห้องใกล้หมดสัญญาจองล่วงหน้าได้) → แอดมินเห็นที่เมนู "คำขอจอง" และกดยืนยัน/ยกเลิก
+- หน้า "แผนผังห้อง" ของแอดมินใช้โมเดล 3D เดียวกัน แต่แสดงชื่อผู้เช่าและลิงก์ไปแก้ไขห้อง
+- โค้ด: `static/js/dorm3d.js` (Three.js r128 จาก CDN), ข้อมูลจาก `RoomMapService` ผ่าน `/explore/rooms` และ `/admin/layout/rooms` (JSON)
+
 **ผู้เช่า (แอป)**
 - หน้าแรก: ยอดที่ต้องจ่าย (ส่วนของตัวเอง), การแจ้งเตือน, เพื่อนร่วมห้อง
 - บิล: **หารค่าห้องอัตโนมัติ** ตามจำนวนคนในห้อง, **QR พร้อมเพย์** สแกนจ่ายตามยอด, อัปโหลดสลิป
@@ -79,12 +87,14 @@ src/main/java/th/mfu/
 ├── service/     BillingService (หารค่าห้อง/ตัดยอด), NotificationService, AnalyticsService,
 │                GeminiClient, ChatbotService, SlipVerificationService, PromptPay, DataSeeder
 ├── admin/       Controller ฝั่งเจ้าของหอ (/admin/**)
+├── explore/     ExploreController หน้าแผนผัง 3D และคำขอจองสำหรับคนทั่วไป (/explore)
 ├── app/         Controller ฝั่งผู้เช่า (/app/**)
 └── *Repository.java
 src/main/resources/
 ├── templates/fragments/  layout ของ admin และ app
 ├── templates/admin, app, auth
-└── static/css/app.css    ธีมสีฟ้า minimal
+├── static/css/app.css    ธีมสีฟ้า minimal
+└── static/js/dorm3d.js   แผนผังหอพัก 3 มิติ + ห้อง 3D
 ```
 
 ## Deploy ขึ้น Cloud Run
