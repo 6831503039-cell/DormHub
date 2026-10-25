@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -21,6 +22,8 @@ import th.mfu.RoomRepository;
 import th.mfu.TenantRepository;
 import th.mfu.domain.Room;
 import th.mfu.domain.Tenant;
+import th.mfu.service.RoomMapService;
+import th.mfu.service.RoomView;
 
 @Controller
 @RequestMapping("/admin")
@@ -28,10 +31,12 @@ public class RoomController {
 
     private final RoomRepository repository;
     private final TenantRepository tenantRepository;
+    private final RoomMapService roomMapService;
 
-    public RoomController(RoomRepository repository, TenantRepository tenantRepository) {
+    public RoomController(RoomRepository repository, TenantRepository tenantRepository, RoomMapService roomMapService) {
         this.repository = repository;
         this.tenantRepository = tenantRepository;
+        this.roomMapService = roomMapService;
     }
 
     @GetMapping("/rooms")
@@ -41,17 +46,28 @@ public class RoomController {
         return "admin/rooms/list";
     }
 
-    /** Floor plan: rooms grouped by floor, coloured by status. */
+    /** Room layout: 3D map on top (static/js/dorm3d.js), and the rooms grouped by building and floor below. */
     @GetMapping("/layout")
     public String layout(Model model) {
-        Map<Integer, List<Room>> floors = new TreeMap<>();
+        // building -> floor -> rooms
+        Map<String, Map<Integer, List<Room>>> buildings = new TreeMap<>();
         for (Room room : repository.findAllByOrderByRoomNumberAsc()) {
+            String building = room.getBuilding() == null || room.getBuilding().isBlank() ? "A" : room.getBuilding();
             int floor = room.getFloor() == null ? 0 : room.getFloor();
-            floors.computeIfAbsent(floor, f -> new java.util.ArrayList<>()).add(room);
+            buildings.computeIfAbsent(building, b -> new TreeMap<>())
+                    .computeIfAbsent(floor, f -> new java.util.ArrayList<>()).add(room);
         }
-        model.addAttribute("floors", floors);
+        model.addAttribute("buildings", buildings);
         model.addAttribute("occupants", occupantsByRoom());
+        model.addAttribute("soonDays", RoomMapService.SOON_DAYS);
         return "admin/rooms/layout";
+    }
+
+    /** Room data for the admin 3D map, including tenant names. */
+    @GetMapping("/layout/rooms")
+    @ResponseBody
+    public List<RoomView> layoutRooms() {
+        return roomMapService.rooms(true);
     }
 
     @GetMapping("/rooms/new")

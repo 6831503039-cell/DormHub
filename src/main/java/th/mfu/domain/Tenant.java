@@ -26,6 +26,10 @@ public class Tenant {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate checkInDate;
 
+    // last day of the rental contract; rooms whose contract ends within 60 days show as "ใกล้หมดสัญญา"
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate contractEndDate;
+
     // null = not assigned to a room yet
     @ManyToOne
     @JsonBackReference("room-tenants")
@@ -75,6 +79,13 @@ public class Tenant {
     }
     public void setCheckInDate(LocalDate checkInDate) {
         this.checkInDate = checkInDate;
+    }
+
+    public LocalDate getContractEndDate() {
+        return contractEndDate;
+    }
+    public void setContractEndDate(LocalDate contractEndDate) {
+        this.contractEndDate = contractEndDate;
     }
 
     public Room getRoom() {

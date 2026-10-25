@@ -9,10 +9,11 @@
     <div class="card">
         <div class="table-responsive">
             <table class="table table-hover">
-                <thead><tr><th>เลขห้อง</th><th>ชั้น</th><th>ประเภท</th><th>ผู้เช่า/ความจุ</th><th class="text-end">ค่าเช่า/เดือน</th><th>สถานะ</th><th></th></tr></thead>
+                <thead><tr><th>เลขห้อง</th><th>ตึก</th><th>ชั้น</th><th>ประเภท</th><th>ผู้เช่า/ความจุ</th><th class="text-end">ค่าเช่า/เดือน</th><th>สถานะ</th><th></th></tr></thead>
                 <tbody>
                 <tr th:each="r : ${rooms}">
                     <td class="fw-medium" th:text="${r.roomNumber}"></td>
+                    <td th:text="${r.building}"></td>
                     <td th:text="${r.floor}"></td>
                     <td th:text="${r.roomType}"></td>
                     <td th:text="${occupants.getOrDefault(r.id, 0L)} + ' / ' + ${r.capacity}"></td>
