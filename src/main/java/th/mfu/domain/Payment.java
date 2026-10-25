@@ -14,15 +14,18 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 /** A transfer slip a tenant uploaded for (part of) a bill. */
 @Entity
 public class Payment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @ManyToOne(optional = false)
+    @JsonBackReference("bill-payments")
     private Bill bill;
 
     // null if the tenant record was deleted later

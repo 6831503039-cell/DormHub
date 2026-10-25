@@ -64,7 +64,8 @@ public class RoomController {
     public String editRoomForm(Model model, @PathVariable Long id) {
         Room room = repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         model.addAttribute("room", room);
-        model.addAttribute("tenants", tenantRepository.findByRoomOrderByFirstNameAsc(room));
+        // tenants come straight from the @OneToMany relationship (Room.tenants)
+        model.addAttribute("tenants", room.getTenants());
         return "admin/rooms/form";
     }
 
