@@ -268,10 +268,10 @@ public class DormHubApplicationTest {
         mvc.perform(get("/explore")).andExpect(status().isOk())
                 .andExpect(content().string(containsString("/js/dorm3d.js")));
         mvc.perform(get("/js/dorm3d.js")).andExpect(status().isOk());
-        // A: 5 floors x 6 rooms, B and C: floors 2-5 x 10 rooms; no tenant names on the public page
+        // SJD Mansion: A 80 rooms, B 70, C 70; no tenant names on the public page
         mvc.perform(get("/explore/rooms"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(110))
+                .andExpect(jsonPath("$.length()").value(220))
                 .andExpect(jsonPath("$[?(@.number == 'A103')].status").value("AVAILABLE"))
                 .andExpect(jsonPath("$[?(@.number == 'A101')].status").value("SOON"))
                 .andExpect(jsonPath("$[?(@.number == 'A104')].status").value("MAINTENANCE"))
