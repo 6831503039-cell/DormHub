@@ -94,14 +94,15 @@ public class DataSeeder implements CommandLineRunner {
         LocalDate today = LocalDate.now(clock);
 
         // building A, floors 1-2: the original demo rooms (used by bills, repairs and feedback below)
-        Room r101 = room("A101", "A", 1, "แอร์", 4500, 2, RoomStatus.OCCUPIED);
-        Room r102 = room("A102", "A", 1, "แอร์", 4500, 2, RoomStatus.OCCUPIED);
-        room("A103", "A", 1, "พัดลม", 3000, 1, RoomStatus.AVAILABLE);
-        Room r104 = room("A104", "A", 1, "พัดลม", 3000, 1, RoomStatus.MAINTENANCE);
-        Room r201 = room("A201", "A", 2, "แอร์ (ห้องใหญ่)", 6000, 3, RoomStatus.OCCUPIED);
-        room("A202", "A", 2, "แอร์ (ห้องใหญ่)", 6000, 3, RoomStatus.AVAILABLE);
-        room("A203", "A", 2, "พัดลม", 3200, 1, RoomStatus.AVAILABLE);
-        Room r204 = room("A204", "A", 2, "แอร์", 5000, 2, RoomStatus.OCCUPIED);
+        // SJD Mansion: every room has air conditioning; floor 1 costs 4,500 and floors 2-4 cost 4,000 per room
+        Room r101 = room("A101", "A", 1, ROOM_TYPE, rentFor(1), 2, RoomStatus.OCCUPIED);
+        Room r102 = room("A102", "A", 1, ROOM_TYPE, rentFor(1), 2, RoomStatus.OCCUPIED);
+        room("A103", "A", 1, ROOM_TYPE, rentFor(1), 1, RoomStatus.AVAILABLE);
+        Room r104 = room("A104", "A", 1, ROOM_TYPE, rentFor(1), 1, RoomStatus.MAINTENANCE);
+        Room r201 = room("A201", "A", 2, ROOM_TYPE, rentFor(2), 3, RoomStatus.OCCUPIED);
+        room("A202", "A", 2, ROOM_TYPE, rentFor(2), 3, RoomStatus.AVAILABLE);
+        room("A203", "A", 2, ROOM_TYPE, rentFor(2), 1, RoomStatus.AVAILABLE);
+        Room r204 = room("A204", "A", 2, ROOM_TYPE, rentFor(2), 2, RoomStatus.OCCUPIED);
 
         // contract ends: A101 and A204 end within 60 days, so they show as "ใกล้หมดสัญญา" on the 3D map
         tenant("สมชาย", "ใจดี", "081-111-1111", "somchai@example.com", today.minusMonths(14), today.plusDays(25), r101);
@@ -162,51 +163,37 @@ public class DataSeeder implements CommandLineRunner {
     private static final String[] FIRST_NAMES = { "กานต์", "ณัฐ", "ธนา", "พิมพ์", "ภูมิ", "มินตรา", "รวิ", "ศุภ", "อร", "ปาล์ม", "เจน", "ต้นข้าว" };
     private static final String[] LAST_NAMES = { "ศรีสุข", "บุญมา", "แก้วใส", "ทองดี", "สายชล", "พรหมมา", "จันทร์เพ็ญ", "วงศ์ดี" };
 
+    static final String ROOM_TYPE = "แอร์";
+
+    /** Room price at SJD Mansion: 4,500 baht on floor 1, 4,000 baht from floor 2 up (per room, split between roommates). */
+    static double rentFor(int floor) {
+        return floor == 1 ? 4500 : 4000;
+    }
+
     /**
-     * Fills the buildings with a fixed pattern of room types and statuses, skipping the rooms created above:
-     * A (centre building) floors 1-5 x 6 rooms, wings B and C floors 2-5 x 10 rooms (ground floor is parking).
-     * Rented rooms get tenants with contract end dates.
+     * Fills buildings A, B and C like SJD Mansion, skipping the rooms created above:
+     * every building has 4 floors with 20 rooms on floors 2-4 (01-20); on floor 1, A has 20 rooms
+     * while B and C have 10 rooms (the other half is the entrance, parking, office and laundry).
+     * Rooms take 1, 2 or 3 people. Rented rooms get tenants with contract end dates.
      */
     private void seedBuildingRooms(LocalDate today) {
         String[] buildings = { "A", "B", "C" };
-        int[] firstFloor = { 1, 2, 2 };
-        int[] roomsPerFloor = { 6, 10, 10 };
         Room firstFree = null;
         Room secondFree = null;
         int person = 0;
         for (int b = 0; b < buildings.length; b++) {
-            int n = roomsPerFloor[b];
-            for (int floor = firstFloor[b]; floor <= 5; floor++) {
+            for (int floor = 1; floor <= 4; floor++) {
+                int n = (floor == 1 && b > 0) ? 10 : 20;
                 for (int i = 1; i <= n; i++) {
                     String number = buildings[b] + floor + String.format("%02d", i);
                     if (rooms.findByRoomNumber(number).isPresent()) {
                         continue;
                     }
-                    // corner rooms are big rooms, the middle rooms are fan rooms
-                    String type;
-                    double rent;
-                    int capacity;
-                    if (i == 1 || i == n) {
-                        type = "แอร์ (ห้องใหญ่)";
-                        rent = 6000;
-                        capacity = 3;
-                    } else if (i % 3 != 0) {
-                        type = "แอร์";
-                        rent = 4500;
-                        capacity = 2;
-                    } else {
-                        type = "พัดลม";
-                        rent = 3000;
-                        capacity = 1;
-                    }
-                    if (floor >= 3) {
-                        rent += 300; // upper floors have a better view
-                    }
-
+                    int capacity = 1 + (i * 7 + floor * 3 + b) % 3;
                     int k = (b * 31 + floor * 7 + i * 3) % 10;
                     RoomStatus status = k < 3 ? RoomStatus.AVAILABLE
-                            : (k == 3 && floor == 5) ? RoomStatus.MAINTENANCE : RoomStatus.OCCUPIED;
-                    Room room = room(number, buildings[b], floor, type, rent, capacity, status);
+                            : (k == 3 && floor == 4) ? RoomStatus.MAINTENANCE : RoomStatus.OCCUPIED;
+                    Room room = room(number, buildings[b], floor, ROOM_TYPE, rentFor(floor), capacity, status);
 
                     if (status == RoomStatus.AVAILABLE) {
                         if (firstFree == null) {
@@ -222,7 +209,7 @@ public class DataSeeder implements CommandLineRunner {
                         for (int p = 0; p < people; p++) {
                             String first = FIRST_NAMES[person % FIRST_NAMES.length];
                             String last = LAST_NAMES[(person / FIRST_NAMES.length + person) % LAST_NAMES.length];
-                            String phone = String.format("09%d-%03d-%04d", person % 10, 100 + person, 1000 + person * 7);
+                            String phone = String.format("09%d-%03d-%04d", person % 10, 100 + person % 900, 1000 + person * 7);
                             String email = number.toLowerCase() + "." + (p + 1) + "@example.com";
                             tenant(first, last, phone, email, contractEnd.minusYears(1), contractEnd, room);
                             person++;

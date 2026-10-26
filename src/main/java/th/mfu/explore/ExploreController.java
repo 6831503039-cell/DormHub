@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import th.mfu.BookingRequestRepository;
+import th.mfu.domain.Bill;
 import th.mfu.domain.BookingRequest;
 import th.mfu.domain.BookingStatus;
 import th.mfu.domain.Room;
@@ -38,6 +39,10 @@ public class ExploreController {
     @GetMapping("/explore")
     public String explore(Model model) {
         model.addAttribute("soonDays", RoomMapService.SOON_DAYS);
+        // the default rates of a new bill are the dorm's rates
+        Bill rates = new Bill();
+        model.addAttribute("electricRate", rates.getElectricRate());
+        model.addAttribute("waterRate", rates.getWaterRate());
         return "explore/index";
     }
 
