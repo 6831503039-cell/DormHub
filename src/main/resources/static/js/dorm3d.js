@@ -54,6 +54,7 @@
         return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
     }
     function damp(k, dt) { return 1 - Math.exp(-k * dt); }
+    function smoother(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
     function easeInOut(t) { return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
     var reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -82,9 +83,12 @@
         var sheadWrap = el('div', 'd3-shead-wrap'); sheadWrap.appendChild(shead); sheadWrap.appendChild(closeBtn);
         var sbody = el('div', 'd3-sbody');
         sheet.appendChild(sheadWrap); sheet.appendChild(sbody);
+        var backBtn = el('button', 'btn d3-back', '<span aria-hidden="true">&larr;</span> ย้อนกลับ');
+        backBtn.type = 'button';
+        backBtn.hidden = true;
         var loading = el('div', 'd3-msg', '<div class="spinner-border text-primary mb-2" role="status"></div><div>กำลังโหลดแผนผังหอพัก…</div>');
         var roomView = el('div', 'd3-room3d'); roomView.hidden = true;
-        [host, labelsEl, tip, panel, sheet, roomView, loading].forEach(function (n) { root.appendChild(n); });
+        [host, labelsEl, tip, backBtn, panel, sheet, roomView, loading].forEach(function (n) { root.appendChild(n); });
 
         // ---------- three.js ----------
         var renderer;
@@ -370,15 +374,6 @@
                 scene.add(car(c[0], parkZ0 + 3 + c[1] * (parkLen - 6), 0, c[2]));
             });
 
-            // blue water tanks between A and the wings
-            var tankM = std(SJD.tank, { roughness: 0.4 });
-            [-1, 1].forEach(function (sx) {
-                var t = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.75, 1.8, 16), tankM);
-                t.position.set(sx * (s.inner + DEPTH / 2), 0.9, s.zFront + 1.5);
-                t.castShadow = true;
-                scene.add(t);
-            });
-
             // green fence around the site, open at the entrance (left side, in front of building C)
             var fenceM = std(0x2f9e4a, { roughness: 0.6 });
             var fz = zRoad - 0.5, gateX0 = -s.outer + 1, gateX1 = -s.inner + 1;
@@ -403,18 +398,6 @@
             shelter('z', x0 + 1.6, zBack + 8, zRoad - 12);
             shelter('z', x1 - 1.6, zBack + 8, zRoad - 12);
             sb.flush();
-
-            // entrance: round planter with palms and red ixora
-            var gx = (gateX0 + gateX1) / 2 + 9, gz = zRoad - 4;
-            var pot = new THREE.Mesh(new THREE.CylinderGeometry(2, 2.1, 0.6, 24), std(SJD.terracotta));
-            pot.position.set(gx, 0.3, gz);
-            pot.castShadow = true;
-            scene.add(pot);
-            var bush = new THREE.Mesh(new THREE.SphereGeometry(1.8, 16, 8), flowerM);
-            bush.scale.y = 0.35;
-            bush.position.set(gx, 0.7, gz);
-            scene.add(bush);
-            [[-0.6, -0.4, 4.2], [0.7, 0.2, 5], [0, 0.8, 3.6]].forEach(function (p) { scene.add(palm(gx + p[0], gz + p[1], p[2])); });
 
             // spirit house at the entrance end of building C
             var shx = -s.outer - 1.2, shz = s.zEnd + 2.5;
@@ -875,8 +858,15 @@
 
         // ---------- camera ----------
         var tween = null;
+        // camera flight: smooth start and stop, duration grows with the distance (about 0.9 to 1.6 s),
+        // and a small lift in the middle so the camera glides over the buildings instead of cutting through
         function flyTo(pos, target, dur) {
-            tween = { p0: camera.position.clone(), t0: controls.target.clone(), p1: pos, t1: target, s: performance.now(), d: reduceMotion ? 1 : (dur || 1100) };
+            var dist = camera.position.distanceTo(pos) + controls.target.distanceTo(target);
+            tween = {
+                p0: camera.position.clone(), t0: controls.target.clone(), p1: pos, t1: target, s: performance.now(),
+                d: reduceMotion ? 1 : (dur || Math.min(1600, Math.max(900, 700 + dist * 7))),
+                lift: Math.min(12, dist * 0.08)
+            };
         }
         function narrow() { return root.clientWidth < 760; }
         function siteView() {
@@ -934,6 +924,8 @@
                 '<i style="width:' + (c.MAINTENANCE / t * 100) + '%;background:' + statusCss('MAINTENANCE') + '"></i></span>';
         }
         function renderPanel() {
+            backBtn.hidden = state.view === 'site' && !state.room;
+            root.classList.toggle('d3-has-back', !backBtn.hidden);
             var parts = ['<button type="button" data-go="site">ภาพรวม</button>'];
             if (state.b) parts.push('<span>›</span>', state.f ? '<button type="button" data-go="b">ตึก ' + esc(state.b) + '</button>' : '<span>ตึก ' + esc(state.b) + '</span>');
             if (state.f) parts.push('<span>›</span><span>ชั้น ' + state.f + '</span>');
@@ -1092,13 +1084,15 @@
             tip.style.transform = 'translate(' + (e.clientX - rect.left + 14) + 'px,' + (e.clientY - rect.top + 14) + 'px)';
         });
         renderer.domElement.addEventListener('pointerleave', function () { tip.hidden = true; if (hovered) hovered.hover = 0; hovered = null; });
-        root.addEventListener('keydown', function (e) {
-            if (e.key !== 'Escape') return;
+        // one step back: room 3D -> room panel -> floor -> building -> overview
+        function goBack() {
             if (!roomView.hidden) closeRoom3D();
-            else if (state.room) { closeSheet(); refreshColors(); }
+            else if (state.room) { closeSheet(); refreshColors(); renderPanel(); }
             else if (state.f) goBuilding(state.b);
             else if (state.b) goSite();
-        });
+        }
+        backBtn.addEventListener('click', goBack);
+        root.addEventListener('keydown', function (e) { if (e.key === 'Escape') goBack(); });
 
         // ---------- render loop ----------
         function resize() {
@@ -1118,8 +1112,9 @@
             var dt = Math.min(0.05, (now - last) / 1000);
             last = now;
             if (tween) {
-                var k = Math.min(1, (now - tween.s) / tween.d), e = easeInOut(k);
+                var k = Math.min(1, (now - tween.s) / tween.d), e = smoother(k);
                 camera.position.lerpVectors(tween.p0, tween.p1, e);
+                camera.position.y += Math.sin(Math.PI * e) * tween.lift;
                 controls.target.lerpVectors(tween.t0, tween.t1, e);
                 if (k >= 1) tween = null;
             }
