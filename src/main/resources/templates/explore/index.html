@@ -75,6 +75,8 @@
         dataUrl: /*[[@{/explore/rooms}]]*/ '/explore/rooms',
         mode: 'public',
         soonDays: /*[[${soonDays}]]*/ 60,
+        electricRate: /*[[${electricRate}]]*/ 7,
+        waterRate: /*[[${waterRate}]]*/ 20,
         bookTemplate: document.getElementById('bookTpl'),
         initialRoom: /*[[${param.room != null ? param.room[0] : null}]]*/ null
     });

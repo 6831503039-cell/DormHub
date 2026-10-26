@@ -20,6 +20,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import th.mfu.RoomRepository;
 import th.mfu.TenantRepository;
+import th.mfu.domain.Bill;
 import th.mfu.domain.Room;
 import th.mfu.domain.Tenant;
 import th.mfu.service.RoomMapService;
@@ -60,6 +61,9 @@ public class RoomController {
         model.addAttribute("buildings", buildings);
         model.addAttribute("occupants", occupantsByRoom());
         model.addAttribute("soonDays", RoomMapService.SOON_DAYS);
+        Bill rates = new Bill();
+        model.addAttribute("electricRate", rates.getElectricRate());
+        model.addAttribute("waterRate", rates.getWaterRate());
         return "admin/rooms/layout";
     }
 
