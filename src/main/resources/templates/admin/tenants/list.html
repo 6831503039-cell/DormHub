@@ -1,40 +1,120 @@
 <!DOCTYPE html>
 <html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout('ผู้เช่า', 'tenants', ~{::main})}">
 <body>
-<main>
-    <div class="d-flex justify-content-between align-items-center mb-3">
+<main th:with="today=${#temporals.createToday()}, DAYS=${T(java.time.temporal.ChronoUnit).DAYS},
+               soonDays=${T(th.mfu.service.RoomMapService).SOON_DAYS},
+               buildings=${#lists.sort(#lists.toList(#sets.toSet(tenants.?[room != null and room.building != null].![room.building])))},
+               appCount=${#lists.size(tenants.?[email != null and #vars.accountEmails.contains(email.toLowerCase())])}">
+    <div class="page-header">
         <div>
-            <h1 class="page-title mb-0">ผู้เช่า</h1>
-            <div class="text-muted small">ผู้เช่าที่สมัครบัญชีด้วยอีเมลเดียวกับในรายการนี้ จะเข้าแอปและเห็นห้องของตัวเองได้</div>
+            <h1 class="page-title">ผู้เช่า</h1>
+            <p class="page-sub" th:text="'ทั้งหมด ' + ${#lists.size(tenants)} + ' คน · ใช้แอปแล้ว ' + ${appCount} + ' คน'"></p>
         </div>
         <a class="btn btn-primary" th:href="@{/admin/tenants/new}"><i data-lucide="user-plus"></i> เพิ่มผู้เช่า</a>
     </div>
-    <div class="card">
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead><tr><th>ชื่อ-นามสกุล</th><th>ห้อง</th><th>โทรศัพท์</th><th>อีเมล</th><th>บัญชีแอป</th><th>วันที่เข้าพัก</th><th></th></tr></thead>
-                <tbody>
-                <tr th:each="t : ${tenants}">
-                    <td class="fw-medium" th:text="${t.fullName}"></td>
-                    <td th:text="${t.room != null} ? ${t.room.roomNumber} : '-'"></td>
-                    <td th:text="${t.phone}"></td>
-                    <td th:text="${t.email}"></td>
-                    <td>
-                        <span th:if="${t.email != null and accountEmails.contains(t.email.toLowerCase())}" class="badge soft-success">ใช้งานแล้ว</span>
-                        <span th:unless="${t.email != null and accountEmails.contains(t.email.toLowerCase())}" class="badge soft-secondary">ยังไม่สมัคร</span>
-                    </td>
-                    <td th:text="${t.checkInDate != null} ? ${#temporals.format(t.checkInDate, 'dd/MM/yyyy')} : '-'"></td>
-                    <td class="text-end text-nowrap">
-                        <a class="btn btn-light btn-icon" th:href="@{/admin/tenants/{id}(id=${t.id})}" title="แก้ไข"><i data-lucide="pencil"></i></a>
-                        <a class="btn btn-light btn-icon text-danger" th:href="@{/admin/tenants/{id}/delete(id=${t.id})}" title="ลบ"
-                           onclick="return confirm('ยืนยันการลบผู้เช่านี้?')"><i data-lucide="trash-2"></i></a>
-                    </td>
-                </tr>
-                <tr th:if="${#lists.isEmpty(tenants)}"><td colspan="7" class="text-center text-muted py-4">ยังไม่มีผู้เช่า</td></tr>
-                </tbody>
-            </table>
+
+    <th:block th:if="${#lists.isEmpty(tenants)}">
+        <div class="card">
+            <div th:replace="~{fragments/ui :: emptyState('users', 'ยังไม่มีผู้เช่า', 'เพิ่มผู้เช่าและผูกกับห้อง เพื่อให้ออกบิลและหารค่าห้องได้', @{/admin/tenants/new}, 'เพิ่มผู้เช่า')}"></div>
         </div>
-    </div>
+    </th:block>
+
+    <th:block th:unless="${#lists.isEmpty(tenants)}">
+        <div class="list-toolbar" role="search">
+            <label class="search-input">
+                <span class="visually-hidden">ค้นหาผู้เช่า</span>
+                <i data-lucide="search"></i>
+                <input class="form-control" type="search" placeholder="ค้นหาชื่อ ห้อง เบอร์โทร หรืออีเมล" data-filter-target="#tenantTable" autocomplete="off">
+            </label>
+            <label class="visually-hidden" for="filterBuilding">ตึก</label>
+            <select class="form-select" id="filterBuilding" data-filter-target="#tenantTable" data-filter-key="building">
+                <option value="">ทุกตึก</option>
+                <option th:each="b : ${buildings}" th:value="${b}" th:text="'ตึก ' + ${b}"></option>
+                <option value="none">ไม่มีห้อง</option>
+            </select>
+            <label class="visually-hidden" for="filterContract">สัญญา</label>
+            <select class="form-select" id="filterContract" data-filter-target="#tenantTable" data-filter-key="contract">
+                <option value="">สัญญา</option>
+                <option value="soon" th:text="'ใกล้หมด (' + ${soonDays} + ' วัน)'">ใกล้หมด</option>
+                <option value="expired">หมดแล้ว</option>
+            </select>
+            <label class="visually-hidden" for="filterApp">บัญชีแอป</label>
+            <select class="form-select" id="filterApp" data-filter-target="#tenantTable" data-filter-key="app">
+                <option value="">แอป</option>
+                <option value="yes">ใช้แอปแล้ว</option>
+                <option value="no">ยังไม่สมัคร</option>
+            </select>
+            <span class="list-count" data-filter-count="#tenantTable" aria-live="polite"></span>
+        </div>
+        <p class="form-text d-flex gap-2 mb-3">
+            <i data-lucide="info"></i>
+            <span>ผู้เช่าที่สมัครแอปด้วยอีเมลเดียวกับในรายการนี้ จะเห็นห้อง บิล และเพื่อนร่วมห้องของตัวเองอัตโนมัติ</span>
+        </p>
+
+        <div class="card">
+            <div class="table-wrap">
+                <table class="table table-hover table-cards" id="tenantTable">
+                    <thead>
+                    <tr>
+                        <th scope="col">ผู้เช่า</th>
+                        <th scope="col">ห้อง</th>
+                        <th scope="col">โทรศัพท์</th>
+                        <th scope="col">เข้าพัก</th>
+                        <th scope="col">สัญญาถึง</th>
+                        <th scope="col">บัญชีแอป</th>
+                        <th scope="col"><span class="visually-hidden">จัดการ</span></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="t : ${tenants}" data-row
+                        th:with="hasApp=${t.email != null and accountEmails.contains(t.email.toLowerCase())},
+                                 daysLeft=${t.contractEndDate != null} ? ${DAYS.between(today, t.contractEndDate)} : null,
+                                 contract=${daysLeft == null} ? 'none' : (${daysLeft < 0} ? 'expired' : (${daysLeft <= soonDays} ? 'soon' : 'ok'))"
+                        th:attr="data-building=(${t.room != null} ? ${t.room.building} : 'none'),data-app=(${hasApp} ? 'yes' : 'no'),data-contract=${contract}">
+                        <td class="td-title">
+                            <span class="d-block fw-semibold" th:text="${t.fullName}"></span>
+                            <span class="item-meta" th:text="${t.email != null} ? ${t.email} : 'ไม่มีอีเมล'"></span>
+                        </td>
+                        <td>
+                            <span th:if="${t.room != null}" class="cell">
+                                <span class="fw-medium" th:text="${t.room.roomNumber}"></span>
+                                <span class="item-meta" th:text="'ตึก ' + ${t.room.building}"></span>
+                            </span>
+                            <span th:if="${t.room == null}" class="text-muted">ไม่มีห้อง</span>
+                        </td>
+                        <td>
+                            <a th:if="${t.phone != null and !#strings.isEmpty(t.phone)}" class="link-quiet num text-nowrap" th:href="'tel:' + ${#strings.replace(t.phone, '-', '')}" th:text="${t.phone}"></a>
+                            <span th:unless="${t.phone != null and !#strings.isEmpty(t.phone)}" class="text-muted">-</span>
+                        </td>
+                        <td class="num text-nowrap" th:text="${t.checkInDate != null} ? ${#temporals.format(t.checkInDate, 'dd/MM/yyyy')} : '-'"></td>
+                        <td>
+                            <span class="cell text-nowrap" th:if="${t.contractEndDate != null}">
+                                <span class="num" th:text="${#temporals.format(t.contractEndDate, 'dd/MM/yyyy')}"></span>
+                                <span th:if="${contract == 'soon'}" class="badge status-soon" th:text="'อีก ' + ${daysLeft} + ' วัน'"></span>
+                                <span th:if="${contract == 'expired'}" class="badge status-danger">หมดแล้ว</span>
+                            </span>
+                            <span th:if="${t.contractEndDate == null}" class="text-muted">-</span>
+                        </td>
+                        <td>
+                            <span th:if="${hasApp}" class="badge status-success">ใช้แอปแล้ว</span>
+                            <span th:unless="${hasApp}" class="badge status-neutral">ยังไม่สมัคร</span>
+                        </td>
+                        <td class="td-actions">
+                            <a class="btn btn-soft btn-icon btn-sm" th:href="@{/admin/tenants/{id}(id=${t.id})}"
+                               th:attr="aria-label='แก้ไขข้อมูล ' + ${t.fullName}" title="แก้ไข"><i data-lucide="pencil"></i></a>
+                            <a class="btn btn-ghost-danger btn-icon btn-sm" th:href="@{/admin/tenants/{id}/delete(id=${t.id})}"
+                               th:attr="aria-label='ลบผู้เช่า ' + ${t.fullName},data-confirm='ลบแล้วกู้คืนไม่ได้ ประวัติการชำระเงินยังเก็บไว้ แต่จะไม่ผูกกับผู้เช่าคนนี้แล้ว',data-confirm-title='ลบ ' + ${t.fullName}"
+                               title="ลบ"><i data-lucide="trash-2"></i></a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div data-filter-empty="#tenantTable" hidden>
+                <div th:replace="~{fragments/ui :: emptyState('search-x', 'ไม่พบผู้เช่าที่ตรงกับเงื่อนไข', 'ลองเปลี่ยนคำค้นหรือตัวกรอง', null, null)}"></div>
+            </div>
+        </div>
+    </th:block>
 </main>
 </body>
 </html>

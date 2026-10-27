@@ -2,46 +2,54 @@
 <html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout('แผนผังห้อง', 'layout', ~{::main})}">
 <body>
 <main>
-    <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+    <div class="page-header">
         <div>
             <h1 class="page-title">แผนผังห้องพัก</h1>
-            <div class="text-muted small">กดที่ตึกเพื่อเข้าไปดูแต่ละชั้น กดที่ห้องเพื่อดูผู้เช่าและห้องแบบ 3D</div>
+            <p class="page-sub">กดที่ตึกเพื่อดูแต่ละชั้น กดที่ห้องเพื่อดูผู้เช่าและห้องแบบ 3D</p>
         </div>
-        <div class="d-flex gap-2">
-            <a class="btn btn-light" th:href="@{/explore}" target="_blank" rel="noopener"><i data-lucide="external-link"></i> หน้าจองห้องสำหรับคนทั่วไป</a>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-secondary" th:href="@{/explore}" target="_blank" rel="noopener"><i data-lucide="external-link"></i> หน้าจองห้อง</a>
             <a class="btn btn-primary" th:href="@{/admin/rooms/new}"><i data-lucide="plus"></i> เพิ่มห้อง</a>
         </div>
     </div>
 
-    <div id="dormMap" class="layout-3d mb-4" aria-label="แผนผังหอพัก 3 มิติ"></div>
+    <div id="dormMap" class="layout-3d mb-3" aria-label="แผนผังหอพัก 3 มิติ"></div>
 
-    <div class="text-muted small mb-2">
-        <span class="me-3"><span class="legend-dot" style="background:#22a565"></span>ว่าง</span>
-        <span class="me-3"><span class="legend-dot" style="background:#2f80ed"></span>มีผู้เช่า</span>
-        <span><span class="legend-dot" style="background:#f5b301"></span>ปิดซ่อม</span>
+    <div class="legend mb-4" aria-label="สีสถานะห้อง">
+        <span><span class="dot success"></span>ว่าง</span>
+        <span><span class="dot soon"></span>ใกล้หมดสัญญา (3D)</span>
+        <span><span class="dot info"></span>มีผู้เช่า</span>
+        <span><span class="dot warning"></span>ปิดซ่อม</span>
     </div>
-    <th:block th:each="building : ${buildings}">
-        <h2 class="h5 mt-4 mb-3" th:text="'ตึก ' + ${building.key}"></h2>
+
+    <!-- the same rooms as a plain list, grouped by building and floor -->
+    <section th:each="building : ${buildings}" class="mb-4" th:attr="aria-label='ตึก ' + ${building.key}">
+        <h2 class="section-title" th:text="'ตึก ' + ${building.key}"></h2>
         <div class="card mb-3" th:each="floor : ${building.value}">
-            <div class="card-header" th:text="'ตึก ' + ${building.key} + ' ชั้น ' + ${floor.key}"></div>
+            <div class="card-header">
+                <span th:text="'ชั้น ' + ${floor.key}"></span>
+                <span class="card-link text-muted fw-normal"
+                      th:text="'ว่าง ' + ${#lists.size(floor.value.?[status.name() == 'AVAILABLE'])} + '/' + ${#lists.size(floor.value)}"></span>
+            </div>
             <div class="card-body">
                 <div class="floor-row">
-                    <a th:each="r : ${floor.value}" class="room-tile" th:classappend="${r.status.name()}" th:href="@{/admin/rooms/{id}(id=${r.id})}">
-                        <div class="d-flex justify-content-between align-items-start">
+                    <a th:each="r : ${floor.value}" class="room-tile" th:classappend="${r.status.name()}" th:href="@{/admin/rooms/{id}(id=${r.id})}"
+                       th:with="occ=${occupants.getOrDefault(r.id, 0L)}"
+                       th:attr="aria-label='ห้อง ' + ${r.roomNumber} + ' ' + ${r.status.label} + ' ผู้เช่า ' + ${occ} + ' จาก ' + ${r.capacity}">
+                        <div class="d-flex justify-content-between align-items-start gap-2">
                             <span class="num" th:text="${r.roomNumber}"></span>
                             <span th:class="'badge soft-' + ${r.status.badge}" th:text="${r.status.label}"></span>
                         </div>
-                        <div class="small text-muted" th:text="${r.roomType}"></div>
-                        <div class="small mt-1">
-                            <i data-lucide="users"></i>
-                            <span th:text="${occupants.getOrDefault(r.id, 0L)} + '/' + ${r.capacity}"></span>
-                            <span class="float-end" th:text="'฿' + ${#numbers.formatDecimal(r.monthlyRent, 1, 'COMMA', 0, 'POINT')}"></span>
+                        <div class="item-meta" th:text="${r.roomType}"></div>
+                        <div class="d-flex justify-content-between item-meta mt-1">
+                            <span><i data-lucide="users"></i> <span class="num" th:text="${occ} + '/' + ${r.capacity}"></span></span>
+                            <span class="num" th:text="'฿' + ${#numbers.formatDecimal(r.monthlyRent, 1, 'COMMA', 0, 'POINT')}"></span>
                         </div>
                     </a>
                 </div>
             </div>
         </div>
-    </th:block>
+    </section>
 
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
