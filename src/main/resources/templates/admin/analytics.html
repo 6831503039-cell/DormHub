@@ -1,48 +1,76 @@
 <!DOCTYPE html>
 <html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout('วิเคราะห์ค่าไฟ', 'analytics', ~{::main})}">
 <body>
-<main>
-    <h1 class="page-title">วิเคราะห์ค่าไฟและค่าใช้จ่าย</h1>
-    <p class="page-sub">แนวโน้ม 12 เดือนล่าสุด และเปรียบเทียบตาม 3 ฤดูของไทย</p>
+<main th:with="seasonTone=${ {'HOT': 'warning', 'RAINY': 'info', 'COOL': ''} },
+               seasonIcon=${ {'HOT': 'sun', 'RAINY': 'cloud-rain', 'COOL': 'snowflake'} }">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">วิเคราะห์ค่าไฟ</h1>
+            <p class="page-sub">แนวโน้ม 12 เดือนล่าสุด และเปรียบเทียบตาม 3 ฤดูของไทย</p>
+        </div>
+    </div>
 
-    <div class="row g-3 mb-3">
-        <div class="col-md-4" th:each="entry : ${seasonAverages}">
-            <div class="card stat h-100">
-                <span class="stat-icon" th:classappend="${entry.key.name() == 'HOT'} ? 'red' : (${entry.key.name() == 'COOL'} ? '' : 'green')">
-                    <i th:data-lucide="${entry.key.name() == 'HOT'} ? 'sun' : (${entry.key.name() == 'COOL'} ? 'snowflake' : 'cloud-rain')"></i>
-                </span>
+    <!-- rooms that need a look come first -->
+    <section class="card mb-4" th:unless="${#lists.isEmpty(abnormal)}" aria-labelledby="abnormalTitle">
+        <div class="card-header">
+            <h2 class="h2 mb-0" id="abnormalTitle">ห้องที่ใช้ไฟสูงผิดปกติ</h2>
+            <span class="badge status-danger" th:text="${#lists.size(abnormal)} + ' ห้อง'"></span>
+        </div>
+        <p class="form-text px-4 pt-3 mb-0">สูงกว่าค่าเฉลี่ย 3 เดือนก่อนหน้าเกิน 30%</p>
+        <ul class="list-plain">
+            <li th:each="a : ${abnormal}">
                 <div>
-                    <div class="stat-value"><span th:text="${entry.value}">0</span> <span class="fs-6 text-muted">หน่วย</span></div>
-                    <div class="stat-label" th:text="${entry.key.label} + ' (' + ${entry.key.months} + ') · เฉลี่ยต่อห้อง/เดือน'"></div>
+                    <div class="item-title" th:text="'ห้อง ' + ${a.room.roomNumber}"></div>
+                    <div class="item-meta" th:text="${a.billMonth} + ' · ' + ${a.units} + ' หน่วย (เฉลี่ย ' + ${a.average} + ')'"></div>
                 </div>
+                <span class="badge status-danger item-end" th:text="'+' + ${a.percentAbove} + '%'"></span>
+            </li>
+        </ul>
+    </section>
+
+    <!-- average units per room-month in each season -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-4" th:each="entry : ${seasonAverages}">
+            <div class="card kpi" th:classappend="${seasonTone[entry.key.name()] != ''} ? 'tone-' + ${seasonTone[entry.key.name()]}">
+                <span class="kpi-head">
+                    <span th:text="${entry.key.label} + ' · ' + ${entry.key.months}"></span>
+                    <i th:data-lucide="${seasonIcon[entry.key.name()]}"></i>
+                </span>
+                <span class="kpi-value"><span th:text="${entry.value}">0</span> <small>หน่วย</small></span>
+                <span class="kpi-meta">เฉลี่ยต่อห้องต่อเดือน</span>
             </div>
         </div>
     </div>
 
     <div class="row g-3">
         <div class="col-lg-8">
-            <div class="card h-100">
-                <div class="card-header">ค่าไฟรวมทุกห้องรายเดือน (หน่วย) แยกสีตามฤดู</div>
-                <div class="card-body"><canvas id="monthlyChart" height="140"></canvas></div>
-            </div>
+            <section class="card h-100" aria-labelledby="monthlyTitle">
+                <div class="card-header"><h2 class="h2 mb-0" id="monthlyTitle">หน่วยไฟรวมทุกห้อง รายเดือน</h2></div>
+                <div class="card-body">
+                    <div class="legend mb-3">
+                        <span><span class="dot warning"></span>ฤดูร้อน</span>
+                        <span><span class="dot info"></span>ฤดูฝน</span>
+                        <span><span class="dot"></span>ฤดูหนาว</span>
+                    </div>
+                    <div class="chart-box"><canvas id="monthlyChart" role="img" aria-label="กราฟแท่งหน่วยไฟรวมทุกห้องรายเดือน 12 เดือนล่าสุด แยกสีตามฤดู"></canvas></div>
+                </div>
+            </section>
         </div>
         <div class="col-lg-4">
-            <div class="card h-100">
-                <div class="card-header">เฉลี่ยต่อห้องตามฤดู</div>
-                <div class="card-body"><canvas id="seasonChart" height="220"></canvas></div>
-            </div>
+            <section class="card h-100" aria-labelledby="seasonTitle">
+                <div class="card-header"><h2 class="h2 mb-0" id="seasonTitle">เฉลี่ยต่อห้องตามฤดู</h2></div>
+                <div class="card-body">
+                    <div class="chart-box"><canvas id="seasonChart" role="img" aria-label="กราฟแท่งหน่วยไฟเฉลี่ยต่อห้องต่อเดือน แยกตามฤดู"></canvas></div>
+                </div>
+            </section>
         </div>
         <div class="col-12">
-            <div class="card">
-                <div class="card-header">ยอดเรียกเก็บรวม vs ค่าไฟ (บาท)</div>
-                <div class="card-body"><canvas id="costChart" height="90"></canvas></div>
-            </div>
-        </div>
-        <div class="col-12" th:unless="${#lists.isEmpty(abnormal)}">
-            <div class="alert alert-warning mb-0">
-                <i data-lucide="zap"></i> ห้องที่ใช้ไฟสูงกว่าค่าเฉลี่ย 3 เดือนก่อนหน้าเกิน 30%:
-                <span th:each="a, st : ${abnormal}"><b th:text="${a.room.roomNumber}"></b> (+<span th:text="${a.percentAbove}"></span>%)<span th:unless="${st.last}">, </span></span>
-            </div>
+            <section class="card" aria-labelledby="costTitle">
+                <div class="card-header"><h2 class="h2 mb-0" id="costTitle">ยอดเรียกเก็บรวม เทียบกับค่าไฟ (บาท)</h2></div>
+                <div class="card-body">
+                    <div class="chart-box sm"><canvas id="costChart" role="img" aria-label="กราฟเส้นยอดเรียกเก็บรวมและค่าไฟรายเดือน"></canvas></div>
+                </div>
+            </section>
         </div>
     </div>
 
@@ -56,30 +84,40 @@
         const seasonLabels = /*[[${seasonLabels}]]*/ [];
         const seasonValues = /*[[${seasonValues}]]*/ [];
 
-        const seasonColor = { HOT: '#f5b301', RAINY: '#2f80ed', COOL: '#7cc4f8' };
-        Chart.defaults.font.family = "'IBM Plex Sans Thai', sans-serif";
-        Chart.defaults.color = '#6b7686';
-        const grid = { color: '#eef1f6' };
+        // colours come from the design tokens in app.css
+        const css = getComputedStyle(document.documentElement);
+        const token = name => css.getPropertyValue(name).trim();
+        const seasonColor = { HOT: token('--s-warning'), RAINY: token('--s-info'), COOL: token('--s-neutral') };
+        Chart.defaults.font.family = token('--font');
+        Chart.defaults.color = token('--c-muted');
+        Chart.defaults.maintainAspectRatio = false;
+        const grid = { color: token('--c-border') };
+        const baht = v => Number(v).toLocaleString('th-TH', { maximumFractionDigits: 0 });
 
         new Chart(document.getElementById('monthlyChart'), {
             type: 'bar',
             data: { labels: months, datasets: [{ label: 'หน่วยไฟฟ้า', data: units,
-                backgroundColor: monthSeasons.map(s => seasonColor[s]), borderRadius: 6 }] },
-            options: { plugins: { legend: { display: false } }, scales: { y: { grid }, x: { grid: { display: false } } } }
+                backgroundColor: monthSeasons.map(s => seasonColor[s]), borderRadius: 4, maxBarThickness: 36 }] },
+            options: { plugins: { legend: { display: false } },
+                scales: { y: { grid, beginAtZero: true }, x: { grid: { display: false } } } }
         });
         new Chart(document.getElementById('seasonChart'), {
             type: 'bar',
             data: { labels: seasonLabels, datasets: [{ label: 'หน่วย/ห้อง/เดือน', data: seasonValues,
-                backgroundColor: ['#f5b301', '#2f80ed', '#7cc4f8'], borderRadius: 8 }] },
-            options: { plugins: { legend: { display: false } }, scales: { y: { grid, beginAtZero: true }, x: { grid: { display: false } } } }
+                backgroundColor: [seasonColor.HOT, seasonColor.RAINY, seasonColor.COOL], borderRadius: 4, maxBarThickness: 48 }] },
+            options: { plugins: { legend: { display: false } },
+                scales: { y: { grid, beginAtZero: true }, x: { grid: { display: false } } } }
         });
         new Chart(document.getElementById('costChart'), {
             type: 'line',
             data: { labels: months, datasets: [
-                { label: 'ยอดเรียกเก็บรวม', data: totalBilled, borderColor: '#2f80ed', backgroundColor: 'rgba(47,128,237,.08)', fill: true, tension: .35 },
-                { label: 'ค่าไฟ', data: electricCost, borderColor: '#f5b301', tension: .35 }
+                { label: 'ยอดเรียกเก็บรวม', data: totalBilled, borderColor: token('--c-primary'), backgroundColor: token('--c-primary'), pointRadius: 3, tension: .3 },
+                { label: 'ค่าไฟ', data: electricCost, borderColor: token('--s-warning'), backgroundColor: token('--s-warning'), pointRadius: 3, tension: .3 }
             ] },
-            options: { scales: { y: { grid }, x: { grid: { display: false } } } }
+            options: { interaction: { mode: 'index', intersect: false },
+                plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } },
+                    tooltip: { callbacks: { label: c => c.dataset.label + ': ฿' + baht(c.parsed.y) } } },
+                scales: { y: { grid, ticks: { callback: baht } }, x: { grid: { display: false } } } }
         });
     </script>
 </main>

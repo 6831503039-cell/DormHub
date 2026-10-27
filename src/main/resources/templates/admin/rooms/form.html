@@ -1,63 +1,89 @@
 <!DOCTYPE html>
 <html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout('ข้อมูลห้อง', 'rooms', ~{::main})}">
 <body>
-<main style="max-width: 760px">
-    <h1 class="page-title mb-3" th:text="${room.id == null} ? 'เพิ่มห้อง' : 'ห้อง ' + ${room.roomNumber}">เพิ่มห้อง</h1>
+<main class="form-page">
+    <a class="back-link" th:href="@{/admin/rooms}"><i data-lucide="chevron-left"></i> ห้องพัก</a>
+    <div class="page-header">
+        <h1 class="page-title" th:text="${room.id == null} ? 'เพิ่มห้อง' : 'ห้อง ' + ${room.roomNumber}">เพิ่มห้อง</h1>
+    </div>
 
-    <form class="card card-body mb-3" th:action="@{/admin/rooms}" th:object="${room}" method="post">
+    <form class="card card-body mb-4" th:action="@{/admin/rooms}" th:object="${room}" method="post">
         <input type="hidden" th:field="*{id}">
-        <div class="row g-3">
-            <div class="col-md-4">
-                <label class="form-label" for="roomNumber">เลขห้อง</label>
-                <input class="form-control" th:field="*{roomNumber}" placeholder="เช่น A101" required>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label" for="building">ตึก</label>
-                <select class="form-select" th:field="*{building}">
-                    <option th:each="b : ${ {'A', 'B', 'C'} }" th:value="${b}" th:text="'ตึก ' + ${b}"></option>
-                </select>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label" for="floor">ชั้น</label>
-                <input class="form-control" type="number" min="1" th:field="*{floor}" required>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label" for="capacity">รับผู้เช่าได้ (คน)</label>
-                <select class="form-select" th:field="*{capacity}">
-                    <option th:each="n : ${#numbers.sequence(1, 3)}" th:value="${n}" th:text="${n} + ' คน'"></option>
-                </select>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label" for="roomType">ประเภทห้อง</label>
-                <input class="form-control" th:field="*{roomType}" list="roomTypes" placeholder="เช่น แอร์, พัดลม">
-                <datalist id="roomTypes"><option value="แอร์"><option value="พัดลม"><option value="แอร์ (ห้องใหญ่)"></datalist>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label" for="monthlyRent">ค่าเช่า/เดือน (บาท)</label>
-                <input class="form-control" type="number" min="0" step="0.01" th:field="*{monthlyRent}" required>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label" for="status">สถานะ</label>
-                <select class="form-select" th:field="*{status}">
-                    <option th:each="s : ${T(th.mfu.domain.RoomStatus).values()}" th:value="${s}" th:text="${s.label}"></option>
-                </select>
+
+        <div class="form-section">
+            <h2 class="form-section-title">ข้อมูลห้อง</h2>
+            <div class="row g-3">
+                <div class="col-sm-4">
+                    <label class="form-label" for="roomNumber">เลขห้อง</label>
+                    <input class="form-control" th:field="*{roomNumber}" placeholder="เช่น A101" required autocomplete="off">
+                </div>
+                <div class="col-6 col-sm-4">
+                    <label class="form-label" for="building">ตึก</label>
+                    <select class="form-select" th:field="*{building}">
+                        <option th:each="b : ${ {'A', 'B', 'C'} }" th:value="${b}" th:text="'ตึก ' + ${b}"></option>
+                    </select>
+                </div>
+                <div class="col-6 col-sm-4">
+                    <label class="form-label" for="floor">ชั้น</label>
+                    <input class="form-control" type="number" inputmode="numeric" min="1" th:field="*{floor}" required>
+                </div>
+                <div class="col-sm-8">
+                    <label class="form-label" for="roomType">ประเภทห้อง <span class="optional">(ไม่บังคับ)</span></label>
+                    <input class="form-control" th:field="*{roomType}" list="roomTypes" placeholder="เช่น แอร์, พัดลม">
+                    <datalist id="roomTypes"><option value="แอร์"><option value="พัดลม"><option value="แอร์ (ห้องใหญ่)"></datalist>
+                </div>
+                <div class="col-sm-4">
+                    <label class="form-label" for="capacity">รับผู้เช่าได้</label>
+                    <select class="form-select" th:field="*{capacity}">
+                        <option th:each="n : ${#numbers.sequence(1, 3)}" th:value="${n}" th:text="${n} + ' คน'"></option>
+                    </select>
+                </div>
             </div>
         </div>
-        <div class="mt-4">
+
+        <div class="form-section">
+            <h2 class="form-section-title">ค่าเช่าและสถานะ</h2>
+            <div class="row g-3">
+                <div class="col-sm-6">
+                    <label class="form-label" for="monthlyRent">ค่าเช่าต่อเดือน (บาท)</label>
+                    <input class="form-control" type="number" inputmode="decimal" min="0" step="0.01" th:field="*{monthlyRent}" required>
+                    <div class="form-text">หารเท่ากันตามจำนวนผู้เช่าในห้องตอนออกบิล</div>
+                </div>
+                <div class="col-sm-6">
+                    <label class="form-label" for="status">สถานะ</label>
+                    <select class="form-select" th:field="*{status}">
+                        <option th:each="s : ${T(th.mfu.domain.RoomStatus).values()}" th:value="${s}" th:text="${s.label}"></option>
+                    </select>
+                    <div class="form-text">เปลี่ยนเป็น "มีผู้เช่า" หรือ "ว่าง" ให้เองเมื่อเพิ่มหรือลบผู้เช่า</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
             <button class="btn btn-primary" type="submit"><i data-lucide="check"></i> บันทึก</button>
-            <a class="btn btn-light" th:href="@{/admin/rooms}">ยกเลิก</a>
+            <a class="btn btn-secondary" th:href="@{/admin/rooms}">ยกเลิก</a>
         </div>
     </form>
 
-    <div class="card" th:if="${tenants != null}">
-        <div class="card-header">ผู้เช่าในห้องนี้</div>
-        <div class="list-group list-group-flush">
-            <a class="list-group-item list-group-item-action px-3" th:each="t : ${tenants}" th:href="@{/admin/tenants/{id}(id=${t.id})}">
-                <span th:text="${t.fullName}"></span> <span class="text-muted small" th:text="${t.phone}"></span>
-            </a>
-            <div class="list-group-item text-muted px-3" th:if="${#lists.isEmpty(tenants)}">ยังไม่มีผู้เช่า</div>
+    <section class="card" th:if="${tenants != null}" aria-labelledby="tenantsTitle">
+        <div class="card-header">
+            <h2 class="h2 mb-0" id="tenantsTitle">ผู้เช่าในห้องนี้</h2>
+            <span class="card-link text-muted fw-normal" th:text="${#lists.size(tenants)} + '/' + ${room.capacity} + ' คน'"></span>
         </div>
-    </div>
+        <ul class="list-plain" th:unless="${#lists.isEmpty(tenants)}">
+            <li th:each="t : ${tenants}">
+                <div>
+                    <a class="item-title link-quiet" th:href="@{/admin/tenants/{id}(id=${t.id})}" th:text="${t.fullName}"></a>
+                    <div class="item-meta" th:text="${t.phone}"></div>
+                </div>
+                <a class="btn btn-ghost btn-icon btn-sm item-end" th:href="@{/admin/tenants/{id}(id=${t.id})}"
+                   th:attr="aria-label='แก้ไขข้อมูล ' + ${t.fullName}"><i data-lucide="chevron-right"></i></a>
+            </li>
+        </ul>
+        <th:block th:if="${#lists.isEmpty(tenants)}">
+            <div th:replace="~{fragments/ui :: emptyState('user-plus', 'ยังไม่มีผู้เช่า', 'เพิ่มผู้เช่าแล้วเลือกห้องนี้', @{/admin/tenants/new}, 'เพิ่มผู้เช่า')}"></div>
+        </th:block>
+    </section>
 </main>
 </body>
 </html>

@@ -1,47 +1,113 @@
 <!DOCTYPE html>
 <html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout('ตรวจสลิป', 'payments', ~{::main})}">
 <body>
-<main>
-    <h1 class="page-title">ตรวจสลิปการชำระเงิน</h1>
-    <p class="page-sub">AI อ่านสลิปและตัดยอดอัตโนมัติเมื่อยอดตรงและไม่พบความผิดปกติ รายการที่ไม่แน่ใจจะรอแอดมินตรวจที่นี่</p>
-
-    <div class="card">
-        <div class="table-responsive">
-            <table class="table">
-                <thead><tr><th>สลิป</th><th>วันที่ส่ง</th><th>ห้อง / บิล</th><th>ผู้ส่ง</th><th class="text-end">ยอด (บาท)</th><th>ผลตรวจ</th><th></th></tr></thead>
-                <tbody>
-                <tr th:each="p : ${payments}">
-                    <td>
-                        <a th:href="@{/admin/payments/{id}/slip(id=${p.id})}" target="_blank">
-                            <img class="slip-thumb" th:src="@{/admin/payments/{id}/slip(id=${p.id})}" alt="สลิป">
-                        </a>
-                    </td>
-                    <td class="text-nowrap" th:text="${#temporals.format(p.submittedAt, 'dd/MM/yy HH:mm')}"></td>
-                    <td><b th:text="${p.bill.room.roomNumber}"></b> <span class="text-muted small" th:text="${p.bill.billMonth}"></span></td>
-                    <td th:text="${p.tenant != null} ? ${p.tenant.fullName} : '-'"></td>
-                    <td class="text-end" th:text="${#numbers.formatDecimal(p.amount, 1, 'COMMA', 2, 'POINT')}"></td>
-                    <td style="max-width: 320px">
-                        <span th:class="'badge soft-' + ${p.status.badge}" th:text="${p.status.label}"></span>
-                        <div class="small text-muted mt-1" th:text="${p.aiNote}"></div>
-                    </td>
-                    <td class="text-end text-nowrap">
-                        <th:block th:if="${p.status.name() != 'APPROVED'}">
-                            <form class="d-inline" th:action="@{/admin/payments/{id}/approve(id=${p.id})}" method="post">
-                                <button class="btn btn-sm btn-soft" type="submit"><i data-lucide="check"></i> อนุมัติ</button>
-                            </form>
-                        </th:block>
-                        <th:block th:if="${p.status.name() != 'REJECTED' and p.status.name() != 'APPROVED'}">
-                            <form class="d-inline" th:action="@{/admin/payments/{id}/reject(id=${p.id})}" method="post">
-                                <button class="btn btn-sm btn-light text-danger" type="submit"><i data-lucide="x"></i> ไม่อนุมัติ</button>
-                            </form>
-                        </th:block>
-                    </td>
-                </tr>
-                <tr th:if="${#lists.isEmpty(payments)}"><td colspan="7" class="text-center text-muted py-4">ยังไม่มีสลิปที่ส่งเข้ามา</td></tr>
-                </tbody>
-            </table>
+<main th:with="toReview=${#lists.size(payments.?[status.name() == 'PENDING' or status.name() == 'SUSPICIOUS'])},
+               suspicious=${#lists.size(payments.?[status.name() == 'SUSPICIOUS'])}">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">ตรวจสลิป</h1>
+            <p class="page-sub" th:text="${toReview > 0}
+                    ? 'ต้องตรวจ ' + ${toReview} + ' รายการ' + (${suspicious > 0} ? ' · น่าสงสัย ' + ${suspicious} : '')
+                    : 'ไม่มีสลิปที่รอตรวจ'">ไม่มีสลิปที่รอตรวจ</p>
         </div>
     </div>
+    <p class="form-text d-flex gap-2 mb-3">
+        <i data-lucide="sparkles"></i>
+        <span>AI อ่านสลิปและตัดยอดให้อัตโนมัติเมื่อยอดตรงและไม่พบความผิดปกติ รายการที่ไม่แน่ใจจะรอให้ตรวจที่นี่</span>
+    </p>
+
+    <th:block th:if="${#lists.isEmpty(payments)}">
+        <div class="card">
+            <div th:replace="~{fragments/ui :: emptyState('scan-line', 'ยังไม่มีสลิป', 'เมื่อผู้เช่าแนบสลิปจากแอป รายการจะแสดงที่นี่', null, null)}"></div>
+        </div>
+    </th:block>
+
+    <th:block th:unless="${#lists.isEmpty(payments)}">
+        <div class="list-toolbar" role="search">
+            <label class="search-input">
+                <span class="visually-hidden">ค้นหาสลิป</span>
+                <i data-lucide="search"></i>
+                <input class="form-control" type="search" placeholder="ค้นหาห้อง หรือชื่อผู้ส่ง" data-filter-target="#slipTable" autocomplete="off">
+            </label>
+            <label class="visually-hidden" for="filterStatus">สถานะ</label>
+            <select class="form-select" id="filterStatus" data-filter-target="#slipTable" data-filter-key="status">
+                <option value="review" th:selected="${toReview > 0}">ต้องตรวจ</option>
+                <option value="" th:selected="${toReview == 0}">ทุกสถานะ</option>
+                <option th:each="s : ${T(th.mfu.domain.PaymentStatus).values()}" th:value="${#strings.toLowerCase(s.name())}" th:text="${s.label}"></option>
+            </select>
+            <span class="list-count" data-filter-count="#slipTable" aria-live="polite"></span>
+        </div>
+
+        <div class="card">
+            <div class="table-wrap">
+                <table class="table table-cards" id="slipTable">
+                    <thead>
+                    <tr>
+                        <th scope="col">สลิป</th>
+                        <th scope="col">ห้อง / บิล</th>
+                        <th scope="col">ผู้ส่ง</th>
+                        <th scope="col" class="text-end">ยอดโอน (บาท)</th>
+                        <th scope="col">ผลตรวจ</th>
+                        <th scope="col"><span class="visually-hidden">จัดการ</span></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="p : ${payments}" data-row
+                        th:with="review=${p.status.name() == 'PENDING' or p.status.name() == 'SUSPICIOUS'}"
+                        th:attr="data-status=${#strings.toLowerCase(p.status.name())} + (${review} ? ' review' : '')">
+                        <td class="td-title">
+                            <a class="d-inline-block" th:href="@{/admin/payments/{id}/slip(id=${p.id})}" target="_blank" rel="noopener"
+                               th:attr="aria-label='ดูสลิปห้อง ' + ${p.bill.room.roomNumber} + ' ขนาดเต็ม'">
+                                <img th:if="${p.slipContentType != null and #strings.startsWith(p.slipContentType, 'image/')}"
+                                     class="slip-thumb" th:src="@{/admin/payments/{id}/slip(id=${p.id})}" alt="" loading="lazy" width="56" height="56">
+                                <span th:unless="${p.slipContentType != null and #strings.startsWith(p.slipContentType, 'image/')}"
+                                      class="slip-file" title="ไฟล์ไม่ใช่รูปภาพ"><i data-lucide="file-x"></i></span>
+                            </a>
+                        </td>
+                        <td>
+                            <span class="cell-stack">
+                                <span class="fw-semibold" th:text="${p.bill.room.roomNumber}"></span>
+                                <span class="item-meta" th:text="'เดือน ' + ${p.bill.billMonth}"></span>
+                            </span>
+                        </td>
+                        <td>
+                            <span class="cell-stack">
+                                <span th:text="${p.tenant != null} ? ${p.tenant.fullName} : 'ไม่ระบุ'"></span>
+                                <span class="item-meta num" th:text="${#temporals.format(p.submittedAt, 'dd/MM HH:mm')}"></span>
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <span class="cell-stack">
+                                <span class="num fw-semibold" th:text="${#numbers.formatDecimal(p.amount, 1, 'COMMA', 2, 'POINT')}"></span>
+                                <span class="item-meta num" th:text="'ส่วนต่อคน ' + ${#numbers.formatDecimal(@billingService.shareOf(p.bill), 1, 'COMMA', 2, 'POINT')}"></span>
+                            </span>
+                        </td>
+                        <td style="max-width: 320px">
+                            <span class="cell-stack">
+                                <span th:class="'badge soft-' + ${p.status.badge}" th:text="${p.status.label}"></span>
+                                <span class="item-meta text-start" th:if="${p.aiNote != null}" th:text="${p.aiNote}"></span>
+                            </span>
+                        </td>
+                        <td class="td-actions">
+                            <form class="d-inline" th:if="${p.status.name() != 'APPROVED'}" th:action="@{/admin/payments/{id}/approve(id=${p.id})}" method="post">
+                                <button class="btn btn-primary btn-sm" type="submit"
+                                        th:attr="aria-label='อนุมัติสลิปห้อง ' + ${p.bill.room.roomNumber}"><i data-lucide="check"></i> อนุมัติ</button>
+                            </form>
+                            <form class="d-inline" th:if="${review}" th:action="@{/admin/payments/{id}/reject(id=${p.id})}" method="post">
+                                <button class="btn btn-ghost-danger btn-sm" type="submit"
+                                        th:attr="aria-label='ไม่อนุมัติสลิปห้อง ' + ${p.bill.room.roomNumber},data-confirm='สลิปนี้จะไม่ถูกนับเป็นการชำระ ผู้เช่าต้องส่งสลิปใหม่',data-confirm-title='ไม่อนุมัติสลิปห้อง ' + ${p.bill.room.roomNumber}"
+                                        data-confirm-ok="ไม่อนุมัติ">ไม่อนุมัติ</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div data-filter-empty="#slipTable" hidden>
+                <div th:replace="~{fragments/ui :: emptyState('circle-check', 'ไม่มีสลิปในกลุ่มนี้', 'ถ้าเลือก &quot;ต้องตรวจ&quot; แปลว่าตรวจครบแล้ว', null, null)}"></div>
+            </div>
+        </div>
+    </th:block>
 </main>
 </body>
 </html>

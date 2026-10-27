@@ -2,21 +2,21 @@
 <html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/app :: layout('ถาม AI', 'chat', ~{::main})}">
 <body>
 <main>
-    <div class="d-flex align-items-center gap-2 mb-2">
-        <span class="stat-icon accent" style="width:38px;height:38px"><i data-lucide="bot"></i></span>
+    <div class="d-flex align-items-center gap-3 mb-3">
+        <span class="stat-icon"><i data-lucide="bot"></i></span>
         <div>
-            <div class="fw-semibold">Smart Virtual Admin</div>
-            <div class="small text-muted" th:text="${aiEnabled} ? 'ขับเคลื่อนด้วย Gemini AI' : 'โหมดคำตอบอัตโนมัติ (ยังไม่ได้ตั้งค่า Gemini API)'"></div>
+            <h1 class="h2 mb-0">แอดมินเสมือน</h1>
+            <div class="small text-muted" th:text="${aiEnabled} ? 'ตอบด้วย Gemini AI' : 'โหมดคำตอบอัตโนมัติ (ยังไม่ได้ตั้งค่า Gemini API)'"></div>
         </div>
     </div>
 
-    <div class="card mb-2">
-        <div class="chat-box" id="chatBox">
-            <div class="bubble bot">สวัสดีครับ ผมเป็นแอดมินเสมือนของหอพัก ถามได้เลย เช่น รหัส Wi-Fi, ยอดค่าห้อง, เครื่องซักผ้าว่างไหม หรือวิธีแจ้งซ่อม</div>
+    <div class="card mb-3">
+        <div class="chat-box" id="chatBox" role="log" aria-live="polite" aria-label="บทสนทนา">
+            <div class="bubble bot">สวัสดีครับ ถามได้เลย เช่น รหัส Wi-Fi ยอดค่าห้อง เครื่องซักผ้าว่างไหม หรือวิธีแจ้งซ่อม</div>
         </div>
     </div>
 
-    <div class="chips mb-2">
+    <div class="chips mb-3" aria-label="คำถามที่พบบ่อย">
         <button class="chip" type="button">ขอรหัส Wi-Fi</button>
         <button class="chip" type="button">ค่าห้องเดือนนี้เท่าไหร่</button>
         <button class="chip" type="button">เครื่องซักผ้าว่างไหม</button>
@@ -24,9 +24,10 @@
         <button class="chip" type="button">กฎหอพัก</button>
     </div>
 
-    <form id="chatForm" class="d-flex gap-2 mb-4">
-        <input class="form-control" id="chatInput" placeholder="พิมพ์คำถาม..." autocomplete="off" maxlength="1000">
-        <button class="btn btn-primary px-3" type="submit" aria-label="ส่ง"><i data-lucide="send"></i></button>
+    <form id="chatForm" class="d-flex gap-2 mb-4" data-no-loading>
+        <label class="visually-hidden" for="chatInput">พิมพ์คำถาม</label>
+        <input class="form-control" id="chatInput" placeholder="พิมพ์คำถาม" autocomplete="off" maxlength="1000" enterkeyhint="send">
+        <button class="btn btn-primary btn-icon" id="chatSend" type="submit" aria-label="ส่งคำถาม"><i data-lucide="send"></i></button>
     </form>
 
     <script>
@@ -34,6 +35,8 @@
             const box = document.getElementById('chatBox');
             const form = document.getElementById('chatForm');
             const input = document.getElementById('chatInput');
+            const sendButton = document.getElementById('chatSend');
+            const chips = document.querySelectorAll('.chip');
             const token = document.querySelector('meta[name="_csrf"]').content;
             const header = document.querySelector('meta[name="_csrf_header"]').content;
             const history = [];
@@ -47,10 +50,16 @@
                 return div;
             }
 
+            function busy(on) {
+                sendButton.disabled = on;
+                chips.forEach(c => c.disabled = on);
+            }
+
             async function send(text) {
-                if (!text.trim()) return;
+                if (!text.trim() || sendButton.disabled) return;
                 add(text, 'user');
                 input.value = '';
+                busy(true);
                 const typing = add('กำลังพิมพ์...', 'bot typing');
                 try {
                     const res = await fetch('/app/chat/send', {
@@ -65,11 +74,14 @@
                 } catch (e) {
                     typing.remove();
                     add('ขออภัย เชื่อมต่อไม่สำเร็จ ลองใหม่อีกครั้ง', 'bot');
+                } finally {
+                    busy(false);
+                    input.focus();
                 }
             }
 
             form.addEventListener('submit', e => { e.preventDefault(); send(input.value); });
-            document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => send(c.textContent)));
+            chips.forEach(c => c.addEventListener('click', () => send(c.textContent)));
         })();
     </script>
 </main>
