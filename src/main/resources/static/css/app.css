@@ -222,6 +222,17 @@ a.card:hover { transform: translateY(-1px); box-shadow: var(--dh-shadow-lg); }
 .auth-wrap { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; }
 .auth-card { width: 100%; max-width: 420px; padding: 2rem; }
 
+/* password box with an eye button to show / hide the password */
+.password-field { position: relative; }
+.password-field .form-control { padding-right: 2.8rem; }
+.password-eye {
+    position: absolute; top: 50%; right: .4rem; transform: translateY(-50%);
+    width: 2.1rem; height: 2.1rem; display: grid; place-items: center;
+    border: 0; border-radius: 8px; background: transparent; color: var(--dh-muted);
+}
+.password-eye:hover, .password-eye:focus-visible { color: var(--dh-primary); background: var(--dh-primary-soft); outline: none; }
+.password-eye .lucide { width: 1.2rem; height: 1.2rem; }
+
 .rating .lucide { width: 1em; height: 1em; }
 .star-on { color: var(--dh-accent); fill: var(--dh-accent); }
 .star-off { color: #d5dbe4; }
