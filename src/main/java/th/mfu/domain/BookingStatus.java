@@ -1,21 +1,20 @@
 package th.mfu.domain;
 
 public enum BookingStatus {
-    PENDING("รอติดต่อกลับ", "warning"),
-    CONFIRMED("ยืนยันแล้ว", "success"),
-    CANCELLED("ยกเลิก", "secondary");
+    PENDING("warning"),
+    CONFIRMED("success"),
+    CANCELLED("secondary");
 
-    private final String label;
     // Bootstrap color used for the status badge
     private final String badge;
 
-    BookingStatus(String label, String badge) {
-        this.label = label;
+    BookingStatus(String badge) {
         this.badge = badge;
     }
 
-    public String getLabel() {
-        return label;
+    /** Message key of the status name shown in the UI (messages*.properties). */
+    public String getKey() {
+        return "bookingStatus." + name();
     }
 
     public String getBadge() {

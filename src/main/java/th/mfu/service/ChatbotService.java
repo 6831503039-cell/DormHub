@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import th.mfu.BillRepository;
 import th.mfu.config.DormProperties;
+import th.mfu.config.Messages;
 import th.mfu.domain.AppUser;
 import th.mfu.domain.Bill;
 import th.mfu.domain.LaundryMachine;
@@ -29,14 +30,16 @@ public class ChatbotService {
     private final BillRepository billRepository;
     private final BillingService billingService;
     private final LaundryService laundryService;
+    private final Messages messages;
 
     public ChatbotService(GeminiClient gemini, DormProperties props, BillRepository billRepository,
-            BillingService billingService, LaundryService laundryService) {
+            BillingService billingService, LaundryService laundryService, Messages messages) {
         this.gemini = gemini;
         this.props = props;
         this.billRepository = billRepository;
         this.billingService = billingService;
         this.laundryService = laundryService;
+        this.messages = messages;
     }
 
     public ChatReply reply(AppUser user, Tenant tenant, String message, List<ChatTurn> history) {
@@ -60,7 +63,8 @@ public class ChatbotService {
     }
 
     private String systemPrompt(AppUser user, Tenant tenant) {
-        return "คุณคือ \"แอดมินเสมือน\" ของหอพัก " + props.getDormName() + " ตอบผู้เช่าเป็นภาษาไทย สุภาพ กระชับ เป็นกันเอง "
+        return "คุณคือ \"แอดมินเสมือน\" ของหอพัก " + props.getDormName() + " ตอบผู้เช่าเป็นภาษา"
+                + (messages.isEnglish() ? "อังกฤษ" : "ไทย") + " สุภาพ กระชับ เป็นกันเอง "
                 + "ใช้เฉพาะข้อมูลด้านล่าง ถ้าไม่รู้หรือเป็นเรื่องที่ต้องให้คนตัดสินใจ ให้แนะนำติดต่อสำนักงาน ห้ามแต่งข้อมูลขึ้นเอง\n"
                 + "ข้อมูลหอพัก:\n"
                 + "- Wi-Fi ชื่อ: " + props.getWifi().getSsid() + " รหัสผ่าน: " + props.getWifi().getPassword() + "\n"
@@ -78,57 +82,56 @@ public class ChatbotService {
 
     String fallback(String message, Tenant tenant) {
         String m = message == null ? "" : message.toLowerCase();
-        if (containsAny(m, "wifi", "wi-fi", "ไวไฟ", "วายฟาย", "เน็ต", "อินเทอร์เน็ต", "รหัส")) {
-            return "Wi-Fi ของหอ ชื่อ \"" + props.getWifi().getSsid() + "\" รหัสผ่าน \"" + props.getWifi().getPassword()
-                    + "\" ครับ ถ้าต่อไม่ได้ลองปิดเปิด Wi-Fi ใหม่ หรือแจ้งที่เมนูคำร้องได้เลย";
+        if (containsAny(m, "wifi", "wi-fi", "ไวไฟ", "วายฟาย", "เน็ต", "อินเทอร์เน็ต", "รหัส", "internet", "password")) {
+            return messages.get("chat.reply.wifi", props.getWifi().getSsid(), props.getWifi().getPassword());
         }
-        if (containsAny(m, "ค่าไฟ", "ค่าน้ำ", "บิล", "ค่าเช่า", "ค้าง", "จ่าย", "ชำระ", "โอน", "เท่าไหร่", "เท่าไร")) {
-            return roomSummary(tenant) + " สแกน QR จ่ายและอัปโหลดสลิปได้ที่เมนู \"บิล\" ครับ";
+        if (containsAny(m, "ค่าไฟ", "ค่าน้ำ", "บิล", "ค่าเช่า", "ค้าง", "จ่าย", "ชำระ", "โอน", "เท่าไหร่", "เท่าไร",
+                "bill", "rent", "electric", "water", "pay", "owe", "how much")) {
+            return messages.get("chat.reply.bill", roomSummary(tenant));
         }
-        if (containsAny(m, "ซักผ้า", "อบผ้า", "เครื่องซัก", "เครื่องอบ")) {
-            return "ตอนนี้ " + laundrySummary() + " ดูสถานะและกดเริ่มใช้งานได้ที่เมนู \"ซักผ้า\" ครับ";
+        if (containsAny(m, "ซักผ้า", "อบผ้า", "เครื่องซัก", "เครื่องอบ", "laundry", "wash", "dryer")) {
+            return messages.get("chat.reply.laundry", laundrySummary());
         }
-        if (containsAny(m, "ซ่อม", "เสีย", "รั่ว", "พัง", "ไม่ติด", "ไม่เย็น")) {
-            return "แจ้งซ่อมได้ที่เมนู \"คำร้อง\" ระบุอาการให้ละเอียด ทีมช่างจะติดต่อกลับครับ ถ้าเร่งด่วนโทร " + props.getContactPhone();
+        if (containsAny(m, "ซ่อม", "เสีย", "รั่ว", "พัง", "ไม่ติด", "ไม่เย็น", "repair", "broken", "fix", "leak", "not working")) {
+            return messages.get("chat.reply.repair", props.getContactPhone());
         }
-        if (containsAny(m, "กฎ", "ระเบียบ", "เสียงดัง", "สัตว์", "แขก", "บุหรี่", "ขยะ")) {
-            return "กฎของหอพัก: " + props.getRules();
+        if (containsAny(m, "กฎ", "ระเบียบ", "เสียงดัง", "สัตว์", "แขก", "บุหรี่", "ขยะ", "rule", "noise", "pet", "guest", "smok", "trash")) {
+            return messages.get("chat.reply.rules", props.getRules());
         }
-        if (containsAny(m, "ติดต่อ", "เบอร์", "โทร", "สำนักงาน", "นิติ", "เวลา", "เปิด", "ปิด")) {
-            return "สำนักงานเปิด " + props.getOfficeHours() + " โทร " + props.getContactPhone() + " ครับ";
+        if (containsAny(m, "ติดต่อ", "เบอร์", "โทร", "สำนักงาน", "นิติ", "เวลา", "เปิด", "ปิด", "contact", "phone", "office", "call", "hours", "open")) {
+            return messages.get("chat.reply.contact", props.getOfficeHours(), props.getContactPhone());
         }
         if (containsAny(m, "สวัสดี", "hello", "hi", "หวัดดี")) {
-            return "สวัสดีครับ ผมแอดมินเสมือนของ " + props.getDormName()
-                    + " ถามได้เลยเรื่อง Wi-Fi, ค่าเช่า/ค่าไฟ, เครื่องซักผ้า, แจ้งซ่อม หรือกฎหอพัก";
+            return messages.get("chat.reply.hello", props.getDormName());
         }
-        return "ขออภัยครับ ผมยังตอบเรื่องนี้ไม่ได้ ลองถามเรื่อง Wi-Fi, ค่าเช่า/ค่าไฟ, เครื่องซักผ้า, แจ้งซ่อม หรือกฎหอพัก "
-                + "หรือติดต่อสำนักงาน " + props.getContactPhone();
+        return messages.get("chat.reply.unknown", props.getContactPhone());
     }
 
     private String roomSummary(Tenant tenant) {
         if (tenant == null || tenant.getRoom() == null) {
-            return "บัญชีนี้ยังไม่ได้ผูกกับห้องพัก (ให้แอดมินเพิ่มอีเมลของคุณในข้อมูลผู้เช่า)";
+            return messages.get("chat.summary.notLinked");
         }
-        StringBuilder sb = new StringBuilder("ห้อง " + tenant.getRoom().getRoomNumber()
-                + " อยู่ " + billingService.occupants(tenant.getRoom()) + " คน");
         List<String> unpaid = new ArrayList<>();
         for (Bill bill : billRepository.findByRoomOrderByBillMonthAsc(tenant.getRoom())) {
             if (!bill.isPaid()) {
-                unpaid.add(String.format("เดือน %s ยอด %,.2f บาท (ส่วนของคุณ %,.2f บาท)",
-                        bill.getBillMonth(), billingService.outstanding(bill), billingService.shareOf(bill)));
+                unpaid.add(messages.get("chat.summary.unpaidBill", bill.getBillMonth(),
+                        String.format("%,.2f", billingService.outstanding(bill)), String.format("%,.2f", billingService.shareOf(bill))));
             }
         }
-        sb.append(unpaid.isEmpty() ? " ไม่มีบิลค้างชำระ" : " บิลค้างชำระ: " + String.join(", ", unpaid));
-        return sb.toString();
+        return messages.get("chat.summary.room", tenant.getRoom().getRoomNumber(),
+                String.valueOf(billingService.occupants(tenant.getRoom())))
+                + " " + (unpaid.isEmpty() ? messages.get("chat.summary.noUnpaid")
+                        : messages.get("chat.summary.unpaid", String.join(", ", unpaid)));
     }
 
     private String laundrySummary() {
         LocalDateTime now = laundryService.now();
         List<String> parts = new ArrayList<>();
         for (LaundryMachine m : laundryService.machines()) {
-            parts.add(m.getName() + (m.isAvailableAt(now) ? " ว่าง" : " ไม่ว่าง (อีก " + m.minutesLeftAt(now) + " นาที)"));
+            parts.add(m.isAvailableAt(now) ? messages.get("chat.summary.machineFree", m.getName())
+                    : messages.get("chat.summary.machineBusy", m.getName(), String.valueOf(m.minutesLeftAt(now))));
         }
-        return parts.isEmpty() ? "ไม่มีข้อมูล" : String.join(", ", parts);
+        return parts.isEmpty() ? messages.get("chat.summary.noData") : String.join(", ", parts);
     }
 
     private static boolean containsAny(String text, String... words) {

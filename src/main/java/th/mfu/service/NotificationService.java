@@ -53,9 +53,8 @@ public class NotificationService {
         }
         electricityReminder(bills, today).ifPresent(notices::add);
         analyticsService.abnormalUsage(room).ifPresent(a -> notices.add(new Notice("warning", "zap",
-                "ค่าไฟสูงผิดปกติ",
-                "เดือน " + a.getBillMonth() + " ใช้ไฟ " + a.getUnits() + " หน่วย สูงกว่าค่าเฉลี่ย ("
-                        + a.getAverage() + " หน่วย) " + a.getPercentAbove() + "% ลองตรวจเครื่องใช้ไฟฟ้าในห้อง")));
+                "notice.abnormal.title", "notice.abnormal.message",
+                a.getBillMonth(), String.valueOf(a.getUnits()), String.valueOf(a.getAverage()), String.valueOf(a.getPercentAbove()))));
         return notices;
     }
 
@@ -63,13 +62,14 @@ public class NotificationService {
         long days = ChronoUnit.DAYS.between(today, due);
         String amount = String.format("%,.2f", share);
         if (days < 0) {
-            return Optional.of(new Notice("danger", "alert-circle", "เลยกำหนดชำระ",
-                    "บิลเดือน " + billMonth + " เลยกำหนด " + due.format(DATE) + " มาแล้ว " + (-days) + " วัน (ส่วนของคุณ ฿" + amount + ")"));
+            return Optional.of(new Notice("danger", "alert-circle", "notice.overdue.title", "notice.overdue.message",
+                    billMonth, due.format(DATE), -days, amount));
         }
         if (days <= PAYMENT_REMINDER_DAYS) {
-            String when = days == 0 ? "ครบกำหนดวันนี้" : "อีก " + days + " วันจะครบกำหนด (" + due.format(DATE) + ")";
-            return Optional.of(new Notice("warning", "calendar-clock", "ใกล้ถึงกำหนดชำระ",
-                    "บิลเดือน " + billMonth + " " + when + " ส่วนของคุณ ฿" + amount));
+            return Optional.of(days == 0
+                    ? new Notice("warning", "calendar-clock", "notice.due.title", "notice.dueToday.message", billMonth, amount)
+                    : new Notice("warning", "calendar-clock", "notice.due.title", "notice.dueIn.message",
+                            billMonth, days, due.format(DATE), amount));
         }
         return Optional.empty();
     }
@@ -84,8 +84,9 @@ public class NotificationService {
         int n = billsOldestFirst.size();
         double estimate = billsOldestFirst.subList(Math.max(0, n - 3), n).stream()
                 .mapToDouble(Bill::getElectricCost).average().orElse(0);
-        String when = days == 0 ? "วันนี้" : "อีก " + days + " วัน";
-        return Optional.of(new Notice("info", "plug-zap", "แจ้งเตือนค่าไฟล่วงหน้า",
-                when + "จะจดมิเตอร์สรุปค่าไฟเดือนนี้ ประมาณการจากค่าเฉลี่ย 3 เดือนล่าสุด ฿" + String.format("%,.2f", estimate)));
+        String amount = String.format("%,.2f", estimate);
+        return Optional.of(days == 0
+                ? new Notice("info", "plug-zap", "notice.electric.title", "notice.electricToday.message", amount)
+                : new Notice("info", "plug-zap", "notice.electric.title", "notice.electricIn.message", days, amount));
     }
 }

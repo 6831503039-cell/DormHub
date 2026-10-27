@@ -1,67 +1,67 @@
 <!DOCTYPE html>
-<html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout('ข้อมูลบิล', 'bills', ~{::main})}">
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout(#{bill.form.title}, 'bills', ~{::main})}">
 <body>
 <main class="form-page">
-    <a class="back-link" th:href="@{/admin/bills}"><i data-lucide="chevron-left"></i> บิลค่าเช่า</a>
+    <a class="back-link" th:href="@{/admin/bills}"><i data-lucide="chevron-left"></i> <span th:text="#{nav.bills}">บิลค่าเช่า</span></a>
     <div class="page-header">
-        <h1 class="page-title" th:text="${bill.id == null} ? 'ออกบิล / จดมิเตอร์' : 'แก้ไขบิล ' + ${bill.room.roomNumber} + ' · ' + ${bill.billMonth}">ออกบิล</h1>
+        <h1 class="page-title" th:text="${bill.id == null} ? #{bill.new} : #{bill.editN(${bill.room.roomNumber}, ${bill.billMonth})}">ออกบิล</h1>
     </div>
 
     <form class="card card-body" th:action="@{/admin/bills}" th:object="${bill}" method="post" id="billForm">
         <input type="hidden" th:field="*{id}">
 
         <div class="form-section">
-            <h2 class="form-section-title">ห้องและรอบบิล</h2>
+            <h2 class="form-section-title" th:text="#{bill.roomPeriod}">ห้องและรอบบิล</h2>
             <div class="row g-3">
                 <div class="col-12">
-                    <label class="form-label" for="room">ห้อง</label>
+                    <label class="form-label" for="room" th:text="#{common.room}">ห้อง</label>
                     <select class="form-select" id="room" name="room" required>
-                        <option value="">เลือกห้อง</option>
+                        <option value="" th:text="#{bill.chooseRoom}">เลือกห้อง</option>
                         <option th:each="r : ${rooms}" th:value="${r.id}" th:attr="data-rent=${r.monthlyRent}"
-                                th:text="${r.roomNumber} + ' · ค่าเช่า ฿' + ${#numbers.formatDecimal(r.monthlyRent, 1, 'COMMA', 0, 'POINT')}"
+                                th:text="${r.roomNumber} + ' · ' + #{bill.roomRent(${#numbers.formatDecimal(r.monthlyRent, 1, 'COMMA', 0, 'POINT')})}"
                                 th:selected="${bill.room != null and bill.room.id == r.id}"></option>
                     </select>
                 </div>
                 <div class="col-sm-6">
-                    <label class="form-label" for="billMonth">ประจำเดือน</label>
+                    <label class="form-label" for="billMonth" th:text="#{bill.month}">ประจำเดือน</label>
                     <input class="form-control" type="month" th:field="*{billMonth}" required>
                 </div>
                 <div class="col-sm-6">
-                    <label class="form-label" for="dueDate">ครบกำหนดชำระ <span class="optional">(ไม่บังคับ)</span></label>
+                    <label class="form-label" for="dueDate"><span th:text="#{bill.dueDate}">ครบกำหนดชำระ</span> <span class="optional" th:text="#{common.optional}">(ไม่บังคับ)</span></label>
                     <input class="form-control" type="date" th:field="*{dueDate}">
-                    <div class="form-text">เว้นว่าง = วันที่ 5 ของเดือนถัดไป</div>
+                    <div class="form-text" th:text="#{bill.dueDate.help}">เว้นว่าง = วันที่ 5 ของเดือนถัดไป</div>
                 </div>
             </div>
         </div>
 
         <div class="form-section">
-            <h2 class="form-section-title">มิเตอร์และค่าใช้จ่าย</h2>
+            <h2 class="form-section-title" th:text="#{bill.meters}">มิเตอร์และค่าใช้จ่าย</h2>
             <div class="row g-3">
                 <div class="col-12">
-                    <label class="form-label" for="rent">ค่าเช่า (บาท) <span class="optional">(ไม่บังคับ)</span></label>
+                    <label class="form-label" for="rent"><span th:text="#{bill.rent}">ค่าเช่า (บาท)</span> <span class="optional" th:text="#{common.optional}">(ไม่บังคับ)</span></label>
                     <input class="form-control" type="number" inputmode="decimal" min="0" step="0.01" th:field="*{rent}">
-                    <div class="form-text">เว้นว่าง = ใช้ค่าเช่าของห้อง</div>
+                    <div class="form-text" th:text="#{bill.rent.help}">เว้นว่าง = ใช้ค่าเช่าของห้อง</div>
                 </div>
                 <div class="col-6 col-sm-3">
-                    <label class="form-label" for="electricUnits">ไฟ (หน่วย)</label>
+                    <label class="form-label" for="electricUnits" th:text="#{bill.electricUnits}">ไฟ (หน่วย)</label>
                     <input class="form-control" type="number" inputmode="numeric" min="0" th:field="*{electricUnits}" required>
                 </div>
                 <div class="col-6 col-sm-3">
-                    <label class="form-label" for="electricRate">บาท/หน่วย</label>
+                    <label class="form-label" for="electricRate" th:text="#{bill.rate}">บาท/หน่วย</label>
                     <input class="form-control" type="number" inputmode="decimal" min="0" step="0.01" th:field="*{electricRate}" required>
                 </div>
                 <div class="col-6 col-sm-3">
-                    <label class="form-label" for="waterUnits">น้ำ (หน่วย)</label>
+                    <label class="form-label" for="waterUnits" th:text="#{bill.waterUnits}">น้ำ (หน่วย)</label>
                     <input class="form-control" type="number" inputmode="numeric" min="0" th:field="*{waterUnits}" required>
                 </div>
                 <div class="col-6 col-sm-3">
-                    <label class="form-label" for="waterRate">บาท/หน่วย</label>
+                    <label class="form-label" for="waterRate" th:text="#{bill.rate}">บาท/หน่วย</label>
                     <input class="form-control" type="number" inputmode="decimal" min="0" step="0.01" th:field="*{waterRate}" required>
                 </div>
                 <div class="col-12">
                     <!-- preview only; the server computes the real total -->
                     <div class="form-summary" aria-live="polite">
-                        <span class="text-muted small">ยอดรวมโดยประมาณ</span>
+                        <span class="text-muted small" th:text="#{bill.estimate}">ยอดรวมโดยประมาณ</span>
                         <span class="kpi-value fs-4" id="billPreview">-</span>
                     </div>
                 </div>
@@ -71,13 +71,13 @@
         <div class="form-section">
             <div class="form-check">
                 <input class="form-check-input" type="checkbox" th:field="*{paid}">
-                <label class="form-check-label" th:for="${#ids.prev('paid')}">ชำระแล้ว</label>
+                <label class="form-check-label" th:for="${#ids.prev('paid')}" th:text="#{common.paid}">ชำระแล้ว</label>
             </div>
         </div>
 
         <div class="form-actions">
-            <button class="btn btn-primary" type="submit"><i data-lucide="check"></i> บันทึก</button>
-            <a class="btn btn-secondary" th:href="@{/admin/bills}">ยกเลิก</a>
+            <button class="btn btn-primary" type="submit"><i data-lucide="check"></i> <span th:text="#{common.save}">บันทึก</span></button>
+            <a class="btn btn-secondary" th:href="@{/admin/bills}" th:text="#{common.cancel}">ยกเลิก</a>
         </div>
     </form>
 
@@ -91,7 +91,7 @@
                 const rentInput = form.querySelector('#rent').value;
                 const rent = rentInput !== '' ? parseFloat(rentInput) || 0 : parseFloat(option && option.dataset.rent) || 0;
                 const total = rent + num('electricUnits') * num('electricRate') + num('waterUnits') * num('waterRate');
-                out.textContent = option && option.value ? '฿' + total.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-';
+                out.textContent = option && option.value ? '฿' + total.toLocaleString(dhT('th-TH', 'en-US'), { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-';
             }
             form.addEventListener('input', update);
             form.addEventListener('change', update);

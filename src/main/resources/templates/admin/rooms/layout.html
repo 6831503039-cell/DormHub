@@ -1,44 +1,44 @@
 <!DOCTYPE html>
-<html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout('แผนผังห้อง', 'layout', ~{::main})}">
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout(#{nav.layout}, 'layout', ~{::main})}">
 <body>
 <main>
     <div class="page-header">
         <div>
-            <h1 class="page-title">แผนผังห้องพัก</h1>
-            <p class="page-sub">กดที่ตึกเพื่อดูแต่ละชั้น กดที่ห้องเพื่อดูผู้เช่าและห้องแบบ 3D</p>
+            <h1 class="page-title" th:text="#{layout.title}">แผนผังห้องพัก</h1>
+            <p class="page-sub" th:text="#{layout.sub}">กดที่ตึกเพื่อดูแต่ละชั้น กดที่ห้องเพื่อดูผู้เช่าและห้องแบบ 3D</p>
         </div>
         <div class="d-flex flex-wrap gap-2">
-            <a class="btn btn-secondary" th:href="@{/explore}" target="_blank" rel="noopener"><i data-lucide="external-link"></i> หน้าจองห้อง</a>
-            <a class="btn btn-primary" th:href="@{/admin/rooms/new}"><i data-lucide="plus"></i> เพิ่มห้อง</a>
+            <a class="btn btn-secondary" th:href="@{/explore}" target="_blank" rel="noopener"><i data-lucide="external-link"></i> <span th:text="#{layout.bookingPage}">หน้าจองห้อง</span></a>
+            <a class="btn btn-primary" th:href="@{/admin/rooms/new}"><i data-lucide="plus"></i> <span th:text="#{rooms.add}">เพิ่มห้อง</span></a>
         </div>
     </div>
 
-    <div id="dormMap" class="layout-3d mb-3" aria-label="แผนผังหอพัก 3 มิติ"></div>
+    <div id="dormMap" class="layout-3d mb-3" th:aria-label="#{map.aria}"></div>
 
-    <div class="legend mb-4" aria-label="สีสถานะห้อง">
-        <span><span class="dot success"></span>ว่าง</span>
-        <span><span class="dot soon"></span>ใกล้หมดสัญญา (3D)</span>
-        <span><span class="dot info"></span>มีผู้เช่า</span>
-        <span><span class="dot warning"></span>ปิดซ่อม</span>
+    <div class="legend mb-4" th:aria-label="#{layout.legend}">
+        <span><span class="dot success"></span><span th:text="#{roomStatus.AVAILABLE}">ว่าง</span></span>
+        <span><span class="dot soon"></span><span th:text="#{mapStatus.SOON} + ' (3D)'">ใกล้หมดสัญญา (3D)</span></span>
+        <span><span class="dot info"></span><span th:text="#{roomStatus.OCCUPIED}">มีผู้เช่า</span></span>
+        <span><span class="dot warning"></span><span th:text="#{roomStatus.MAINTENANCE}">ปิดซ่อม</span></span>
     </div>
 
     <!-- the same rooms as a plain list, grouped by building and floor -->
-    <section th:each="building : ${buildings}" class="mb-4" th:attr="aria-label='ตึก ' + ${building.key}">
-        <h2 class="section-title" th:text="'ตึก ' + ${building.key}"></h2>
+    <section th:each="building : ${buildings}" class="mb-4" th:attr="aria-label=#{common.buildingN(${building.key})}">
+        <h2 class="section-title" th:text="#{common.buildingN(${building.key})}"></h2>
         <div class="card mb-3" th:each="floor : ${building.value}">
             <div class="card-header">
-                <span th:text="'ชั้น ' + ${floor.key}"></span>
+                <span th:text="#{common.floorN(${floor.key})}"></span>
                 <span class="card-link text-muted fw-normal"
-                      th:text="'ว่าง ' + ${#lists.size(floor.value.?[status.name() == 'AVAILABLE'])} + '/' + ${#lists.size(floor.value)}"></span>
+                      th:text="#{common.freeOf(${#lists.size(floor.value.?[status.name() == 'AVAILABLE'])}, ${#lists.size(floor.value)})}"></span>
             </div>
             <div class="card-body">
                 <div class="floor-row">
                     <a th:each="r : ${floor.value}" class="room-tile" th:classappend="${r.status.name()}" th:href="@{/admin/rooms/{id}(id=${r.id})}"
                        th:with="occ=${occupants.getOrDefault(r.id, 0L)}"
-                       th:attr="aria-label='ห้อง ' + ${r.roomNumber} + ' ' + ${r.status.label} + ' ผู้เช่า ' + ${occ} + ' จาก ' + ${r.capacity}">
+                       th:attr="aria-label=#{layout.tileAria(${r.roomNumber}, #{${r.status.key}}, ${occ}, ${r.capacity})}">
                         <div class="d-flex justify-content-between align-items-start gap-2">
                             <span class="num" th:text="${r.roomNumber}"></span>
-                            <span th:class="'badge soft-' + ${r.status.badge}" th:text="${r.status.label}"></span>
+                            <span th:class="'badge soft-' + ${r.status.badge}" th:text="#{${r.status.key}}"></span>
                         </div>
                         <div class="item-meta" th:text="${r.roomType}"></div>
                         <div class="d-flex justify-content-between item-meta mt-1">

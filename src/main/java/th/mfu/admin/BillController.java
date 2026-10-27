@@ -17,6 +17,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import th.mfu.BillRepository;
 import th.mfu.PaymentRepository;
 import th.mfu.RoomRepository;
+import th.mfu.config.Messages;
 import th.mfu.domain.Bill;
 import th.mfu.service.BillingService;
 
@@ -29,14 +30,16 @@ public class BillController {
     private final PaymentRepository paymentRepository;
     private final BillingService billingService;
     private final Clock clock;
+    private final Messages messages;
 
     public BillController(BillRepository repository, RoomRepository roomRepository, PaymentRepository paymentRepository,
-            BillingService billingService, Clock clock) {
+            BillingService billingService, Clock clock, Messages messages) {
         this.repository = repository;
         this.roomRepository = roomRepository;
         this.paymentRepository = paymentRepository;
         this.billingService = billingService;
         this.clock = clock;
+        this.messages = messages;
     }
 
     @GetMapping("/bills")
@@ -67,7 +70,7 @@ public class BillController {
             bill.setDueDate(billingService.defaultDueDate(bill.getBillMonth()));
         }
         repository.save(bill);
-        redirect.addFlashAttribute("success", "บันทึกบิลห้อง " + bill.getRoom().getRoomNumber() + " แล้ว");
+        redirect.addFlashAttribute("success", messages.get("flash.bill.saved", bill.getRoom().getRoomNumber()));
         return "redirect:/admin/bills";
     }
 
@@ -84,7 +87,7 @@ public class BillController {
         Bill bill = findBill(id);
         paymentRepository.deleteAll(paymentRepository.findByBillOrderBySubmittedAtDesc(bill));
         repository.delete(bill);
-        redirect.addFlashAttribute("success", "ลบบิลแล้ว");
+        redirect.addFlashAttribute("success", messages.get("flash.bill.deleted"));
         return "redirect:/admin/bills";
     }
 
