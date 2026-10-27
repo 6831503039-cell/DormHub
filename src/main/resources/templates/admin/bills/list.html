@@ -1,49 +1,114 @@
 <!DOCTYPE html>
 <html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout('บิลค่าเช่า', 'bills', ~{::main})}">
 <body>
-<main>
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1 class="page-title mb-0">บิลค่าเช่า</h1>
+<main th:with="today=${#temporals.createToday()}, DAYS=${T(java.time.temporal.ChronoUnit).DAYS},
+               unpaid=${bills.?[!paid]},
+               overdueCount=${#lists.size(bills.?[!paid and dueDate != null and dueDate.isBefore(#vars.today)])},
+               months=${#lists.sort(#lists.toList(#sets.toSet(bills.![billMonth])))}">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">บิลค่าเช่า</h1>
+            <p class="page-sub" th:if="${!#lists.isEmpty(bills) and #lists.isEmpty(unpaid)}">ทุกบิลชำระครบแล้ว</p>
+            <p class="page-sub" th:unless="${#lists.isEmpty(unpaid)}"
+               th:text="'ค้างชำระ ' + ${#lists.size(unpaid)} + ' บิล · ฿' + ${#numbers.formatDecimal(#aggregates.sum(unpaid.![total]), 1, 'COMMA', 0, 'POINT')} + (${overdueCount > 0} ? ' · เลยกำหนด ' + ${overdueCount} + ' บิล' : '')"></p>
+        </div>
         <a class="btn btn-primary" th:href="@{/admin/bills/new}"><i data-lucide="plus"></i> ออกบิล / จดมิเตอร์</a>
     </div>
-    <div class="card">
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                <tr><th>เดือน</th><th>ห้อง</th><th class="text-end">ค่าเช่า</th><th class="text-end">ค่าน้ำ</th><th class="text-end">ค่าไฟ</th>
-                    <th class="text-end">รวม</th><th class="text-end">หาร/คน</th><th>ครบกำหนด</th><th>สถานะ</th><th></th></tr>
-                </thead>
-                <tbody>
-                <tr th:each="b : ${bills}">
-                    <td th:text="${b.billMonth}"></td>
-                    <td class="fw-medium" th:text="${b.room.roomNumber}"></td>
-                    <td class="text-end" th:text="${#numbers.formatDecimal(b.rent, 1, 'COMMA', 2, 'POINT')}"></td>
-                    <td class="text-end"><span th:text="${#numbers.formatDecimal(b.waterCost, 1, 'COMMA', 2, 'POINT')}"></span>
-                        <div class="small text-muted" th:text="${b.waterUnits} + ' หน่วย'"></div></td>
-                    <td class="text-end"><span th:text="${#numbers.formatDecimal(b.electricCost, 1, 'COMMA', 2, 'POINT')}"></span>
-                        <div class="small text-muted" th:text="${b.electricUnits} + ' หน่วย'"></div></td>
-                    <td class="text-end fw-medium" th:text="${#numbers.formatDecimal(b.total, 1, 'COMMA', 2, 'POINT')}"></td>
-                    <td class="text-end">
-                        <span th:text="${#numbers.formatDecimal(@billingService.shareOf(b), 1, 'COMMA', 2, 'POINT')}"></span>
-                        <div class="small text-muted" th:text="${@billingService.occupants(b.room)} + ' คน'"></div>
-                    </td>
-                    <td th:text="${b.dueDate != null} ? ${#temporals.format(b.dueDate, 'dd/MM/yy')} : '-'"></td>
-                    <td>
-                        <span th:if="${b.paid}" class="badge soft-success">ชำระแล้ว</span>
-                        <span th:unless="${b.paid}" class="badge soft-danger">ค้างชำระ</span>
-                    </td>
-                    <td class="text-end text-nowrap">
-                        <a class="btn btn-sm btn-soft" th:href="@{/admin/bills/{id}/pay(id=${b.id})}" th:text="${b.paid} ? 'ยกเลิกชำระ' : 'รับชำระ'"></a>
-                        <a class="btn btn-light btn-icon" th:href="@{/admin/bills/{id}(id=${b.id})}" title="แก้ไข"><i data-lucide="pencil"></i></a>
-                        <a class="btn btn-light btn-icon text-danger" th:href="@{/admin/bills/{id}/delete(id=${b.id})}" title="ลบ"
-                           onclick="return confirm('ยืนยันการลบบิลนี้? สลิปที่แนบไว้จะถูกลบด้วย')"><i data-lucide="trash-2"></i></a>
-                    </td>
-                </tr>
-                <tr th:if="${#lists.isEmpty(bills)}"><td colspan="10" class="text-center text-muted py-4">ยังไม่มีบิล</td></tr>
-                </tbody>
-            </table>
+
+    <th:block th:if="${#lists.isEmpty(bills)}">
+        <div class="card">
+            <div th:replace="~{fragments/ui :: emptyState('receipt', 'ยังไม่มีบิล', 'จดมิเตอร์และออกบิลแรก ระบบจะคำนวณค่าน้ำค่าไฟและหารต่อคนให้', @{/admin/bills/new}, 'ออกบิล')}"></div>
         </div>
-    </div>
+    </th:block>
+
+    <th:block th:unless="${#lists.isEmpty(bills)}">
+        <div class="list-toolbar" role="search">
+            <label class="search-input">
+                <span class="visually-hidden">ค้นหาบิล</span>
+                <i data-lucide="search"></i>
+                <input class="form-control" type="search" placeholder="ค้นหาเลขห้อง" data-filter-target="#billTable" autocomplete="off">
+            </label>
+            <label class="visually-hidden" for="filterMonth">เดือน</label>
+            <select class="form-select" id="filterMonth" data-filter-target="#billTable" data-filter-key="month">
+                <option value="">ทุกเดือน</option>
+                <option th:each="m, st : ${months}" th:with="month=${months[#lists.size(months) - 1 - st.index]}"
+                        th:value="${month}" th:text="${month}"></option>
+            </select>
+            <label class="visually-hidden" for="filterStatus">สถานะ</label>
+            <select class="form-select" id="filterStatus" data-filter-target="#billTable" data-filter-key="status">
+                <option value="">ทุกสถานะ</option>
+                <option value="unpaid">ค้างชำระ</option>
+                <option value="overdue">เลยกำหนด</option>
+                <option value="paid">ชำระแล้ว</option>
+            </select>
+            <span class="list-count" data-filter-count="#billTable" aria-live="polite"></span>
+        </div>
+
+        <div class="card">
+            <div class="table-wrap">
+                <table class="table table-hover table-cards" id="billTable">
+                    <thead>
+                    <tr>
+                        <th scope="col">ห้อง</th>
+                        <th scope="col">เดือน</th>
+                        <th scope="col">ค่าใช้จ่าย</th>
+                        <th scope="col" class="text-end">รวม (บาท)</th>
+                        <th scope="col" class="text-end">ต่อคน</th>
+                        <th scope="col">ครบกำหนด</th>
+                        <th scope="col">สถานะ</th>
+                        <th scope="col"><span class="visually-hidden">จัดการ</span></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="b : ${bills}" data-row
+                        th:with="people=${@billingService.occupants(b.room)},
+                                 overdue=${!b.paid and b.dueDate != null and b.dueDate.isBefore(today)}"
+                        th:attr="data-month=${b.billMonth},data-status=(${b.paid} ? 'paid' : (${overdue} ? 'unpaid overdue' : 'unpaid'))">
+                        <td class="td-title">
+                            <span class="d-block fw-semibold" th:text="${b.room.roomNumber}"></span>
+                            <span class="item-meta" th:text="'หาร ' + ${people} + ' คน'"></span>
+                        </td>
+                        <td class="num nowrap" th:text="${b.billMonth}"></td>
+                        <td>
+                            <span class="cell item-meta">
+                                <span th:text="'เช่า ' + ${#numbers.formatDecimal(b.rent, 1, 'COMMA', 0, 'POINT')}"></span>
+                                <span th:text="'· ไฟ ' + ${#numbers.formatDecimal(b.electricCost, 1, 'COMMA', 0, 'POINT')} + ' (' + ${b.electricUnits} + ' หน่วย)'"></span>
+                                <span th:text="'· น้ำ ' + ${#numbers.formatDecimal(b.waterCost, 1, 'COMMA', 0, 'POINT')}"></span>
+                            </span>
+                        </td>
+                        <td class="text-end num fw-semibold" th:text="${#numbers.formatDecimal(b.total, 1, 'COMMA', 2, 'POINT')}"></td>
+                        <td class="text-end num" th:text="${#numbers.formatDecimal(@billingService.shareOf(b), 1, 'COMMA', 2, 'POINT')}"></td>
+                        <td>
+                            <span class="cell text-nowrap">
+                                <span class="num" th:text="${b.dueDate != null} ? ${#temporals.format(b.dueDate, 'dd/MM/yyyy')} : '-'"></span>
+                                <span th:if="${overdue}" class="badge status-danger" th:text="'เลย ' + ${DAYS.between(b.dueDate, today)} + ' วัน'"></span>
+                            </span>
+                        </td>
+                        <td>
+                            <span th:if="${b.paid}" class="badge status-success">ชำระแล้ว</span>
+                            <span th:unless="${b.paid}" class="badge status-danger">ค้างชำระ</span>
+                        </td>
+                        <td class="td-actions">
+                            <a th:unless="${b.paid}" class="btn btn-soft btn-sm" th:href="@{/admin/bills/{id}/pay(id=${b.id})}"
+                               th:attr="aria-label='รับชำระบิลห้อง ' + ${b.room.roomNumber} + ' เดือน ' + ${b.billMonth}"><i data-lucide="check"></i> รับชำระ</a>
+                            <a th:if="${b.paid}" class="btn btn-ghost btn-sm" th:href="@{/admin/bills/{id}/pay(id=${b.id})}"
+                               th:attr="aria-label='ยกเลิกสถานะชำระแล้ว ห้อง ' + ${b.room.roomNumber} + ' เดือน ' + ${b.billMonth},data-confirm='บิลห้อง ' + ${b.room.roomNumber} + ' เดือน ' + ${b.billMonth} + ' จะกลับเป็นค้างชำระ',data-confirm-title='ยกเลิกสถานะชำระแล้ว'"
+                               data-confirm-ok="ยกเลิกการชำระ" data-confirm-tone="primary">ยกเลิก</a>
+                            <a class="btn btn-ghost btn-icon btn-sm" th:href="@{/admin/bills/{id}(id=${b.id})}"
+                               th:attr="aria-label='แก้ไขบิลห้อง ' + ${b.room.roomNumber}" title="แก้ไข"><i data-lucide="pencil"></i></a>
+                            <a class="btn btn-ghost-danger btn-icon btn-sm" th:href="@{/admin/bills/{id}/delete(id=${b.id})}"
+                               th:attr="aria-label='ลบบิลห้อง ' + ${b.room.roomNumber} + ' เดือน ' + ${b.billMonth},data-confirm='ลบแล้วกู้คืนไม่ได้ สลิปที่แนบกับบิลนี้จะถูกลบด้วย',data-confirm-title='ลบบิล ' + ${b.room.roomNumber} + ' เดือน ' + ${b.billMonth}"
+                               title="ลบ"><i data-lucide="trash-2"></i></a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div data-filter-empty="#billTable" hidden>
+                <div th:replace="~{fragments/ui :: emptyState('search-x', 'ไม่พบบิลที่ตรงกับเงื่อนไข', 'ลองเปลี่ยนคำค้นหรือตัวกรอง', null, null)}"></div>
+            </div>
+        </div>
+    </th:block>
 </main>
 </body>
 </html>

@@ -1,34 +1,94 @@
 <!DOCTYPE html>
-<html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout('จัดการห้อง', 'rooms', ~{::main})}">
+<html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout('ห้องพัก', 'rooms', ~{::main})}">
 <body>
-<main>
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1 class="page-title mb-0">จัดการห้องพัก</h1>
-        <a class="btn btn-primary" th:href="@{/admin/rooms/new}"><i data-lucide="plus"></i> เพิ่มห้อง</a>
-    </div>
-    <div class="card">
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead><tr><th>เลขห้อง</th><th>ตึก</th><th>ชั้น</th><th>ประเภท</th><th>ผู้เช่า/ความจุ</th><th class="text-end">ค่าเช่า/เดือน</th><th>สถานะ</th><th></th></tr></thead>
-                <tbody>
-                <tr th:each="r : ${rooms}">
-                    <td class="fw-medium" th:text="${r.roomNumber}"></td>
-                    <td th:text="${r.building}"></td>
-                    <td th:text="${r.floor}"></td>
-                    <td th:text="${r.roomType}"></td>
-                    <td th:text="${occupants.getOrDefault(r.id, 0L)} + ' / ' + ${r.capacity}"></td>
-                    <td class="text-end" th:text="${r.monthlyRent != null} ? ${#numbers.formatDecimal(r.monthlyRent, 1, 'COMMA', 2, 'POINT')} : '-'"></td>
-                    <td><span th:class="'badge soft-' + ${r.status.badge}" th:text="${r.status.label}"></span></td>
-                    <td class="text-end text-nowrap">
-                        <a class="btn btn-light btn-icon" th:href="@{/admin/rooms/{id}(id=${r.id})}" title="แก้ไข"><i data-lucide="pencil"></i></a>
-                        <a class="btn btn-light btn-icon text-danger" th:href="@{/admin/rooms/{id}/delete(id=${r.id})}" title="ลบ"
-                           onclick="return confirm('ยืนยันการลบห้องนี้?')"><i data-lucide="trash-2"></i></a>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+<main th:with="buildings=${#lists.sort(#lists.toList(#sets.toSet(rooms.?[building != null].![building])))},
+               freeCount=${#lists.size(rooms.?[status.name() == 'AVAILABLE'])}">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">ห้องพัก</h1>
+            <p class="page-sub" th:text="'ทั้งหมด ' + ${#lists.size(rooms)} + ' ห้อง · ว่าง ' + ${freeCount} + ' ห้อง'"></p>
+        </div>
+        <div class="d-flex gap-2">
+            <a class="btn btn-secondary" th:href="@{/admin/layout}"><i data-lucide="layout-grid"></i> แผนผัง</a>
+            <a class="btn btn-primary" th:href="@{/admin/rooms/new}"><i data-lucide="plus"></i> เพิ่มห้อง</a>
         </div>
     </div>
+
+    <th:block th:if="${#lists.isEmpty(rooms)}">
+        <div class="card">
+            <div th:replace="~{fragments/ui :: emptyState('door-closed', 'ยังไม่มีห้องพัก', 'เพิ่มห้องแรกเพื่อเริ่มออกบิลและรับผู้เช่า', @{/admin/rooms/new}, 'เพิ่มห้อง')}"></div>
+        </div>
+    </th:block>
+
+    <th:block th:unless="${#lists.isEmpty(rooms)}">
+        <!-- search and filters (client side, see ui.js) -->
+        <div class="list-toolbar" role="search">
+            <label class="search-input">
+                <span class="visually-hidden">ค้นหาห้อง</span>
+                <i data-lucide="search"></i>
+                <input class="form-control" type="search" placeholder="ค้นหาเลขห้อง หรือประเภท" data-filter-target="#roomTable" autocomplete="off">
+            </label>
+            <label class="visually-hidden" for="filterBuilding">ตึก</label>
+            <select class="form-select" id="filterBuilding" data-filter-target="#roomTable" data-filter-key="building">
+                <option value="">ทุกตึก</option>
+                <option th:each="b : ${buildings}" th:value="${b}" th:text="'ตึก ' + ${b}"></option>
+            </select>
+            <label class="visually-hidden" for="filterStatus">สถานะ</label>
+            <select class="form-select" id="filterStatus" data-filter-target="#roomTable" data-filter-key="status">
+                <option value="">ทุกสถานะ</option>
+                <option th:each="s : ${T(th.mfu.domain.RoomStatus).values()}" th:value="${s.name()}" th:text="${s.label}"></option>
+            </select>
+            <span class="list-count" data-filter-count="#roomTable" aria-live="polite"></span>
+        </div>
+
+        <div class="card">
+            <div class="table-wrap">
+                <table class="table table-hover table-cards" id="roomTable">
+                    <thead>
+                    <tr>
+                        <th scope="col">ห้อง</th>
+                        <th scope="col">ตึก / ชั้น</th>
+                        <th scope="col">ผู้เช่า</th>
+                        <th scope="col" class="text-end">ค่าเช่า/เดือน</th>
+                        <th scope="col">สถานะ</th>
+                        <th scope="col"><span class="visually-hidden">จัดการ</span></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="r : ${rooms}" data-row
+                        th:with="occ=${occupants.getOrDefault(r.id, 0L)}"
+                        th:attr="data-building=${r.building},data-status=${r.status.name()}">
+                        <td class="td-title">
+                            <span class="d-block fw-semibold" th:text="${r.roomNumber}"></span>
+                            <span class="item-meta" th:text="${r.roomType}"></span>
+                        </td>
+                        <td th:text="'ตึก ' + ${r.building} + ' · ชั้น ' + ${r.floor}"></td>
+                        <td>
+                            <span class="cell">
+                                <span class="num" th:text="${occ} + ' / ' + ${r.capacity}"></span>
+                                <span class="badge status-neutral" th:if="${r.capacity != null and occ >= r.capacity}">เต็ม</span>
+                            </span>
+                        </td>
+                        <td class="text-end num" th:text="${r.monthlyRent != null} ? ${#numbers.formatDecimal(r.monthlyRent, 1, 'COMMA', 0, 'POINT')} : '-'"></td>
+                        <td><span th:class="'badge soft-' + ${r.status.badge}" th:text="${r.status.label}"></span></td>
+                        <td class="td-actions">
+                            <a class="btn btn-soft btn-icon btn-sm" th:href="@{/admin/rooms/{id}(id=${r.id})}"
+                               th:attr="aria-label='แก้ไขห้อง ' + ${r.roomNumber}" title="แก้ไข"><i data-lucide="pencil"></i></a>
+                            <a th:if="${occ == 0}" class="btn btn-ghost-danger btn-icon btn-sm" th:href="@{/admin/rooms/{id}/delete(id=${r.id})}"
+                               th:attr="aria-label='ลบห้อง ' + ${r.roomNumber},data-confirm='ลบแล้วกู้คืนไม่ได้ ถ้าห้อง ' + ${r.roomNumber} + ' ยังมีบิลหรือรายการแจ้งซ่อม ระบบจะไม่ให้ลบ',data-confirm-title='ลบห้อง ' + ${r.roomNumber}"
+                               title="ลบ"><i data-lucide="trash-2"></i></a>
+                            <span th:unless="${occ == 0}" class="btn btn-ghost btn-icon btn-sm disabled" aria-disabled="true"
+                                  title="ลบไม่ได้ เพราะยังมีผู้เช่าอยู่"><i data-lucide="trash-2"></i></span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div data-filter-empty="#roomTable" hidden>
+                <div th:replace="~{fragments/ui :: emptyState('search-x', 'ไม่พบห้องที่ตรงกับเงื่อนไข', 'ลองเปลี่ยนคำค้นหรือตัวกรอง', null, null)}"></div>
+            </div>
+        </div>
+    </th:block>
 </main>
 </body>
 </html>
