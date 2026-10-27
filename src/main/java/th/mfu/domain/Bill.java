@@ -39,9 +39,9 @@ public class Bill {
     private String billMonth;
     private Double rent;
     private Integer waterUnits = 0;
-    private Double waterRate = 18.0;
+    private Double waterRate = 20.0;
     private Integer electricUnits = 0;
-    private Double electricRate = 8.0;
+    private Double electricRate = 7.0;
     private boolean paid;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
