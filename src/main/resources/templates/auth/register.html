@@ -31,11 +31,21 @@
             </div>
             <div class="mb-3">
                 <label class="form-label" for="password">รหัสผ่าน (อย่างน้อย 6 ตัวอักษร)</label>
-                <input class="form-control" type="password" th:field="*{password}" minlength="6" autocomplete="new-password" required>
+                <div class="password-field">
+                    <input class="form-control" type="password" th:field="*{password}" minlength="6" autocomplete="new-password" required>
+                    <button class="password-eye" type="button" data-toggle-password="password" aria-label="แสดงรหัสผ่าน" aria-pressed="false">
+                        <span class="when-hidden"><i data-lucide="eye"></i></span><span class="when-shown" hidden><i data-lucide="eye-off"></i></span>
+                    </button>
+                </div>
             </div>
             <div class="mb-4">
                 <label class="form-label" for="confirmPassword">ยืนยันรหัสผ่าน</label>
-                <input class="form-control" type="password" th:field="*{confirmPassword}" minlength="6" autocomplete="new-password" required>
+                <div class="password-field">
+                    <input class="form-control" type="password" th:field="*{confirmPassword}" minlength="6" autocomplete="new-password" required>
+                    <button class="password-eye" type="button" data-toggle-password="confirmPassword" aria-label="แสดงรหัสผ่าน" aria-pressed="false">
+                        <span class="when-hidden"><i data-lucide="eye"></i></span><span class="when-shown" hidden><i data-lucide="eye-off"></i></span>
+                    </button>
+                </div>
             </div>
             <button class="btn btn-primary w-100 py-2" type="submit">สมัครสมาชิก</button>
         </form>
@@ -46,5 +56,6 @@
 </div>
 <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <script>lucide.createIcons();</script>
+<script th:src="@{/js/password-toggle.js}"></script>
 </body>
 </html>

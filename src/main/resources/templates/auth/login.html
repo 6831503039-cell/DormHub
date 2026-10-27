@@ -13,9 +13,8 @@
 <div class="auth-wrap">
     <div class="card auth-card">
         <div class="text-center mb-4">
-            <img th:src="@{/img/logo.png}" alt="DormHub" class="d-block mx-auto mb-2" style="width:150px;height:150px;border-radius:16px">
+            <img th:src="@{/img/logo.png}" alt="DormHub" class="d-block mx-auto" style="width:150px;height:150px;border-radius:16px">
             <h1 class="visually-hidden" th:text="${dormName}">DormHub</h1>
-            <div class="text-muted">เข้าสู่ระบบสำหรับผู้เช่าและเจ้าของหอพัก</div>
         </div>
 
         <div th:if="${param.error}" class="alert alert-danger">อีเมลหรือรหัสผ่านไม่ถูกต้อง</div>
@@ -29,17 +28,22 @@
             </div>
             <div class="mb-4">
                 <label class="form-label" for="password">รหัสผ่าน</label>
-                <input class="form-control" type="password" id="password" name="password" autocomplete="current-password" required>
+                <div class="password-field">
+                    <input class="form-control" type="password" id="password" name="password" autocomplete="current-password" required>
+                    <button class="password-eye" type="button" data-toggle-password="password" aria-label="แสดงรหัสผ่าน" aria-pressed="false">
+                        <span class="when-hidden"><i data-lucide="eye"></i></span><span class="when-shown" hidden><i data-lucide="eye-off"></i></span>
+                    </button>
+                </div>
             </div>
             <button class="btn btn-primary w-100 py-2" type="submit">เข้าสู่ระบบ</button>
         </form>
         <div class="text-center mt-4 text-muted">
             ยังไม่มีบัญชี? <a th:href="@{/register}">สมัครสมาชิก</a>
         </div>
-        <a class="btn btn-soft w-100 mt-3" th:href="@{/explore}"><i data-lucide="building-2"></i> ดูห้องว่างแบบ 3D และจองห้อง</a>
     </div>
 </div>
 <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <script>lucide.createIcons();</script>
+<script th:src="@{/js/password-toggle.js}"></script>
 </body>
 </html>
