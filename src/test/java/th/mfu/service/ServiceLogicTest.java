@@ -47,9 +47,10 @@ public class ServiceLogicTest {
     }
 
     @Test
-    public void paymentReminderStartsFiveDaysBeforeDueDate() {
+    public void paymentReminderStartsSevenDaysBeforeDueDate() {
         LocalDate due = LocalDate.of(2026, 11, 5);
-        assertTrue(NotificationService.paymentNotice("2026-10", due, 100, LocalDate.of(2026, 10, 29)).isEmpty());
+        assertTrue(NotificationService.paymentNotice("2026-10", due, 100, LocalDate.of(2026, 10, 28)).isEmpty()); // 8 days before
+        assertEquals("warning", NotificationService.paymentNotice("2026-10", due, 100, LocalDate.of(2026, 10, 29)).get().getLevel()); // 7 days before
         assertEquals("warning", NotificationService.paymentNotice("2026-10", due, 100, LocalDate.of(2026, 10, 31)).get().getLevel());
         assertEquals("warning", NotificationService.paymentNotice("2026-10", due, 100, due).get().getLevel());
         assertEquals("danger", NotificationService.paymentNotice("2026-10", due, 100, LocalDate.of(2026, 11, 6)).get().getLevel());

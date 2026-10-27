@@ -16,12 +16,12 @@ import th.mfu.domain.Room;
 
 /**
  * Builds the tenant's notifications on the fly:
- * payment due within 5 days / overdue, electricity summary within 7 days, abnormal electricity usage.
+ * payment due within 7 days / overdue, electricity summary within 7 days, abnormal electricity usage.
  */
 @Service
 public class NotificationService {
 
-    static final int PAYMENT_REMINDER_DAYS = 5;
+    static final int PAYMENT_REMINDER_DAYS = 7;
     static final int ELECTRICITY_REMINDER_DAYS = 7;
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
