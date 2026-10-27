@@ -87,7 +87,7 @@
         // colours come from the design tokens in app.css
         const css = getComputedStyle(document.documentElement);
         const token = name => css.getPropertyValue(name).trim();
-        const seasonColor = { HOT: token('--s-warning'), RAINY: token('--c-primary'), COOL: token('--s-neutral') };
+        const seasonColor = { HOT: token('--s-warning'), RAINY: token('--s-info'), COOL: token('--s-neutral') };
         Chart.defaults.font.family = token('--font');
         Chart.defaults.color = token('--c-muted');
         Chart.defaults.maintainAspectRatio = false;
