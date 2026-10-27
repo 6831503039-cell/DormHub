@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import th.mfu.AppUserRepository;
 import th.mfu.BillRepository;
+import th.mfu.BookingRequestRepository;
 import th.mfu.FeedbackRepository;
 import th.mfu.LaundryMachineRepository;
 import th.mfu.RepairRequestRepository;
@@ -19,6 +20,7 @@ import th.mfu.TenantRepository;
 import th.mfu.config.DormProperties;
 import th.mfu.domain.AppUser;
 import th.mfu.domain.Bill;
+import th.mfu.domain.BookingRequest;
 import th.mfu.domain.Feedback;
 import th.mfu.domain.LaundryMachine;
 import th.mfu.domain.MachineType;
@@ -46,13 +48,14 @@ public class DataSeeder implements CommandLineRunner {
     private final RepairRequestRepository repairs;
     private final FeedbackRepository feedbacks;
     private final LaundryMachineRepository machines;
+    private final BookingRequestRepository bookings;
     private final PasswordEncoder passwordEncoder;
     private final DormProperties props;
     private final Clock clock;
 
     public DataSeeder(AppUserRepository users, RoomRepository rooms, TenantRepository tenants, BillRepository bills,
             RepairRequestRepository repairs, FeedbackRepository feedbacks, LaundryMachineRepository machines,
-            PasswordEncoder passwordEncoder, DormProperties props, Clock clock) {
+            BookingRequestRepository bookings, PasswordEncoder passwordEncoder, DormProperties props, Clock clock) {
         this.users = users;
         this.rooms = rooms;
         this.tenants = tenants;
@@ -60,6 +63,7 @@ public class DataSeeder implements CommandLineRunner {
         this.repairs = repairs;
         this.feedbacks = feedbacks;
         this.machines = machines;
+        this.bookings = bookings;
         this.passwordEncoder = passwordEncoder;
         this.props = props;
         this.clock = clock;
@@ -89,22 +93,28 @@ public class DataSeeder implements CommandLineRunner {
     private void seedDemoData() {
         LocalDate today = LocalDate.now(clock);
 
-        Room r101 = room("101", 1, "แอร์", 4500, 2, RoomStatus.OCCUPIED);
-        Room r102 = room("102", 1, "แอร์", 4500, 2, RoomStatus.OCCUPIED);
-        room("103", 1, "พัดลม", 3000, 1, RoomStatus.AVAILABLE);
-        Room r104 = room("104", 1, "พัดลม", 3000, 1, RoomStatus.MAINTENANCE);
-        Room r201 = room("201", 2, "แอร์ (ห้องใหญ่)", 6000, 3, RoomStatus.OCCUPIED);
-        room("202", 2, "แอร์ (ห้องใหญ่)", 6000, 3, RoomStatus.AVAILABLE);
-        room("203", 2, "พัดลม", 3200, 1, RoomStatus.AVAILABLE);
-        Room r204 = room("204", 2, "แอร์", 5000, 2, RoomStatus.OCCUPIED);
+        // building A, floors 1-2: the original demo rooms (used by bills, repairs and feedback below)
+        // SJD Mansion: every room has air conditioning; floor 1 costs 4,500 and floors 2-4 cost 4,000 per room
+        Room r101 = room("A101", "A", 1, ROOM_TYPE, rentFor(1), 2, RoomStatus.OCCUPIED);
+        Room r102 = room("A102", "A", 1, ROOM_TYPE, rentFor(1), 2, RoomStatus.OCCUPIED);
+        room("A103", "A", 1, ROOM_TYPE, rentFor(1), 1, RoomStatus.AVAILABLE);
+        Room r104 = room("A104", "A", 1, ROOM_TYPE, rentFor(1), 1, RoomStatus.MAINTENANCE);
+        Room r201 = room("A201", "A", 2, ROOM_TYPE, rentFor(2), 3, RoomStatus.OCCUPIED);
+        room("A202", "A", 2, ROOM_TYPE, rentFor(2), 3, RoomStatus.AVAILABLE);
+        room("A203", "A", 2, ROOM_TYPE, rentFor(2), 1, RoomStatus.AVAILABLE);
+        Room r204 = room("A204", "A", 2, ROOM_TYPE, rentFor(2), 2, RoomStatus.OCCUPIED);
 
-        tenant("สมชาย", "ใจดี", "081-111-1111", "somchai@example.com", today.minusMonths(14), r101);
-        tenant("สมศักดิ์", "มั่นคง", "081-222-2222", "somsak@example.com", today.minusMonths(14), r101);
-        tenant("สุดา", "รักเรียน", "082-333-3333", "suda@example.com", today.minusMonths(13), r102);
-        tenant("มานี", "มีสุข", "083-444-4444", "manee@example.com", today.minusMonths(13), r201);
-        tenant("ชูใจ", "ใฝ่ดี", "083-555-5555", "chujai@example.com", today.minusMonths(13), r201);
-        tenant("วีระ", "กล้าหาญ", "083-666-6666", "weera@example.com", today.minusMonths(13), r201);
-        tenant("ปิติ", "ยินดี", "084-777-7777", "piti@example.com", today.minusMonths(13), r204);
+        // contract ends: A101 and A204 end within 60 days, so they show as "ใกล้หมดสัญญา" on the 3D map
+        tenant("สมชาย", "ใจดี", "081-111-1111", "somchai@example.com", today.minusMonths(14), today.plusDays(25), r101);
+        tenant("สมศักดิ์", "มั่นคง", "081-222-2222", "somsak@example.com", today.minusMonths(14), today.plusDays(25), r101);
+        tenant("สุดา", "รักเรียน", "082-333-3333", "suda@example.com", today.minusMonths(13), today.plusMonths(4), r102);
+        tenant("มานี", "มีสุข", "083-444-4444", "manee@example.com", today.minusMonths(13), today.plusMonths(5), r201);
+        tenant("ชูใจ", "ใฝ่ดี", "083-555-5555", "chujai@example.com", today.minusMonths(13), today.plusMonths(5), r201);
+        tenant("วีระ", "กล้าหาญ", "083-666-6666", "weera@example.com", today.minusMonths(13), today.plusMonths(5), r201);
+        tenant("ปิติ", "ยินดี", "084-777-7777", "piti@example.com", today.minusMonths(13), today.plusDays(40), r204);
+
+        // the rest of the 3 buildings for the 3D room map (laid out like SJD Mansion)
+        seedBuildingRooms(today);
 
         // demo tenant logins (linked to the tenant records above by email)
         AppUser somchai = demoUser("somchai@example.com", "สมชาย ใจดี");
@@ -140,14 +150,94 @@ public class DataSeeder implements CommandLineRunner {
         machines.save(new LaundryMachine("เครื่องซักผ้า 1", MachineType.WASHER));
         LaundryMachine washer2 = new LaundryMachine("เครื่องซักผ้า 2", MachineType.WASHER);
         washer2.setBusyUntil(now.plusMinutes(25));
-        washer2.setUsedBy("ห้อง 201");
+        washer2.setUsedBy("ห้อง A201");
         machines.save(washer2);
         machines.save(new LaundryMachine("เครื่องซักผ้า 3", MachineType.WASHER));
         LaundryMachine dryer1 = new LaundryMachine("เครื่องอบผ้า 1", MachineType.DRYER);
         dryer1.setBusyUntil(now.plusMinutes(12));
-        dryer1.setUsedBy("ห้อง 102");
+        dryer1.setUsedBy("ห้อง A102");
         machines.save(dryer1);
         machines.save(new LaundryMachine("เครื่องอบผ้า 2", MachineType.DRYER));
+    }
+
+    private static final String[] FIRST_NAMES = { "กานต์", "ณัฐ", "ธนา", "พิมพ์", "ภูมิ", "มินตรา", "รวิ", "ศุภ", "อร", "ปาล์ม", "เจน", "ต้นข้าว" };
+    private static final String[] LAST_NAMES = { "ศรีสุข", "บุญมา", "แก้วใส", "ทองดี", "สายชล", "พรหมมา", "จันทร์เพ็ญ", "วงศ์ดี" };
+
+    static final String ROOM_TYPE = "แอร์";
+
+    /** Room price at SJD Mansion: 4,500 baht on floor 1, 4,000 baht from floor 2 up (per room, split between roommates). */
+    static double rentFor(int floor) {
+        return floor == 1 ? 4500 : 4000;
+    }
+
+    /**
+     * Fills buildings A, B and C like SJD Mansion, skipping the rooms created above:
+     * every building has 4 floors with 20 rooms on floors 2-4 (01-20); on floor 1, A has 20 rooms
+     * while B and C have 10 rooms (the other half is the entrance, parking, office and laundry).
+     * Rooms take 1, 2 or 3 people. Rented rooms get tenants with contract end dates.
+     */
+    private void seedBuildingRooms(LocalDate today) {
+        String[] buildings = { "A", "B", "C" };
+        Room firstFree = null;
+        Room secondFree = null;
+        int person = 0;
+        for (int b = 0; b < buildings.length; b++) {
+            for (int floor = 1; floor <= 4; floor++) {
+                int n = (floor == 1 && b > 0) ? 10 : 20;
+                for (int i = 1; i <= n; i++) {
+                    String number = buildings[b] + floor + String.format("%02d", i);
+                    if (rooms.findByRoomNumber(number).isPresent()) {
+                        continue;
+                    }
+                    int capacity = 1 + (i * 7 + floor * 3 + b) % 3;
+                    int k = (b * 31 + floor * 7 + i * 3) % 10;
+                    RoomStatus status = k < 3 ? RoomStatus.AVAILABLE
+                            : (k == 3 && floor == 4) ? RoomStatus.MAINTENANCE : RoomStatus.OCCUPIED;
+                    Room room = room(number, buildings[b], floor, ROOM_TYPE, rentFor(floor), capacity, status);
+
+                    if (status == RoomStatus.AVAILABLE) {
+                        if (firstFree == null) {
+                            firstFree = room;
+                        } else if (secondFree == null && !buildings[b].equals(firstFree.getBuilding())) {
+                            secondFree = room;
+                        }
+                    }
+                    if (status == RoomStatus.OCCUPIED) {
+                        // k = 4 or 5: contract ends within 60 days ("ใกล้หมดสัญญา")
+                        LocalDate contractEnd = (k == 4 || k == 5) ? today.plusDays(10 + k * 7) : today.plusDays(90 + k * 25);
+                        int people = Math.min(capacity, 1 + k % capacity);
+                        for (int p = 0; p < people; p++) {
+                            String first = FIRST_NAMES[person % FIRST_NAMES.length];
+                            String last = LAST_NAMES[(person / FIRST_NAMES.length + person) % LAST_NAMES.length];
+                            String phone = String.format("09%d-%03d-%04d", person % 10, 100 + person % 900, 1000 + person * 7);
+                            String email = number.toLowerCase() + "." + (p + 1) + "@example.com";
+                            tenant(first, last, phone, email, contractEnd.minusYears(1), contractEnd, room);
+                            person++;
+                        }
+                    }
+                }
+            }
+        }
+
+        // two demo booking requests from the public 3D map
+        if (firstFree != null) {
+            booking(firstFree, "ศิริพร นาคดี", "089-123-4567", "siriporn@example.com", today.plusDays(7), "อยากได้ห้องชั้นล่าง", 1);
+        }
+        if (secondFree != null) {
+            booking(secondFree, "อนันต์ ใจกว้าง", "086-555-0101", null, today.plusDays(20), null, 0);
+        }
+    }
+
+    private void booking(Room room, String name, String phone, String email, LocalDate moveIn, String note, int daysAgo) {
+        BookingRequest b = new BookingRequest();
+        b.setRoom(room);
+        b.setFullName(name);
+        b.setPhone(phone);
+        b.setEmail(email);
+        b.setMoveInDate(moveIn);
+        b.setNote(note);
+        b.setCreatedAt(LocalDateTime.now(clock).minusDays(daysAgo));
+        bookings.save(b);
     }
 
     /** Typical electricity units per month for a standard room in each season. */
@@ -162,9 +252,10 @@ public class DataSeeder implements CommandLineRunner {
         }
     }
 
-    private Room room(String number, int floor, String type, double rent, int capacity, RoomStatus status) {
+    private Room room(String number, String building, int floor, String type, double rent, int capacity, RoomStatus status) {
         Room room = new Room();
         room.setRoomNumber(number);
+        room.setBuilding(building);
         room.setFloor(floor);
         room.setRoomType(type);
         room.setMonthlyRent(rent);
@@ -173,13 +264,15 @@ public class DataSeeder implements CommandLineRunner {
         return rooms.save(room);
     }
 
-    private void tenant(String first, String last, String phone, String email, LocalDate checkIn, Room room) {
+    private void tenant(String first, String last, String phone, String email, LocalDate checkIn, LocalDate contractEnd,
+            Room room) {
         Tenant t = new Tenant();
         t.setFirstName(first);
         t.setLastName(last);
         t.setPhone(phone);
         t.setEmail(email);
         t.setCheckInDate(checkIn);
+        t.setContractEndDate(contractEnd);
         t.setRoom(room);
         tenants.save(t);
     }

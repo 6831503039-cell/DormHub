@@ -18,7 +18,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
-                .antMatchers("/login", "/register", "/css/**", "/img/**", "/error").permitAll()
+                .antMatchers("/login", "/register", "/css/**", "/img/**", "/js/**", "/error").permitAll()
+                // public 3D room map and booking requests (no login needed)
+                .antMatchers("/explore", "/explore/**").permitAll()
                 .antMatchers("/admin/**").hasRole("ADMIN")
                 .antMatchers("/app/**").hasRole("TENANT")
                 .anyRequest().authenticated())

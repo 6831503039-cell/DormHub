@@ -29,6 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import th.mfu.domain.Bill;
+import th.mfu.domain.BookingStatus;
 import th.mfu.domain.PaymentStatus;
 import th.mfu.domain.Role;
 import th.mfu.domain.Room;
@@ -41,7 +42,7 @@ import th.mfu.domain.RoomStatus;
 public class DormHubApplicationTest {
 
     private static final String ADMIN_EMAIL = "sjdadmin@gmail.com";
-    private static final String TENANT_EMAIL = "somchai@example.com"; // room 101, shared by 2
+    private static final String TENANT_EMAIL = "somchai@example.com"; // room A101, shared by 2
 
     @Autowired
     private MockMvc mvc;
@@ -53,6 +54,8 @@ public class DormHubApplicationTest {
     private BillRepository billRepository;
     @Autowired
     private PaymentRepository paymentRepository;
+    @Autowired
+    private BookingRequestRepository bookingRepository;
 
     private static RequestPostProcessor admin() {
         return user(ADMIN_EMAIL).roles("ADMIN");
@@ -124,7 +127,7 @@ public class DormHubApplicationTest {
     public void allAdminPagesLoad() throws Exception {
         String[] urls = { "/admin", "/admin/analytics", "/admin/layout", "/admin/rooms", "/admin/rooms/new", "/admin/rooms/1",
                 "/admin/tenants", "/admin/tenants/new", "/admin/tenants/1", "/admin/bills", "/admin/bills/new", "/admin/bills/1",
-                "/admin/payments", "/admin/repairs", "/admin/repairs/new", "/admin/repairs/1", "/admin/feedback" };
+                "/admin/payments", "/admin/repairs", "/admin/repairs/new", "/admin/repairs/1", "/admin/feedback", "/admin/bookings" };
         for (String url : urls) {
             mvc.perform(get(url).with(admin())).andExpect(status().isOk());
         }
@@ -173,7 +176,7 @@ public class DormHubApplicationTest {
 
     @Test
     public void addingTenantMarksRoomOccupied() throws Exception {
-        Room room = roomRepository.findByRoomNumber("103").get();
+        Room room = roomRepository.findByRoomNumber("A103").get();
         assertEquals(RoomStatus.AVAILABLE, room.getStatus());
 
         mvc.perform(post("/admin/tenants").with(admin()).with(csrf())
@@ -185,7 +188,7 @@ public class DormHubApplicationTest {
 
     @Test
     public void roomCapacityIsEnforced() throws Exception {
-        Room room = roomRepository.findByRoomNumber("103").get(); // capacity 1
+        Room room = roomRepository.findByRoomNumber("A103").get(); // capacity 1
         mvc.perform(post("/admin/tenants").with(admin()).with(csrf())
                 .param("firstName", "คนที่").param("lastName", "หนึ่ง").param("room", room.getId().toString()))
                 .andExpect(redirectedUrl("/admin/tenants"));
@@ -196,7 +199,7 @@ public class DormHubApplicationTest {
 
     @Test
     public void roomWithTenantsCannotBeDeleted() throws Exception {
-        Room room = roomRepository.findByRoomNumber("101").get();
+        Room room = roomRepository.findByRoomNumber("A101").get();
         mvc.perform(get("/admin/rooms/" + room.getId() + "/delete").with(admin())).andExpect(redirectedUrl("/admin/rooms"));
         assertTrue(roomRepository.existsById(room.getId()));
     }
@@ -205,7 +208,7 @@ public class DormHubApplicationTest {
 
     @Test
     public void slipWithoutAiWaitsForAdminThenClosesBill() throws Exception {
-        Room room = roomRepository.findByRoomNumber("101").get();
+        Room room = roomRepository.findByRoomNumber("A101").get();
         Bill bill = unpaidBill(room);
         MockMultipartFile slip = new MockMultipartFile("slip", "slip.jpg", "image/jpeg", new byte[] { 1, 2, 3 });
 
@@ -224,7 +227,7 @@ public class DormHubApplicationTest {
 
     @Test
     public void nonImageSlipIsFlagged() throws Exception {
-        Bill bill = unpaidBill(roomRepository.findByRoomNumber("101").get());
+        Bill bill = unpaidBill(roomRepository.findByRoomNumber("A101").get());
         MockMultipartFile slip = new MockMultipartFile("slip", "slip.pdf", "application/pdf", new byte[] { 1 });
         mvc.perform(multipart("/app/bills/" + bill.getId() + "/pay").file(slip)
                 .param("amount", "100").with(tenant()).with(csrf()));
@@ -233,7 +236,7 @@ public class DormHubApplicationTest {
 
     @Test
     public void tenantCannotPayAnotherRoomsBill() throws Exception {
-        Bill other = unpaidBill(roomRepository.findByRoomNumber("204").get());
+        Bill other = unpaidBill(roomRepository.findByRoomNumber("A204").get());
         MockMultipartFile slip = new MockMultipartFile("slip", "slip.jpg", "image/jpeg", new byte[] { 1 });
         mvc.perform(multipart("/app/bills/" + other.getId() + "/pay").file(slip)
                 .param("amount", "100").with(tenant()).with(csrf()))
@@ -255,7 +258,64 @@ public class DormHubApplicationTest {
     @Test
     public void laundryMachineCanBeStartedOnce() throws Exception {
         mvc.perform(post("/app/laundry/1/start").with(tenant()).with(csrf())).andExpect(redirectedUrl("/app/laundry"));
-        mvc.perform(get("/app/laundry").with(tenant())).andExpect(content().string(containsString("ห้อง 101")));
+        mvc.perform(get("/app/laundry").with(tenant())).andExpect(content().string(containsString("ห้อง A101")));
+    }
+
+    // ---------- 3D room map / booking requests ----------
+
+    @Test
+    public void roomMapIsPublic() throws Exception {
+        mvc.perform(get("/explore")).andExpect(status().isOk())
+                .andExpect(content().string(containsString("/js/dorm3d.js")));
+        mvc.perform(get("/js/dorm3d.js")).andExpect(status().isOk());
+        // SJD Mansion: A 80 rooms, B 70, C 70; no tenant names on the public page
+        mvc.perform(get("/explore/rooms"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(220))
+                .andExpect(jsonPath("$[?(@.number == 'A103')].status").value("AVAILABLE"))
+                .andExpect(jsonPath("$[?(@.number == 'A101')].status").value("SOON"))
+                .andExpect(jsonPath("$[?(@.number == 'A104')].status").value("MAINTENANCE"))
+                .andExpect(jsonPath("$[0].tenants").doesNotExist());
+    }
+
+    @Test
+    public void adminRoomMapShowsTenantNames() throws Exception {
+        mvc.perform(get("/admin/layout/rooms").with(admin()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.number == 'A101')].tenants[0]").value("สมชาย ใจดี"));
+        mvc.perform(get("/admin/layout/rooms").with(tenant())).andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void visitorCanBookAFreeRoom() throws Exception {
+        Room room = roomRepository.findByRoomNumber("A103").get();
+        long before = bookingRepository.count();
+        mvc.perform(post("/explore/book").with(csrf())
+                .param("room", room.getId().toString()).param("fullName", "ผู้สนใจ ทดสอบ").param("phone", "089-000-0000")
+                .param("moveInDate", java.time.LocalDate.now().plusDays(3).toString()).param("status", "CONFIRMED"))
+                .andExpect(redirectedUrl("/explore?room=A103"));
+        assertEquals(before + 1, bookingRepository.count());
+        // the visitor cannot choose the status of the request
+        assertEquals(BookingStatus.PENDING, bookingRepository.findAllByOrderByCreatedAtDesc().get(0).getStatus());
+    }
+
+    @Test
+    public void rentedRoomCannotBeBooked() throws Exception {
+        Room room = roomRepository.findByRoomNumber("A102").get(); // contract ends in 4 months
+        long before = bookingRepository.count();
+        mvc.perform(post("/explore/book").with(csrf())
+                .param("room", room.getId().toString()).param("fullName", "ผู้สนใจ").param("phone", "089-000-0000")
+                .param("moveInDate", java.time.LocalDate.now().plusDays(3).toString()))
+                .andExpect(redirectedUrl("/explore?room=A102"));
+        assertEquals(before, bookingRepository.count());
+    }
+
+    @Test
+    public void adminConfirmsBooking() throws Exception {
+        var booking = bookingRepository.findAllByOrderByCreatedAtDesc().get(0);
+        mvc.perform(post("/admin/bookings/" + booking.getId() + "/status").param("status", "CONFIRMED").with(admin()).with(csrf()))
+                .andExpect(redirectedUrl("/admin/bookings"));
+        assertEquals(BookingStatus.CONFIRMED, bookingRepository.findById(booking.getId()).get().getStatus());
     }
 
     private Bill unpaidBill(Room room) {
