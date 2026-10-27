@@ -13,6 +13,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import th.mfu.RepairRequestRepository;
 import th.mfu.RoomRepository;
+import th.mfu.config.Messages;
 import th.mfu.domain.RepairRequest;
 
 @Controller
@@ -21,10 +22,12 @@ public class RepairController {
 
     private final RepairRequestRepository repository;
     private final RoomRepository roomRepository;
+    private final Messages messages;
 
-    public RepairController(RepairRequestRepository repository, RoomRepository roomRepository) {
+    public RepairController(RepairRequestRepository repository, RoomRepository roomRepository, Messages messages) {
         this.repository = repository;
         this.roomRepository = roomRepository;
+        this.messages = messages;
     }
 
     @GetMapping("/repairs")
@@ -47,14 +50,14 @@ public class RepairController {
     @PostMapping("/repairs")
     public String saveRepair(@ModelAttribute RepairRequest repair, RedirectAttributes redirect) {
         repository.save(repair);
-        redirect.addFlashAttribute("success", "บันทึกรายการแจ้งซ่อมแล้ว");
+        redirect.addFlashAttribute("success", messages.get("flash.repair.saved"));
         return "redirect:/admin/repairs";
     }
 
     @GetMapping("/repairs/{id}/delete")
     public String deleteRepair(@PathVariable Long id, RedirectAttributes redirect) {
         repository.deleteById(id);
-        redirect.addFlashAttribute("success", "ลบรายการแจ้งซ่อมแล้ว");
+        redirect.addFlashAttribute("success", messages.get("flash.repair.deleted"));
         return "redirect:/admin/repairs";
     }
 

@@ -1,36 +1,36 @@
 <!DOCTYPE html>
-<html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/app :: layout('ถาม AI', 'chat', ~{::main})}">
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/app :: layout(#{tab.chat}, 'chat', ~{::main})}">
 <body>
 <main>
     <div class="d-flex align-items-center gap-3 mb-3">
         <span class="stat-icon"><i data-lucide="bot"></i></span>
         <div>
-            <h1 class="h2 mb-0">แอดมินเสมือน</h1>
-            <div class="small text-muted" th:text="${aiEnabled} ? 'ตอบด้วย Gemini AI' : 'โหมดคำตอบอัตโนมัติ (ยังไม่ได้ตั้งค่า Gemini API)'"></div>
+            <h1 class="h2 mb-0" th:text="#{chat.title}">แอดมินเสมือน</h1>
+            <div class="small text-muted" th:text="${aiEnabled} ? #{chat.gemini} : #{chat.fallback}"></div>
         </div>
     </div>
 
     <div class="card mb-3">
-        <div class="chat-box" id="chatBox" role="log" aria-live="polite" aria-label="บทสนทนา">
-            <div class="bubble bot">สวัสดีครับ ถามได้เลย เช่น รหัส Wi-Fi ยอดค่าห้อง เครื่องซักผ้าว่างไหม หรือวิธีแจ้งซ่อม</div>
+        <div class="chat-box" id="chatBox" role="log" aria-live="polite" th:aria-label="#{chat.log}">
+            <div class="bubble bot" th:text="#{chat.welcome}">สวัสดีครับ ถามได้เลย เช่น รหัส Wi-Fi ยอดค่าห้อง เครื่องซักผ้าว่างไหม หรือวิธีแจ้งซ่อม</div>
         </div>
     </div>
 
-    <div class="chips mb-3" aria-label="คำถามที่พบบ่อย">
-        <button class="chip" type="button">ขอรหัส Wi-Fi</button>
-        <button class="chip" type="button">ค่าห้องเดือนนี้เท่าไหร่</button>
-        <button class="chip" type="button">เครื่องซักผ้าว่างไหม</button>
-        <button class="chip" type="button">แจ้งซ่อมยังไง</button>
-        <button class="chip" type="button">กฎหอพัก</button>
+    <div class="chips mb-3" th:aria-label="#{chat.faq}">
+        <button class="chip" type="button" th:text="#{chat.chip.wifi}">ขอรหัส Wi-Fi</button>
+        <button class="chip" type="button" th:text="#{chat.chip.bill}">ค่าห้องเดือนนี้เท่าไหร่</button>
+        <button class="chip" type="button" th:text="#{chat.chip.laundry}">เครื่องซักผ้าว่างไหม</button>
+        <button class="chip" type="button" th:text="#{chat.chip.repair}">แจ้งซ่อมยังไง</button>
+        <button class="chip" type="button" th:text="#{chat.chip.rules}">กฎหอพัก</button>
     </div>
 
     <form id="chatForm" class="d-flex gap-2 mb-4" data-no-loading>
-        <label class="visually-hidden" for="chatInput">พิมพ์คำถาม</label>
-        <input class="form-control" id="chatInput" placeholder="พิมพ์คำถาม" autocomplete="off" maxlength="1000" enterkeyhint="send">
-        <button class="btn btn-primary btn-icon" id="chatSend" type="submit" aria-label="ส่งคำถาม"><i data-lucide="send"></i></button>
+        <label class="visually-hidden" for="chatInput" th:text="#{chat.input}">พิมพ์คำถาม</label>
+        <input class="form-control" id="chatInput" th:placeholder="#{chat.input}" autocomplete="off" maxlength="1000" enterkeyhint="send">
+        <button class="btn btn-primary btn-icon" id="chatSend" type="submit" th:aria-label="#{chat.send}"><i data-lucide="send"></i></button>
     </form>
 
-    <script>
+    <script th:inline="javascript">
         (function () {
             const box = document.getElementById('chatBox');
             const form = document.getElementById('chatForm');
@@ -60,7 +60,7 @@
                 add(text, 'user');
                 input.value = '';
                 busy(true);
-                const typing = add('กำลังพิมพ์...', 'bot typing');
+                const typing = add(/*[[#{chat.typing}]]*/ 'กำลังพิมพ์...', 'bot typing');
                 try {
                     const res = await fetch('/app/chat/send', {
                         method: 'POST',
@@ -73,7 +73,7 @@
                     history.push({ role: 'user', text: text }, { role: 'bot', text: data.reply });
                 } catch (e) {
                     typing.remove();
-                    add('ขออภัย เชื่อมต่อไม่สำเร็จ ลองใหม่อีกครั้ง', 'bot');
+                    add(/*[[#{chat.error}]]*/ 'ขออภัย เชื่อมต่อไม่สำเร็จ ลองใหม่อีกครั้ง', 'bot');
                 } finally {
                     busy(false);
                     input.focus();

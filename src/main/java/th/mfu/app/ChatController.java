@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import th.mfu.config.Messages;
 import th.mfu.domain.AppUser;
 import th.mfu.service.ChatReply;
 import th.mfu.service.ChatbotService;
@@ -24,11 +25,13 @@ public class ChatController {
     private final CurrentUserService currentUser;
     private final ChatbotService chatbot;
     private final GeminiClient gemini;
+    private final Messages messages;
 
-    public ChatController(CurrentUserService currentUser, ChatbotService chatbot, GeminiClient gemini) {
+    public ChatController(CurrentUserService currentUser, ChatbotService chatbot, GeminiClient gemini, Messages messages) {
         this.currentUser = currentUser;
         this.chatbot = chatbot;
         this.gemini = gemini;
+        this.messages = messages;
     }
 
     @GetMapping("/app/chat")
@@ -41,7 +44,7 @@ public class ChatController {
     @ResponseBody
     public ChatReply send(@RequestBody ChatRequest request, Principal principal) {
         if (!StringUtils.hasText(request.getMessage())) {
-            return new ChatReply("พิมพ์คำถามได้เลยครับ", "fallback");
+            return new ChatReply(messages.get("chat.reply.empty"), "fallback");
         }
         String message = request.getMessage().trim();
         if (message.length() > MAX_MESSAGE_LENGTH) {

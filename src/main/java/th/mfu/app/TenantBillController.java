@@ -20,6 +20,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import th.mfu.BillRepository;
 import th.mfu.PaymentRepository;
 import th.mfu.config.DormProperties;
+import th.mfu.config.Messages;
 import th.mfu.domain.Bill;
 import th.mfu.domain.Payment;
 import th.mfu.domain.PaymentStatus;
@@ -37,16 +38,18 @@ public class TenantBillController {
     private final BillingService billingService;
     private final PaymentService paymentService;
     private final DormProperties props;
+    private final Messages messages;
 
     public TenantBillController(CurrentUserService currentUser, BillRepository billRepository,
             PaymentRepository paymentRepository, BillingService billingService, PaymentService paymentService,
-            DormProperties props) {
+            DormProperties props, Messages messages) {
         this.currentUser = currentUser;
         this.billRepository = billRepository;
         this.paymentRepository = paymentRepository;
         this.billingService = billingService;
         this.paymentService = paymentService;
         this.props = props;
+        this.messages = messages;
     }
 
     @GetMapping("/app/bills")
@@ -85,16 +88,16 @@ public class TenantBillController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         if (slip.isEmpty() || amount <= 0) {
-            redirect.addFlashAttribute("error", "กรุณาแนบรูปสลิปและระบุยอดเงิน");
+            redirect.addFlashAttribute("error", messages.get("flash.slip.missing"));
             return "redirect:/app/bills";
         }
         Payment payment = paymentService.submit(tenant, bill, amount, slip.getBytes(), slip.getContentType());
         if (payment.getStatus() == PaymentStatus.APPROVED) {
-            redirect.addFlashAttribute("success", "ชำระเงินสำเร็จ ระบบตัดยอดให้อัตโนมัติแล้ว");
+            redirect.addFlashAttribute("success", messages.get("flash.slip.approved"));
         } else if (payment.getStatus() == PaymentStatus.SUSPICIOUS) {
-            redirect.addFlashAttribute("error", "สลิปไม่ผ่านการตรวจสอบเบื้องต้น แอดมินจะตรวจสอบอีกครั้ง: " + payment.getAiNote());
+            redirect.addFlashAttribute("error", messages.get("flash.slip.suspicious", payment.getAiNote()));
         } else {
-            redirect.addFlashAttribute("success", "ส่งสลิปแล้ว รอแอดมินตรวจสอบ");
+            redirect.addFlashAttribute("success", messages.get("flash.slip.pending"));
         }
         return "redirect:/app/bills";
     }
