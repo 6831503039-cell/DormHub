@@ -12,7 +12,14 @@ import javax.persistence.ManyToOne;
 @Entity
 public class Feedback {
 
+    // stored in the database as these Thai names; shown through the message keys feedback.category.0-5
     public static final String[] CATEGORIES = { "ทั่วไป", "ความสะอาด", "ความปลอดภัย", "สิ่งอำนวยความสะดวก", "อินเทอร์เน็ต", "อื่นๆ" };
+
+    /** Message key of a stored category name, or null for a name that is not in CATEGORIES. */
+    public static String categoryKey(String category) {
+        int index = java.util.Arrays.asList(CATEGORIES).indexOf(category);
+        return index < 0 ? null : "feedback.category." + index;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -54,6 +61,10 @@ public class Feedback {
     }
     public void setRoom(Room room) {
         this.room = room;
+    }
+
+    public String getCategoryKey() {
+        return categoryKey(category);
     }
 
     public String getCategory() {

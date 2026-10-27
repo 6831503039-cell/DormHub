@@ -5,7 +5,7 @@ document.querySelectorAll('[data-toggle-password]').forEach(function (btn) {
         var show = input.type === 'password';
         input.type = show ? 'text' : 'password';
         btn.setAttribute('aria-pressed', show);
-        btn.setAttribute('aria-label', show ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน');
+        btn.setAttribute('aria-label', show ? dhT('ซ่อนรหัสผ่าน', 'Hide password') : dhT('แสดงรหัสผ่าน', 'Show password'));
         btn.querySelector('.when-hidden').hidden = show;
         btn.querySelector('.when-shown').hidden = !show;
         input.focus();

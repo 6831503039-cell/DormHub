@@ -16,6 +16,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import th.mfu.FeedbackRepository;
 import th.mfu.RepairRequestRepository;
+import th.mfu.config.Messages;
 import th.mfu.domain.AppUser;
 import th.mfu.domain.Feedback;
 import th.mfu.domain.RepairRequest;
@@ -30,13 +31,15 @@ public class TenantRequestController {
     private final RepairRequestRepository repairRepository;
     private final FeedbackRepository feedbackRepository;
     private final Clock clock;
+    private final Messages messages;
 
     public TenantRequestController(CurrentUserService currentUser, RepairRequestRepository repairRepository,
-            FeedbackRepository feedbackRepository, Clock clock) {
+            FeedbackRepository feedbackRepository, Clock clock, Messages messages) {
         this.currentUser = currentUser;
         this.repairRepository = repairRepository;
         this.feedbackRepository = feedbackRepository;
         this.clock = clock;
+        this.messages = messages;
     }
 
     @GetMapping("/app/requests")
@@ -58,7 +61,7 @@ public class TenantRequestController {
         AppUser user = currentUser.user(principal);
         Optional<Tenant> tenant = currentUser.tenant(user);
         if (tenant.isEmpty() || tenant.get().getRoom() == null || !StringUtils.hasText(title)) {
-            redirect.addFlashAttribute("error", "แจ้งซ่อมไม่สำเร็จ บัญชียังไม่ผูกกับห้อง หรือยังไม่ได้ระบุเรื่อง");
+            redirect.addFlashAttribute("error", messages.get("flash.repair.failed"));
             return "redirect:/app/requests";
         }
         RepairRequest repair = new RepairRequest();
@@ -68,7 +71,7 @@ public class TenantRequestController {
         repair.setReportedDate(LocalDate.now(clock));
         repair.setReportedBy(user.getFullName());
         repairRepository.save(repair);
-        redirect.addFlashAttribute("success", "ส่งเรื่องแจ้งซ่อมแล้ว");
+        redirect.addFlashAttribute("success", messages.get("flash.repair.sent"));
         return "redirect:/app/requests";
     }
 
@@ -76,7 +79,7 @@ public class TenantRequestController {
     public String sendFeedback(@RequestParam String category, @RequestParam int rating, @RequestParam String message,
             Principal principal, RedirectAttributes redirect) {
         if (!StringUtils.hasText(message)) {
-            redirect.addFlashAttribute("error", "กรุณาเขียนความคิดเห็น");
+            redirect.addFlashAttribute("error", messages.get("flash.feedback.empty"));
             return "redirect:/app/requests";
         }
         AppUser user = currentUser.user(principal);
@@ -88,7 +91,7 @@ public class TenantRequestController {
         feedback.setMessage(message.trim());
         feedback.setCreatedAt(LocalDateTime.now(clock));
         feedbackRepository.save(feedback);
-        redirect.addFlashAttribute("success", "ขอบคุณสำหรับความคิดเห็น เจ้าของหอจะได้รับข้อความนี้");
+        redirect.addFlashAttribute("success", messages.get("flash.feedback.sent"));
         return "redirect:/app/requests";
     }
 }
