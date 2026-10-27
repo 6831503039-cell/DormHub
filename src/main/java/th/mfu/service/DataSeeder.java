@@ -189,7 +189,8 @@ public class DataSeeder implements CommandLineRunner {
                     if (rooms.findByRoomNumber(number).isPresent()) {
                         continue;
                     }
-                    int capacity = 1 + (i * 7 + floor * 3 + b) % 3;
+                    // C103 is a single room (one double bed); the rest follow the 1-3 person pattern
+                    int capacity = number.equals("C103") ? 1 : 1 + (i * 7 + floor * 3 + b) % 3;
                     int k = (b * 31 + floor * 7 + i * 3) % 10;
                     RoomStatus status = k < 3 ? RoomStatus.AVAILABLE
                             : (k == 3 && floor == 4) ? RoomStatus.MAINTENANCE : RoomStatus.OCCUPIED;
