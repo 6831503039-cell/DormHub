@@ -36,6 +36,11 @@
                 <label class="form-label" for="checkInDate">วันที่เข้าพัก</label>
                 <input class="form-control" type="date" th:field="*{checkInDate}">
             </div>
+            <div class="col-md-6">
+                <label class="form-label" for="contractEndDate">วันหมดสัญญา</label>
+                <input class="form-control" type="date" th:field="*{contractEndDate}">
+                <div class="form-text">ถ้าเหลือไม่เกิน 60 วัน ห้องจะขึ้นเป็น "ใกล้หมดสัญญา" และเปิดให้จองล่วงหน้าบนแผนผัง 3D</div>
+            </div>
         </div>
         <div class="mt-4">
             <button class="btn btn-primary" type="submit"><i data-lucide="check"></i> บันทึก</button>

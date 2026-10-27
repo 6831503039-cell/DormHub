@@ -27,6 +27,7 @@
             <a class="nav-link" th:classappend="${active == 'layout'} ? 'active'" th:href="@{/admin/layout}"><i data-lucide="layout-grid"></i> แผนผังห้อง</a>
             <a class="nav-link" th:classappend="${active == 'rooms'} ? 'active'" th:href="@{/admin/rooms}"><i data-lucide="door-closed"></i> จัดการห้อง</a>
             <a class="nav-link" th:classappend="${active == 'tenants'} ? 'active'" th:href="@{/admin/tenants}"><i data-lucide="users"></i> ผู้เช่า</a>
+            <a class="nav-link" th:classappend="${active == 'bookings'} ? 'active'" th:href="@{/admin/bookings}"><i data-lucide="inbox"></i> คำขอจอง</a>
             <div class="nav-section">การเงิน</div>
             <a class="nav-link" th:classappend="${active == 'bills'} ? 'active'" th:href="@{/admin/bills}"><i data-lucide="receipt"></i> บิลค่าเช่า</a>
             <a class="nav-link" th:classappend="${active == 'payments'} ? 'active'" th:href="@{/admin/payments}"><i data-lucide="scan-line"></i> ตรวจสลิป</a>

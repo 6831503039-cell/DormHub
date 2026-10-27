@@ -95,4 +95,29 @@ public class ServiceLogicTest {
         b.setElectricUnits(electricUnits);
         return b;
     }
+
+    @Test
+    public void roomMapStatusFromContractEnd() {
+        LocalDate today = LocalDate.of(2026, 10, 26);
+        assertEquals("AVAILABLE", RoomMapService.mapStatus(th.mfu.domain.RoomStatus.AVAILABLE, null, today));
+        assertEquals("MAINTENANCE", RoomMapService.mapStatus(th.mfu.domain.RoomStatus.MAINTENANCE, today, today));
+        // 60 days or less left -> "ใกล้หมดสัญญา"
+        assertEquals("SOON", RoomMapService.mapStatus(th.mfu.domain.RoomStatus.OCCUPIED, today.plusDays(60), today));
+        assertEquals("OCCUPIED", RoomMapService.mapStatus(th.mfu.domain.RoomStatus.OCCUPIED, today.plusDays(61), today));
+        assertEquals("OCCUPIED", RoomMapService.mapStatus(th.mfu.domain.RoomStatus.OCCUPIED, null, today));
+        // a "soon" room can be moved into the day after the contract ends
+        assertEquals(today.plusDays(11), RoomMapService.availableFrom("SOON", today.plusDays(10), today));
+        assertEquals(null, RoomMapService.availableFrom("OCCUPIED", today.plusDays(100), today));
+    }
+
+    @Test
+    public void roomIsFreeWhenTheLastContractEnds() {
+        th.mfu.domain.Tenant a = new th.mfu.domain.Tenant();
+        a.setContractEndDate(LocalDate.of(2026, 12, 1));
+        th.mfu.domain.Tenant b = new th.mfu.domain.Tenant();
+        b.setContractEndDate(LocalDate.of(2027, 1, 15));
+        assertEquals(LocalDate.of(2027, 1, 15), RoomMapService.contractEnd(List.of(a, b)));
+        b.setContractEndDate(null); // one roommate without an end date: unknown
+        assertEquals(null, RoomMapService.contractEnd(List.of(a, b)));
+    }
 }

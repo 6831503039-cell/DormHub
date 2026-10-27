@@ -12,12 +12,12 @@ public class BillTest {
     public void totalIsRentPlusWaterPlusElectric() {
         Bill bill = new Bill();
         bill.setRent(4500.0);
-        bill.setWaterUnits(5);      // 5 * 18 = 90
-        bill.setElectricUnits(100); // 100 * 8 = 800
+        bill.setWaterUnits(5);      // 5 * 20 = 100
+        bill.setElectricUnits(100); // 100 * 7 = 700
 
-        assertEquals(90.0, bill.getWaterCost());
-        assertEquals(800.0, bill.getElectricCost());
-        assertEquals(5390.0, bill.getTotal());
+        assertEquals(100.0, bill.getWaterCost());
+        assertEquals(700.0, bill.getElectricCost());
+        assertEquals(5300.0, bill.getTotal());
     }
 
     @Test
