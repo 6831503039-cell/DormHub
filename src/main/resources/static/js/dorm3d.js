@@ -27,15 +27,15 @@
         slab: 0xffffff, glass: 0xb9d4f2, edge: 0x8a96a8, neutral: 0xe6ebf2,
         tree: 0x8fbf7f, trunk: 0x9b8468,
         // status colours = design-system tokens --s-success / --s-soon / --s-info / --s-warning (app.css)
-        AVAILABLE: 0x1a9a55, SOON: 0xe8833a, OCCUPIED: 0x1d6fd8, MAINTENANCE: 0xd99a00,
-        OCCUPIED_PUBLIC: 0xbcc5d2, select: 0x1d6fd8
+        AVAILABLE: 0x2e9a5a, SOON: 0xe8833a, OCCUPIED: 0x5b7a9d, MAINTENANCE: 0xd99a00,
+        OCCUPIED_PUBLIC: 0xbcc5d2, select: 0x4f7a58
     };
     // colours of SJD Mansion (from the photos): cream centre building, white wings, green roof trim
     var SJD = {
         green: 0x2fa84f, cream: 0xf1e4c3, white: 0xf7f7f4, terracotta: 0xc8643c, steel: 0xc3cad2,
         glass: 0x6f8aa0, concrete: 0xd6d6d1, tank: 0x2f6fb5, column: 0xf4f2ed
     };
-    var CSS_COLORS = { AVAILABLE: '#1a9a55', SOON: '#e8833a', OCCUPIED: '#1d6fd8', MAINTENANCE: '#d99a00', OCCUPIED_PUBLIC: '#aab4c3' };
+    var CSS_COLORS = { AVAILABLE: '#2e9a5a', SOON: '#e8833a', OCCUPIED: '#5b7a9d', MAINTENANCE: '#d99a00', OCCUPIED_PUBLIC: '#aab4c3' };
 
     function el(tag, cls, html) {
         var e = document.createElement(tag);
