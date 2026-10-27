@@ -686,6 +686,9 @@ button.d3-lbl.on { pointer-events: auto; }
     .layout-3d { height: 560px; }
     .d3-lbl-building { font-size: .85rem; padding: .3rem .55rem; }
 }
+/* the 3D map keeps short, gentle transitions even when the computer asks for reduced motion
+   (the global rule above would otherwise make the panels jump) */
 @media (prefers-reduced-motion: reduce) {
-    .d3-sheet, .d3-lbl, .d3-room3d { transition: none; }
+    .d3-root .d3-sheet { transition-duration: .25s !important; }
+    .d3-root .d3-lbl, .d3-root .d3-room3d { transition-duration: .2s !important; }
 }

@@ -57,7 +57,10 @@
     function damp(k, dt) { return 1 - Math.exp(-k * dt); }
     function smoother(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
     function easeInOut(t) { return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+    // Computers with "reduce motion" / Windows "Animation effects" turned off still get smooth camera moves,
+    // only a little quicker and without the lift, because the moves show where you are going in the model.
     var reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var MOTION = reduceMotion ? 0.6 : 1;
 
     function mount(opts) {
         var root = opts.root;
@@ -865,8 +868,8 @@
             var dist = camera.position.distanceTo(pos) + controls.target.distanceTo(target);
             tween = {
                 p0: camera.position.clone(), t0: controls.target.clone(), p1: pos, t1: target, s: performance.now(),
-                d: reduceMotion ? 1 : (dur || Math.min(1600, Math.max(900, 700 + dist * 7))),
-                lift: Math.min(12, dist * 0.08)
+                d: (dur || Math.min(1600, Math.max(900, 700 + dist * 7))) * MOTION,
+                lift: reduceMotion ? 0 : Math.min(12, dist * 0.08)
             };
         }
         function narrow() { return root.clientWidth < 760; }
@@ -1121,7 +1124,7 @@
             }
             controls.update();
 
-            var a = reduceMotion ? 1 : damp(7, dt);
+            var a = damp(reduceMotion ? 10 : 7, dt);
             pulse += dt;
             buildings.forEach(function (b) {
                 b.op += (b.opTarget - b.op) * a;
@@ -1171,7 +1174,7 @@
             requestAnimationFrame(loop);
             if (opts.initialRoom) {
                 var r = byNumber(opts.initialRoom);
-                if (r) setTimeout(function () { openRoom(r); }, reduceMotion ? 0 : 900);
+                if (r) setTimeout(function () { openRoom(r); }, 900 * MOTION);
             }
         }
 
@@ -1250,7 +1253,7 @@
             (function frame(now) {
                 var dt = Math.min(0.05, (now - lastT) / 1000);
                 lastT = now;
-                var k = reduceMotion ? 1 : Math.min(1, (now - t0) / 1300);
+                var k = Math.min(1, (now - t0) / (1300 * MOTION));
                 if (k < 1) cam.position.lerpVectors(startPos, endPos, easeInOut(k));
                 if (model.fan) model.fan.rotation.y += dt * 5;
                 ctl.update();
@@ -1274,7 +1277,7 @@
                 r3 = null;
             }
             if (instant === true) return;
-            r3HideTimer = setTimeout(function () { roomView.hidden = true; roomView.innerHTML = ''; }, reduceMotion ? 0 : 250);
+            r3HideTimer = setTimeout(function () { roomView.hidden = true; roomView.innerHTML = ''; }, 250);
         }
 
         function plankTexture(tones, seam) {
