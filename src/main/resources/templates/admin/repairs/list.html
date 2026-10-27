@@ -1,34 +1,95 @@
 <!DOCTYPE html>
 <html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout('แจ้งซ่อม', 'repairs', ~{::main})}">
 <body>
-<main>
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1 class="page-title mb-0">แจ้งซ่อม</h1>
+<main th:with="today=${#temporals.createToday()}, DAYS=${T(java.time.temporal.ChronoUnit).DAYS},
+               pendingCount=${#lists.size(repairs.?[status.name() == 'PENDING'])},
+               progressCount=${#lists.size(repairs.?[status.name() == 'IN_PROGRESS'])},
+               tone=${ {'PENDING': 'warning', 'IN_PROGRESS': 'info', 'DONE': 'success'} }">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">แจ้งซ่อม</h1>
+            <p class="page-sub" th:text="${pendingCount + progressCount > 0}
+                    ? 'รอดำเนินการ ' + ${pendingCount} + ' · กำลังซ่อม ' + ${progressCount}
+                    : 'ไม่มีงานซ่อมค้าง'">ไม่มีงานซ่อมค้าง</p>
+        </div>
         <a class="btn btn-primary" th:href="@{/admin/repairs/new}"><i data-lucide="plus"></i> เพิ่มรายการ</a>
     </div>
-    <div class="card">
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead><tr><th>วันที่แจ้ง</th><th>ห้อง</th><th>เรื่อง</th><th>รายละเอียด</th><th>ผู้แจ้ง</th><th>สถานะ</th><th></th></tr></thead>
-                <tbody>
-                <tr th:each="r : ${repairs}">
-                    <td class="text-nowrap" th:text="${r.reportedDate != null} ? ${#temporals.format(r.reportedDate, 'dd/MM/yyyy')} : '-'"></td>
-                    <td class="fw-medium" th:text="${r.room.roomNumber}"></td>
-                    <td th:text="${r.title}"></td>
-                    <td class="text-muted" th:text="${r.description}"></td>
-                    <td th:text="${r.reportedBy != null} ? ${r.reportedBy} : 'แอดมิน'"></td>
-                    <td><span th:class="'badge soft-' + ${r.status.badge}" th:text="${r.status.label}"></span></td>
-                    <td class="text-end text-nowrap">
-                        <a class="btn btn-light btn-icon" th:href="@{/admin/repairs/{id}(id=${r.id})}" title="แก้ไข"><i data-lucide="pencil"></i></a>
-                        <a class="btn btn-light btn-icon text-danger" th:href="@{/admin/repairs/{id}/delete(id=${r.id})}" title="ลบ"
-                           onclick="return confirm('ยืนยันการลบรายการนี้?')"><i data-lucide="trash-2"></i></a>
-                    </td>
-                </tr>
-                <tr th:if="${#lists.isEmpty(repairs)}"><td colspan="7" class="text-center text-muted py-4">ยังไม่มีรายการแจ้งซ่อม</td></tr>
-                </tbody>
-            </table>
+
+    <th:block th:if="${#lists.isEmpty(repairs)}">
+        <div class="card">
+            <div th:replace="~{fragments/ui :: emptyState('wrench', 'ยังไม่มีรายการแจ้งซ่อม', 'เมื่อผู้เช่าแจ้งซ่อมจากแอป หรือเพิ่มเอง รายการจะแสดงที่นี่', @{/admin/repairs/new}, 'เพิ่มรายการ')}"></div>
         </div>
-    </div>
+    </th:block>
+
+    <th:block th:unless="${#lists.isEmpty(repairs)}">
+        <div class="list-toolbar" role="search">
+            <label class="search-input">
+                <span class="visually-hidden">ค้นหางานซ่อม</span>
+                <i data-lucide="search"></i>
+                <input class="form-control" type="search" placeholder="ค้นหาห้อง เรื่อง หรือผู้แจ้ง" data-filter-target="#repairTable" autocomplete="off">
+            </label>
+            <label class="visually-hidden" for="filterStatus">สถานะ</label>
+            <select class="form-select" id="filterStatus" data-filter-target="#repairTable" data-filter-key="status">
+                <option value="open" th:selected="${pendingCount + progressCount > 0}">ยังไม่เสร็จ</option>
+                <option value="" th:selected="${pendingCount + progressCount == 0}">ทุกสถานะ</option>
+                <option th:each="s : ${T(th.mfu.domain.RepairStatus).values()}" th:value="${#strings.toLowerCase(s.name())}" th:text="${s.label}"></option>
+            </select>
+            <span class="list-count" data-filter-count="#repairTable" aria-live="polite"></span>
+        </div>
+
+        <div class="card">
+            <div class="table-wrap">
+                <table class="table table-hover table-cards" id="repairTable">
+                    <thead>
+                    <tr>
+                        <th scope="col">เรื่อง</th>
+                        <th scope="col">ห้อง</th>
+                        <th scope="col">ผู้แจ้ง</th>
+                        <th scope="col">วันที่แจ้ง</th>
+                        <th scope="col">สถานะ</th>
+                        <th scope="col"><span class="visually-hidden">จัดการ</span></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="r : ${repairs}" data-row
+                        th:with="open=${r.status.name() != 'DONE'},
+                                 waited=${r.reportedDate != null} ? ${DAYS.between(r.reportedDate, today)} : null"
+                        th:attr="data-status=${#strings.toLowerCase(r.status.name())} + (${open} ? ' open' : '')">
+                        <td class="td-title td-wide">
+                            <span class="d-block fw-semibold" th:text="${r.title}"></span>
+                            <span class="item-meta clamp-2 fw-normal" th:if="${r.description != null and !#strings.isEmpty(r.description)}" th:text="${r.description}"></span>
+                        </td>
+                        <td class="fw-medium nowrap" th:text="${r.room.roomNumber}"></td>
+                        <td>
+                            <span th:if="${r.reportedBy != null}" th:text="${r.reportedBy}"></span>
+                            <span th:unless="${r.reportedBy != null}" class="text-muted">แอดมิน</span>
+                        </td>
+                        <td>
+                            <span class="cell-stack">
+                                <span class="num nowrap" th:text="${r.reportedDate != null} ? ${#temporals.format(r.reportedDate, 'dd/MM/yyyy')} : '-'"></span>
+                                <span class="item-meta" th:if="${open and waited != null}"
+                                      th:text="${waited == 0} ? 'วันนี้' : 'รอมา ' + ${waited} + ' วัน'"></span>
+                            </span>
+                        </td>
+                        <td><span th:class="'badge status-' + ${tone[r.status.name()]}" th:text="${r.status.label}"></span></td>
+                        <td class="td-actions">
+                            <a class="btn btn-soft btn-sm" th:href="@{/admin/repairs/{id}(id=${r.id})}"
+                               th:attr="aria-label='อัปเดตงานซ่อม ' + ${r.title} + ' ห้อง ' + ${r.room.roomNumber}">
+                                <i data-lucide="pencil"></i> <span th:text="${open} ? 'อัปเดต' : 'แก้ไข'">อัปเดต</span>
+                            </a>
+                            <a class="btn btn-ghost-danger btn-icon btn-sm" th:href="@{/admin/repairs/{id}/delete(id=${r.id})}"
+                               th:attr="aria-label='ลบงานซ่อม ' + ${r.title} + ' ห้อง ' + ${r.room.roomNumber},data-confirm='ลบแล้วกู้คืนไม่ได้ ผู้เช่าจะไม่เห็นรายการนี้ในแอปอีก',data-confirm-title='ลบ &quot;' + ${r.title} + '&quot;'"
+                               title="ลบ"><i data-lucide="trash-2"></i></a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div data-filter-empty="#repairTable" hidden>
+                <div th:replace="~{fragments/ui :: emptyState('circle-check', 'ไม่มีงานซ่อมในกลุ่มนี้', 'ถ้าเลือก &quot;ยังไม่เสร็จ&quot; แปลว่าซ่อมครบทุกงานแล้ว', null, null)}"></div>
+            </div>
+        </div>
+    </th:block>
 </main>
 </body>
 </html>
