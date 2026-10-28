@@ -817,3 +817,7 @@ a.news-item:hover { border-color: var(--c-border-strong); }
     width: min(1200px, 100vw - 2 * var(--sp-4)); margin-left: calc(50% - min(600px, 50vw - var(--sp-4)));
     height: calc(100dvh - 210px); min-height: 460px; border-radius: var(--r-md);
 }
+/* read-only label/value pairs (repair update form) */
+.detail-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--sp-3); }
+.detail-list dt { font-size: var(--fs-xs); font-weight: var(--fw-medium); color: var(--c-muted); margin-bottom: 2px; }
+.detail-list dd { margin: 0; }

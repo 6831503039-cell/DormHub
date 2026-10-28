@@ -49,7 +49,17 @@ public class RepairController {
 
     @PostMapping("/repairs")
     public String saveRepair(@ModelAttribute RepairRequest repair, RedirectAttributes redirect) {
-        repository.save(repair);
+        if (repair.getId() == null) {
+            repository.save(repair);
+        } else {
+            // updating: what was reported (room, date, subject, details, reporter) stays as sent;
+            // the admin only changes the status and the work details
+            RepairRequest saved = repository.findById(repair.getId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+            saved.setStatus(repair.getStatus());
+            saved.setAdminNote(repair.getAdminNote());
+            repository.save(saved);
+        }
         redirect.addFlashAttribute("success", messages.get("flash.repair.saved"));
         return "redirect:/admin/repairs";
     }
