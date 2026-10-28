@@ -190,11 +190,29 @@ public class DormHubApplicationTest {
         mvc.perform(post("/register").with(csrf())
                 .param("fullName", "ยังไม่มี ห้อง").param("email", "noroom@example.com")
                 .param("password", "secret1").param("confirmPassword", "secret1"));
-        for (String url : new String[] { "/app", "/app/bills", "/app/requests" }) {
-            mvc.perform(get(url).with(user("noroom@example.com").roles("TENANT")))
-                    .andExpect(status().isOk())
-                    .andExpect(content().string(containsString("ยังไม่ผูกกับห้องพัก")));
+        RequestPostProcessor me = user("noroom@example.com").roles("TENANT");
+        mvc.perform(get("/app").with(me))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("ยังไม่ผูกกับห้องพัก")))
+                .andExpect(content().string(containsString("/app/rent")))
+                // no other menus or announcements until the account has a room
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("/app/laundry"))))
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("งดจ่ายน้ำ"))));
+        mvc.perform(get("/app/rent").with(me)).andExpect(status().isOk());
+    }
+
+    @Test
+    public void accountWithoutRoomCanOnlyRent() throws Exception {
+        RequestPostProcessor me = newAccount("fresh@example.com");
+        for (String url : new String[] { "/app/bills", "/app/chat", "/app/laundry", "/app/requests",
+                "/app/announcements", "/app/parcels", "/app/usage" }) {
+            mvc.perform(get(url).with(me)).andExpect(redirectedUrl("/app"));
         }
+        mvc.perform(post("/app/laundry/1/start").with(me).with(csrf())).andExpect(redirectedUrl("/app"));
+        mvc.perform(get("/app/laundry").with(tenant())).andExpect(content().string(org.hamcrest.Matchers.not(containsString("ผู้สนใจ เช่าห้อง"))));
+        mvc.perform(post("/app/chat/send").with(me).with(csrf()).accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON).content("{\"message\":\"wifi\"}"))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -359,23 +377,6 @@ public class DormHubApplicationTest {
     }
 
     @Test
-    public void newAccountCanUseLaundryFeedbackAndChat() throws Exception {
-        RequestPostProcessor me = newAccount("fresh@example.com");
-        mvc.perform(post("/app/laundry/1/start").with(me).with(csrf())).andExpect(redirectedUrl("/app/laundry"));
-        mvc.perform(get("/app/laundry").with(me)).andExpect(content().string(containsString("ผู้สนใจ เช่าห้อง")));
-
-        mvc.perform(post("/app/feedback").with(me).with(csrf())
-                .param("category", "อื่น ๆ").param("rating", "4").param("message", "อยากให้มีที่จอดจักรยาน"))
-                .andExpect(redirectedUrl("/app/requests"));
-        mvc.perform(get("/app/requests").with(me)).andExpect(content().string(containsString("อยากให้มีที่จอดจักรยาน")));
-
-        mvc.perform(post("/app/chat/send").with(me).with(csrf())
-                .contentType(MediaType.APPLICATION_JSON).content("{\"message\":\"wifi\"}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.reply", containsString("DormHub_5G")));
-    }
-
-    @Test
     public void staleFormRedirectsToLoginInsteadOf403() throws Exception {
         // no CSRF token, as after a server restart: plain forms go back to login, the chat gets 401
         mvc.perform(post("/app/laundry/1/start").with(tenant())).andExpect(redirectedUrl("/login?expired"));
@@ -414,6 +415,8 @@ public class DormHubApplicationTest {
         assertEquals("A103", tenant.getRoom().getRoomNumber());
         assertEquals(RoomStatus.OCCUPIED, roomRepository.findByRoomNumber("A103").get().getStatus());
         mvc.perform(get("/app").with(me)).andExpect(content().string(containsString("A103")));
+        // with a room the full menu opens
+        mvc.perform(get("/app/laundry").with(me)).andExpect(status().isOk());
     }
 
     // ---------- repairs, announcements, parcels, electricity ----------

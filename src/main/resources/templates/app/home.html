@@ -13,7 +13,7 @@
                     <span th:text="#{home.rentRequest(${latestBooking.room.roomNumber})}"></span>
                     <span th:class="'badge soft-' + ${latestBooking.status.badge}" th:text="#{${latestBooking.status.key}}"></span>
                 </p>
-                <a class="btn btn-primary btn-sm mt-3" th:href="@{/app/rent}"><i data-lucide="building-2"></i> <span th:text="#{home.rentRoom}">เช่าห้องพัก</span></a>
+                <a class="btn btn-primary mt-3" th:href="@{/app/rent}"><i data-lucide="building-2"></i> <span th:text="#{home.rentRoom}">เช่าห้องพัก</span></a>
             </div>
         </div>
     </div>
@@ -49,9 +49,10 @@
         </div>
     </section>
 
-    <!-- 3. shortcuts -->
+    <!-- 3. shortcuts, announcements and status cards: only for accounts with a room (HasRoomInterceptor) -->
+    <th:block th:if="${linked}">
     <nav class="quick-grid mb-3" th:aria-label="#{home.shortcuts}">
-        <a class="quick" th:href="@{/app/bills}" th:if="${linked}"><i data-lucide="receipt"></i><span th:text="#{tab.bills}">บิล</span></a>
+        <a class="quick" th:href="@{/app/bills}"><i data-lucide="receipt"></i><span th:text="#{tab.bills}">บิล</span></a>
         <a class="quick" th:href="@{/app/chat}"><i data-lucide="sparkles"></i><span th:text="#{tab.chat}">ถาม AI</span></a>
         <a class="quick" th:href="@{/app/laundry}"><i data-lucide="washing-machine"></i><span th:text="#{tab.laundry}">ซักผ้า</span></a>
         <a class="quick" th:href="@{/app/requests}"><i data-lucide="wrench"></i><span th:text="#{nav.repairs}">แจ้งซ่อม</span></a>
@@ -61,7 +62,6 @@
             <span class="quick-badge" th:if="${parcelsWaiting != null and parcelsWaiting > 0}" th:text="${parcelsWaiting}"
                   th:attr="aria-label=#{parcels.waitingN(${parcelsWaiting})}"></span>
         </a>
-        <a class="quick" th:href="@{/app/rent}" th:unless="${linked}"><i data-lucide="building-2"></i><span th:text="#{home.rentRoom}">เช่าห้องพัก</span></a>
     </nav>
 
     <!-- announcements from the office -->
@@ -99,6 +99,7 @@
             </a>
         </div>
     </div>
+    </th:block>
 
     <!-- 4. roommates -->
     <section class="card mb-4" th:if="${roommates != null}" aria-labelledby="roommatesTitle">
