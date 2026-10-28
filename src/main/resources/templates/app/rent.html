@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/app :: layout(#{rent.title}, 'rent', ~{::main})}">
+<body>
+<main th:with="linked=${tenant != null and tenant.room != null},
+               pending=${!#lists.isEmpty(myBookings.?[status.name() == 'PENDING'])}">
+    <h1 class="app-title" th:text="#{rent.title}">เช่าห้องพัก</h1>
+    <p class="app-sub" th:text="#{rent.sub(${residenceName})}">เลือกห้องว่างบนแผนผัง 3D แล้วส่งคำขอเช่า เจ้าของหอจะยืนยันให้</p>
+
+    <!-- already has a room: nothing to book -->
+    <div class="card mb-3" th:if="${linked}">
+        <div th:replace="~{fragments/ui :: emptyState('house', #{rent.hasRoom.title(${tenant.room.roomNumber})}, #{rent.hasRoom.text}, @{/app}, #{tab.home})}"></div>
+    </div>
+
+    <th:block th:unless="${linked}">
+        <p class="form-text d-flex gap-2 mb-2" th:if="${pending}"><i data-lucide="info"></i> <span th:text="#{rent.onePending}">มีคำขอที่รอยืนยันอยู่ ส่งคำขอใหม่ได้เมื่อเจ้าของหอตอบกลับแล้ว</span></p>
+        <!-- the map has its own colour legend -->
+        <div id="dormMap" class="layout-3d rent-3d mb-3" th:aria-label="#{map.aria}"></div>
+    </th:block>
+
+    <!-- my requests and their status -->
+    <section class="card mb-4" th:unless="${#lists.isEmpty(myBookings)}" aria-labelledby="myBookingsTitle">
+        <div class="card-header"><h2 class="h2 mb-0" id="myBookingsTitle" th:text="#{rent.myRequests}">คำขอเช่าของฉัน</h2></div>
+        <ul class="list-plain">
+            <li th:each="b : ${myBookings}" class="align-items-start">
+                <div class="min-w-0">
+                    <div class="item-title" th:text="#{common.roomN(${b.room.roomNumber})}"></div>
+                    <div class="item-meta" th:text="#{rent.requestMeta(${#temporals.format(b.createdAt, 'dd/MM/yyyy')}, ${b.moveInDate != null} ? ${#temporals.format(b.moveInDate, 'dd/MM/yyyy')} : '-')}"></div>
+                    <div class="item-meta" th:if="${b.status.name() == 'PENDING'}" th:text="#{rent.waiting}">รอเจ้าของหอยืนยัน</div>
+                </div>
+                <span class="item-end" th:classappend="'badge soft-' + ${b.status.badge}" th:text="#{${b.status.key}}"></span>
+            </li>
+        </ul>
+    </section>
+
+    <th:block th:unless="${linked}">
+        <template th:replace="~{fragments/ui :: bookTemplate(@{/app/rent/book}, ${currentUser.fullName}, ${currentUser.email}, true)}"></template>
+
+        <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+        <script th:src="@{/js/dorm3d.js}"></script>
+        <script th:inline="javascript">
+            // one open request at a time: while one is pending, free rooms show a note instead of the form
+            var pending = /*[[${pending}]]*/ false;
+            Dorm3D.mount({
+                root: document.getElementById('dormMap'),
+                dataUrl: /*[[@{/explore/rooms}]]*/ '/explore/rooms',
+                mode: 'public',
+                soonDays: /*[[${soonDays}]]*/ 60,
+                electricRate: /*[[${electricRate}]]*/ 7,
+                waterRate: /*[[${waterRate}]]*/ 20,
+                bookTemplate: pending ? null : document.getElementById('bookTpl'),
+                bookBlockedText: /*[[#{rent.blocked}]]*/ 'มีคำขอที่รอยืนยันอยู่แล้ว',
+                initialRoom: /*[[${param.room != null ? param.room[0] : null}]]*/ null
+            });
+        </script>
+    </th:block>
+</main>
+</body>
+</html>

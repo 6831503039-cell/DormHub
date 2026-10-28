@@ -23,7 +23,7 @@
         <div class="d-flex align-items-center gap-2">
             <img class="brand-logo" th:src="@{/img/logo-icon.png}" alt="">
             <div>
-                <div class="text-muted small" th:text="${dormName}">DormHub</div>
+                <div class="text-muted small" th:text="${dormName} + ' · ' + ${residenceName}">DormHub · SJD Mansion</div>
                 <div class="fw-semibold" th:text="#{app.hello(${currentUser?.fullName})}">สวัสดี</div>
             </div>
         </div>
@@ -48,10 +48,14 @@
 <nav class="bottom-nav" th:aria-label="#{nav.main}">
     <div class="inner">
         <a th:href="@{/app}" th:classappend="${active == 'home'} ? 'active'"><i data-lucide="house"></i><span th:text="#{tab.home}">หน้าแรก</span></a>
+        <th:block th:if="${hasRoom}">
         <a th:href="@{/app/bills}" th:classappend="${active == 'bills'} ? 'active'"><i data-lucide="receipt"></i><span th:text="#{tab.bills}">บิล</span></a>
         <a class="ai" th:href="@{/app/chat}" th:classappend="${active == 'chat'} ? 'active'"><i data-lucide="sparkles"></i><span th:text="#{tab.chat}">ถาม AI</span></a>
         <a th:href="@{/app/laundry}" th:classappend="${active == 'laundry'} ? 'active'"><i data-lucide="washing-machine"></i><span th:text="#{tab.laundry}">ซักผ้า</span></a>
         <a th:href="@{/app/requests}" th:classappend="${active == 'requests'} ? 'active'"><i data-lucide="clipboard-list"></i><span th:text="#{tab.requests}">คำร้อง</span></a>
+        </th:block>
+        <!-- no room yet: only home and renting a room (HasRoomInterceptor blocks the other pages) -->
+        <a th:unless="${hasRoom}" th:href="@{/app/rent}" th:classappend="${active == 'rent'} ? 'active'"><i data-lucide="building-2"></i><span th:text="#{home.rentRoom}">เช่าห้องพัก</span></a>
     </div>
 </nav>
 <div th:replace="~{fragments/ui :: confirmModal}"></div>

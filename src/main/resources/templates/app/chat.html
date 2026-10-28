@@ -64,9 +64,15 @@
                 try {
                     const res = await fetch('/app/chat/send', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json', [header]: token },
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', [header]: token },
                         body: JSON.stringify({ message: text, history: history })
                     });
+                    if (res.status === 401 || res.redirected) {
+                        // session ended (e.g. the server restarted): log in again
+                        window.location.href = '/login?expired';
+                        return;
+                    }
+                    if (!res.ok) throw new Error(res.status);
                     const data = await res.json();
                     typing.remove();
                     add(data.reply, 'bot');

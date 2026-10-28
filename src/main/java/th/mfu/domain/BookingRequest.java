@@ -13,10 +13,11 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
-/** A booking request sent from the public 3D room map by someone who wants to rent a room. */
+/** A booking request sent from the 3D room map (public page or the tenant app) by someone who wants to rent a room. */
 @Entity
 public class BookingRequest {
 
@@ -28,6 +29,11 @@ public class BookingRequest {
     @ManyToOne
     @JsonBackReference("room-bookings")
     private Room room;
+
+    // the logged-in account that sent the request from the tenant app (/app/rent); null when sent from the public page
+    @ManyToOne
+    @JsonIgnore
+    private AppUser applicant;
 
     private String fullName;
     private String phone;
@@ -56,6 +62,13 @@ public class BookingRequest {
     }
     public void setRoom(Room room) {
         this.room = room;
+    }
+
+    public AppUser getApplicant() {
+        return applicant;
+    }
+    public void setApplicant(AppUser applicant) {
+        this.applicant = applicant;
     }
 
     public String getFullName() {

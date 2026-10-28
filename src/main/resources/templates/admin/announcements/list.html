@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout(#{nav.announcements}, 'announcements', ~{::main})}">
+<body>
+<main>
+    <div class="page-header">
+        <div>
+            <h1 class="page-title" th:text="#{nav.announcements}">ประกาศ</h1>
+            <p class="page-sub" th:text="#{announcements.admin.sub}">ประกาศที่นี่ ผู้เช่าทุกคนจะเห็นในแอป</p>
+        </div>
+        <a class="btn btn-primary" th:href="@{/admin/announcements/new}"><i data-lucide="plus"></i> <span th:text="#{announcements.add}">สร้างประกาศ</span></a>
+    </div>
+
+    <div class="card" th:if="${#lists.isEmpty(announcements)}">
+        <div th:replace="~{fragments/ui :: emptyState('megaphone', #{announcements.empty.title}, #{announcements.admin.empty}, @{/admin/announcements/new}, #{announcements.add})}"></div>
+    </div>
+
+    <div class="d-grid gap-2" th:unless="${#lists.isEmpty(announcements)}">
+        <article class="card news-item admin-news" th:each="a : ${announcements}">
+            <img th:if="${a.hasImage()}" class="news-thumb" th:src="@{/announcements/{id}/image(id=${a.id})}" alt="" loading="lazy">
+            <div class="min-w-0 flex-grow-1">
+                <div class="d-flex gap-2 align-items-center">
+                    <span class="badge status-info" th:if="${a.pinned}"><i data-lucide="pin"></i> <span th:text="#{announcements.pinned}">ปักหมุด</span></span>
+                    <span class="item-meta num" th:text="${#temporals.format(a.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
+                </div>
+                <div class="fw-semibold" th:text="${a.title}"></div>
+                <div class="small text-muted clamp-2" th:if="${a.body != null}" th:text="${a.body}"></div>
+            </div>
+            <div class="td-actions">
+                <a class="btn btn-soft btn-sm" th:href="@{/admin/announcements/{id}(id=${a.id})}"
+                   th:attr="aria-label=#{announcements.editN(${a.title})}"><i data-lucide="pencil"></i> <span th:text="#{common.edit}">แก้ไข</span></a>
+                <form class="d-inline" th:action="@{/admin/announcements/{id}/delete(id=${a.id})}" method="post">
+                    <button class="btn btn-ghost-danger btn-icon btn-sm" type="submit" th:title="#{common.delete}"
+                            th:attr="aria-label=#{announcements.deleteN(${a.title})},data-confirm=#{announcements.delete.confirm(${a.title})}"><i data-lucide="trash-2"></i></button>
+                </form>
+            </div>
+        </article>
+    </div>
+</main>
+</body>
+</html>

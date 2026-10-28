@@ -9,6 +9,7 @@
  *     editUrl: '/admin/rooms/', // admin: link to the room form (+ id)
  *     bookingsUrl: '/admin/bookings',
  *     bookTemplate: element,    // public: <template> holding the booking form
+ *     bookBlockedText: '...',   // public without bookTemplate: shown on free rooms instead of the form
  *     initialRoom: 'A103'       // optional room number to open first
  *   });
  *
@@ -1025,6 +1026,8 @@
                     (r.pendingBookings ? '<a class="btn btn-light" href="' + esc(opts.bookingsUrl) + '"><i data-lucide="inbox"></i> ' + dhT('ดูคำขอจอง', 'View booking requests') + '</a>' : '') + '</div>';
             } else if (bookable(r) && opts.bookTemplate) {
                 html += '<div data-slot="book"></div>';
+            } else if (bookable(r) && opts.bookBlockedText) {
+                html += '<button class="btn btn-light w-100" disabled>' + esc(opts.bookBlockedText) + '</button>';
             } else {
                 html += '<button class="btn btn-light w-100" disabled>' + (r.status === 'MAINTENANCE' ? dhT('ปิดซ่อม จองไม่ได้ชั่วคราว', 'Under maintenance, not bookable for now') : dhT('ห้องนี้มีผู้เช่าแล้ว', 'This room is taken')) + '</button>';
             }
