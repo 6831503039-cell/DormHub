@@ -1,21 +1,20 @@
 package th.mfu.domain;
 
 public enum PaymentStatus {
-    PENDING("รอตรวจสอบ", "warning"),
-    APPROVED("อนุมัติแล้ว", "success"),
-    SUSPICIOUS("สงสัยสลิปปลอม", "danger"),
-    REJECTED("ไม่อนุมัติ", "secondary");
+    PENDING("warning"),
+    APPROVED("success"),
+    SUSPICIOUS("danger"),
+    REJECTED("secondary");
 
-    private final String label;
     private final String badge;
 
-    PaymentStatus(String label, String badge) {
-        this.label = label;
+    PaymentStatus(String badge) {
         this.badge = badge;
     }
 
-    public String getLabel() {
-        return label;
+    /** Message key of the status name shown in the UI (messages*.properties). */
+    public String getKey() {
+        return "paymentStatus." + name();
     }
 
     public String getBadge() {

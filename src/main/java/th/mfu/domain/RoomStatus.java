@@ -1,21 +1,20 @@
 package th.mfu.domain;
 
 public enum RoomStatus {
-    AVAILABLE("ว่าง", "success"),
-    OCCUPIED("มีผู้เช่า", "primary"),
-    MAINTENANCE("ปิดซ่อม", "warning");
+    AVAILABLE("success"),
+    OCCUPIED("primary"),
+    MAINTENANCE("warning");
 
-    private final String label;
     // Bootstrap color used for the status badge
     private final String badge;
 
-    RoomStatus(String label, String badge) {
-        this.label = label;
+    RoomStatus(String badge) {
         this.badge = badge;
     }
 
-    public String getLabel() {
-        return label;
+    /** Message key of the status name shown in the UI (messages*.properties). */
+    public String getKey() {
+        return "roomStatus." + name();
     }
 
     public String getBadge() {

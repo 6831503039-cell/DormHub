@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import th.mfu.BookingRequestRepository;
+import th.mfu.config.Messages;
 import th.mfu.domain.Bill;
 import th.mfu.domain.BookingRequest;
 import th.mfu.domain.BookingStatus;
@@ -29,11 +30,13 @@ public class ExploreController {
     private final RoomMapService roomMapService;
     private final BookingRequestRepository bookingRepository;
     private final Clock clock;
+    private final Messages messages;
 
-    public ExploreController(RoomMapService roomMapService, BookingRequestRepository bookingRepository, Clock clock) {
+    public ExploreController(RoomMapService roomMapService, BookingRequestRepository bookingRepository, Clock clock, Messages messages) {
         this.roomMapService = roomMapService;
         this.bookingRepository = bookingRepository;
         this.clock = clock;
+        this.messages = messages;
     }
 
     @GetMapping("/explore")
@@ -57,22 +60,22 @@ public class ExploreController {
     public String book(@ModelAttribute BookingRequest booking, RedirectAttributes redirect) {
         Room room = booking.getRoom();
         if (room == null) {
-            redirect.addFlashAttribute("error", "ไม่พบห้องที่เลือก กรุณาเลือกห้องใหม่อีกครั้ง");
+            redirect.addFlashAttribute("error", messages.get("flash.book.noRoom"));
             return "redirect:/explore";
         }
         String back = "redirect:/explore?room=" + room.getRoomNumber();
 
         if (!StringUtils.hasText(booking.getFullName()) || !StringUtils.hasText(booking.getPhone())) {
-            redirect.addFlashAttribute("error", "กรุณากรอกชื่อและเบอร์โทรศัพท์");
+            redirect.addFlashAttribute("error", messages.get("flash.book.missing"));
             return back;
         }
         if (!roomMapService.canBook(room)) {
-            redirect.addFlashAttribute("error", "ห้อง " + room.getRoomNumber() + " ไม่ว่างแล้ว ลองเลือกห้องอื่น");
+            redirect.addFlashAttribute("error", messages.get("flash.book.taken", room.getRoomNumber()));
             return back;
         }
         LocalDate from = roomMapService.availableFrom(room);
         if (booking.getMoveInDate() == null || booking.getMoveInDate().isBefore(from)) {
-            redirect.addFlashAttribute("error", "ห้อง " + room.getRoomNumber() + " เข้าอยู่ได้ตั้งแต่วันที่ " + from + " เป็นต้นไป");
+            redirect.addFlashAttribute("error", messages.get("flash.book.tooEarly", room.getRoomNumber(), from.toString()));
             return back;
         }
 
@@ -84,8 +87,7 @@ public class ExploreController {
         booking.setPhone(booking.getPhone().trim());
         bookingRepository.save(booking);
 
-        redirect.addFlashAttribute("success", "ส่งคำขอจองห้อง " + room.getRoomNumber()
-                + " แล้ว เจ้าหน้าที่หอจะติดต่อกลับที่เบอร์ " + booking.getPhone());
+        redirect.addFlashAttribute("success", messages.get("flash.book.sent", room.getRoomNumber(), booking.getPhone()));
         return back;
     }
 }
