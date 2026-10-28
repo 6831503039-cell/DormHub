@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import th.mfu.AppUserRepository;
 import th.mfu.config.DormProperties;
+import th.mfu.config.Messages;
 import th.mfu.domain.AppUser;
 import th.mfu.domain.Role;
 
@@ -21,11 +22,13 @@ public class AuthController {
     private final AppUserRepository users;
     private final PasswordEncoder passwordEncoder;
     private final DormProperties props;
+    private final Messages messages;
 
-    public AuthController(AppUserRepository users, PasswordEncoder passwordEncoder, DormProperties props) {
+    public AuthController(AppUserRepository users, PasswordEncoder passwordEncoder, DormProperties props, Messages messages) {
         this.users = users;
         this.passwordEncoder = passwordEncoder;
         this.props = props;
+        this.messages = messages;
     }
 
     // "/" is the landing page after login: admins go to the dashboard, everyone else to the tenant app
@@ -64,22 +67,22 @@ public class AuthController {
 
     private String validate(RegisterForm form, String email) {
         if (!StringUtils.hasText(form.getFullName())) {
-            return "กรุณากรอกชื่อ-นามสกุล";
+            return messages.get("register.error.name");
         }
         if (!email.contains("@")) {
-            return "รูปแบบอีเมลไม่ถูกต้อง";
+            return messages.get("register.error.email");
         }
         if (email.equalsIgnoreCase(props.getAdmin().getEmail())) {
-            return "อีเมลนี้สงวนไว้สำหรับผู้ดูแลหอพัก ไม่สามารถสมัครได้";
+            return messages.get("register.error.reserved");
         }
         if (users.existsByEmailIgnoreCase(email)) {
-            return "อีเมลนี้มีบัญชีอยู่แล้ว";
+            return messages.get("register.error.exists");
         }
         if (form.getPassword() == null || form.getPassword().length() < 6) {
-            return "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร";
+            return messages.get("register.error.short");
         }
         if (!form.getPassword().equals(form.getConfirmPassword())) {
-            return "รหัสผ่านทั้งสองช่องไม่ตรงกัน";
+            return messages.get("register.error.mismatch");
         }
         return null;
     }

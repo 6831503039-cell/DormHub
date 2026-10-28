@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import th.mfu.BookingRequestRepository;
 import th.mfu.RoomRepository;
 import th.mfu.TenantRepository;
+import th.mfu.config.Messages;
 import th.mfu.domain.BookingRequest;
 import th.mfu.domain.BookingStatus;
 import th.mfu.domain.Room;
@@ -34,13 +35,15 @@ public class RoomMapService {
     private final TenantRepository tenantRepository;
     private final BookingRequestRepository bookingRepository;
     private final Clock clock;
+    private final Messages messages;
 
     public RoomMapService(RoomRepository roomRepository, TenantRepository tenantRepository,
-            BookingRequestRepository bookingRepository, Clock clock) {
+            BookingRequestRepository bookingRepository, Clock clock, Messages messages) {
         this.roomRepository = roomRepository;
         this.tenantRepository = tenantRepository;
         this.bookingRepository = bookingRepository;
         this.clock = clock;
+        this.messages = messages;
     }
 
     /** All rooms for the map. forAdmin = true also includes tenant names. */
@@ -76,7 +79,7 @@ public class RoomMapService {
             v.setCapacity(room.getCapacity() == null ? 1 : room.getCapacity());
             v.setOccupants(tenants.size());
             v.setStatus(status);
-            v.setStatusLabel(label(status));
+            v.setStatusLabel(messages.get(labelKey(status)));
             v.setContractEnd(contractEnd == null ? null : contractEnd.toString());
             LocalDate from = availableFrom(status, contractEnd, today);
             v.setAvailableFrom(from == null ? null : from.toString());
@@ -147,16 +150,8 @@ public class RoomMapService {
         return null;
     }
 
-    static String label(String status) {
-        switch (status) {
-            case AVAILABLE:
-                return "ว่าง";
-            case SOON:
-                return "ใกล้หมดสัญญา";
-            case MAINTENANCE:
-                return "ปิดซ่อม";
-            default:
-                return "มีผู้เช่า";
-        }
+    /** Message key of a map status (AVAILABLE, SOON, OCCUPIED, MAINTENANCE). */
+    static String labelKey(String status) {
+        return "mapStatus." + status;
     }
 }

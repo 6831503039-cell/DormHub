@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import th.mfu.BookingRequestRepository;
+import th.mfu.config.Messages;
 import th.mfu.domain.BookingRequest;
 import th.mfu.domain.BookingStatus;
 
@@ -21,9 +22,11 @@ import th.mfu.domain.BookingStatus;
 public class BookingController {
 
     private final BookingRequestRepository repository;
+    private final Messages messages;
 
-    public BookingController(BookingRequestRepository repository) {
+    public BookingController(BookingRequestRepository repository, Messages messages) {
         this.repository = repository;
+        this.messages = messages;
     }
 
     @GetMapping("/bookings")
@@ -39,8 +42,8 @@ public class BookingController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         booking.setStatus(status);
         repository.save(booking);
-        redirect.addFlashAttribute("success", "คำขอจองห้อง " + booking.getRoom().getRoomNumber() + " ของ "
-                + booking.getFullName() + ": " + status.getLabel());
+        redirect.addFlashAttribute("success", messages.get("flash.booking.status",
+                booking.getRoom().getRoomNumber(), booking.getFullName(), messages.get(status.getKey())));
         return "redirect:/admin/bookings";
     }
 }

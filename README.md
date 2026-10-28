@@ -59,6 +59,12 @@ Spring Boot + Thymeleaf + Spring Security + H2, deploy ขึ้น Google Cloud
 - ห้องซักผ้า: ดูเครื่องว่าง/ไม่ว่าง และกดเริ่มใช้งาน (**Mockup จำลอง** ไม่ได้ต่อเครื่องจริง)
 - คำร้อง: แจ้งซ่อม และส่งความคิดเห็นถึงเจ้าของหอ
 
+**ตั้งค่า (ทุกหน้า)**
+- เมนูบัญชี (ไอคอนผู้ใช้ในแอป / ชื่อผู้ใช้มุมล่างซ้ายของแอดมิน) → **ตั้งค่า**: เลือกภาษา **ไทย / English** และธีม **สว่าง / มืด / ตามระบบ**
+- หน้าเข้าสู่ระบบ สมัครสมาชิก และหน้าจองห้อง มีปุ่มฟันเฟือง ⚙ เปิดตั้งค่าเดียวกัน
+- ภาษาเก็บในคุกกี้ `lang` (เปิดหน้าใดก็ได้ด้วย `?lang=en` หรือ `?lang=th`), ธีมเก็บใน localStorage ของเบราว์เซอร์
+- ข้อความทั้งหมดอยู่ใน `messages.properties` (ไทย) และ `messages_en.properties` (อังกฤษ) ใช้ key เดียวกัน; ข้อมูลที่ผู้ใช้กรอก (ชื่อ ข้อความ ประเภทห้อง) แสดงตามที่บันทึกไว้
+
 ## ตั้งค่า Gemini API (AI Chatbot + ตรวจสลิป)
 
 1. สร้าง API key ที่ https://aistudio.google.com/apikey
@@ -86,6 +92,7 @@ Spring Boot + Thymeleaf + Spring Security + H2, deploy ขึ้น Google Cloud
 ```
 src/main/java/th/mfu/
 ├── domain/      Entity: Room, Tenant, Bill, Payment, Feedback, RepairRequest, LaundryMachine, AppUser
+├── config/      WebConfig (ภาษา ไทย/English), Messages (ดึงข้อความตามภาษา), DormProperties
 ├── security/    SecurityConfig, login/register (AuthController)
 ├── service/     BillingService (หารค่าห้อง/ตัดยอด), NotificationService, AnalyticsService,
 │                GeminiClient, ChatbotService, SlipVerificationService, PromptPay, DataSeeder
@@ -96,7 +103,9 @@ src/main/java/th/mfu/
 src/main/resources/
 ├── templates/fragments/  layout ของ admin และ app
 ├── templates/admin, app, auth
-├── static/css/app.css    ธีมสีฟ้า minimal
+├── messages*.properties  ข้อความ UI ภาษาไทย (ค่าเริ่มต้น) และอังกฤษ
+├── static/css/app.css    design tokens ธีมสว่างและมืด
+├── static/js/prefs.js    ธีมสว่าง/มืด และ dhT('ไทย', 'English') สำหรับข้อความใน JavaScript
 └── static/js/dorm3d.js   แผนผังหอพัก 3 มิติ + ห้อง 3D
 ```
 
