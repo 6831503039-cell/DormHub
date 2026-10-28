@@ -10,6 +10,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class DormProperties {
 
     private String dormName = "DormHub";
+    // the (simulated) dorm the app runs for, shown to tenants next to their room
+    private String residenceName = "SJD Mansion";
     private String officeHours = "ทุกวัน 08:00 - 20:00 น.";
     private String contactPhone = "081-234-5678";
     private String rules = "งดส่งเสียงดังหลัง 22:00 น., ห้ามเลี้ยงสัตว์, แขกค้างคืนต้องแจ้งสำนักงานก่อน, "
@@ -83,6 +85,13 @@ public class DormProperties {
     }
     public void setDormName(String dormName) {
         this.dormName = dormName;
+    }
+
+    public String getResidenceName() {
+        return residenceName;
+    }
+    public void setResidenceName(String residenceName) {
+        this.residenceName = residenceName;
     }
 
     public String getOfficeHours() {

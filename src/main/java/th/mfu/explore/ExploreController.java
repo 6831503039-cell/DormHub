@@ -1,25 +1,21 @@
 package th.mfu.explore;
 
-import java.time.Clock;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import th.mfu.BookingRequestRepository;
 import th.mfu.config.Messages;
 import th.mfu.domain.Bill;
 import th.mfu.domain.BookingRequest;
-import th.mfu.domain.BookingStatus;
 import th.mfu.domain.Room;
+import th.mfu.service.BookingService;
 import th.mfu.service.RoomMapService;
 import th.mfu.service.RoomView;
 
@@ -28,25 +24,28 @@ import th.mfu.service.RoomView;
 public class ExploreController {
 
     private final RoomMapService roomMapService;
-    private final BookingRequestRepository bookingRepository;
-    private final Clock clock;
+    private final BookingService bookingService;
     private final Messages messages;
 
-    public ExploreController(RoomMapService roomMapService, BookingRequestRepository bookingRepository, Clock clock, Messages messages) {
+    public ExploreController(RoomMapService roomMapService, BookingService bookingService, Messages messages) {
         this.roomMapService = roomMapService;
-        this.bookingRepository = bookingRepository;
-        this.clock = clock;
+        this.bookingService = bookingService;
         this.messages = messages;
     }
 
     @GetMapping("/explore")
     public String explore(Model model) {
+        addMapSettings(model);
+        return "explore/index";
+    }
+
+    /** Settings for static/js/dorm3d.js, shared with the tenant app's rent page. */
+    public static void addMapSettings(Model model) {
         model.addAttribute("soonDays", RoomMapService.SOON_DAYS);
         // the default rates of a new bill are the dorm's rates
         Bill rates = new Bill();
         model.addAttribute("electricRate", rates.getElectricRate());
         model.addAttribute("waterRate", rates.getWaterRate());
-        return "explore/index";
     }
 
     /** Room data for static/js/dorm3d.js (no tenant names). */
@@ -64,29 +63,13 @@ public class ExploreController {
             return "redirect:/explore";
         }
         String back = "redirect:/explore?room=" + room.getRoomNumber();
-
-        if (!StringUtils.hasText(booking.getFullName()) || !StringUtils.hasText(booking.getPhone())) {
-            redirect.addFlashAttribute("error", messages.get("flash.book.missing"));
+        Optional<String> problem = bookingService.problem(booking);
+        if (problem.isPresent()) {
+            redirect.addFlashAttribute("error", problem.get());
             return back;
         }
-        if (!roomMapService.canBook(room)) {
-            redirect.addFlashAttribute("error", messages.get("flash.book.taken", room.getRoomNumber()));
-            return back;
-        }
-        LocalDate from = roomMapService.availableFrom(room);
-        if (booking.getMoveInDate() == null || booking.getMoveInDate().isBefore(from)) {
-            redirect.addFlashAttribute("error", messages.get("flash.book.tooEarly", room.getRoomNumber(), from.toString()));
-            return back;
-        }
-
-        // values the visitor must not choose themselves
-        booking.setId(null);
-        booking.setStatus(BookingStatus.PENDING);
-        booking.setCreatedAt(LocalDateTime.now(clock));
-        booking.setFullName(booking.getFullName().trim());
-        booking.setPhone(booking.getPhone().trim());
-        bookingRepository.save(booking);
-
+        booking.setApplicant(null);
+        bookingService.submit(booking);
         redirect.addFlashAttribute("success", messages.get("flash.book.sent", room.getRoomNumber(), booking.getPhone()));
         return back;
     }

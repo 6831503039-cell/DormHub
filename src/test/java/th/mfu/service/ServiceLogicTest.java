@@ -121,4 +121,11 @@ public class ServiceLogicTest {
         b.setContractEndDate(null); // one roommate without an end date: unknown
         assertEquals(null, RoomMapService.contractEnd(List.of(a, b)));
     }
+
+    @Test
+    public void bookingNameIsSplitIntoFirstAndLastName() {
+        assertEquals(List.of("สมชาย", "ใจดี"), List.of(BookingService.splitName("  สมชาย ใจดี ")));
+        assertEquals(List.of("Mary", "Jane Watson"), List.of(BookingService.splitName("Mary Jane Watson")));
+        assertEquals(List.of("มานี", ""), List.of(BookingService.splitName("มานี")));
+    }
 }

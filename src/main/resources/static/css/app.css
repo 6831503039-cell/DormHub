@@ -552,7 +552,12 @@ a.card-link:hover { text-decoration: underline; }
 .hero .btn-light { --bs-btn-bg: #fff; --bs-btn-border-color: #fff; --bs-btn-color: var(--c-primary-text); --bs-btn-hover-bg: var(--c-primary-soft); --bs-btn-hover-color: var(--c-primary-hover); }
 /* the white button stays white on the green card in dark mode, so keep its text dark green */
 :root[data-bs-theme="dark"] .hero .btn-light { --bs-btn-color: #3d6346; --bs-btn-hover-bg: #edf3ec; --bs-btn-hover-color: #2f4f37; }
-.quick-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-2); }
+.quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-2); }
+.quick { position: relative; }
+.quick-badge {
+    position: absolute; top: 6px; right: 8px; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px;
+    background: var(--s-danger-fg); color: #fff; font-size: 11px; font-weight: var(--fw-medium); line-height: 20px;
+}
 .quick {
     background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--r-md); min-height: 72px;
     padding: var(--sp-3) var(--sp-1); text-align: center; font-size: var(--fs-xs); color: var(--c-text); text-decoration: none;
@@ -626,14 +631,17 @@ a.card-link:hover { text-decoration: underline; }
 
 /* password box with an eye button to show / hide the password */
 .password-field { position: relative; }
-.password-field .form-control { padding-right: 3rem; }
+.password-field .form-control { padding-right: 2.75rem; }
 .password-eye {
-    position: absolute; top: 50%; right: 2px; transform: translateY(-50%);
-    width: 40px; height: 40px; display: grid; place-items: center;
-    border: 0; border-radius: 6px; background: transparent; color: var(--c-muted);
+    position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
+    width: 32px; height: 32px; padding: 0; display: grid; place-items: center;
+    border: 0; border-radius: 6px; background: transparent; color: var(--c-muted); line-height: 0;
 }
 .password-eye:hover, .password-eye:focus-visible { color: var(--c-primary-text); background: var(--c-primary-soft); }
-.password-eye .lucide { width: 1.2rem; height: 1.2rem; }
+/* the icon wrappers are inline spans; make them boxes so the icon sits in the exact middle */
+.password-eye > span { display: grid; place-items: center; }
+.password-eye > span[hidden] { display: none; }
+.password-eye .lucide { width: 1rem; height: 1rem; }
 
 .rating .lucide { width: 1em; height: 1em; }
 .star-on { color: var(--c-accent); fill: var(--c-accent); }
@@ -770,3 +778,30 @@ button.d3-lbl.on { pointer-events: auto; }
 @media (prefers-reduced-motion: reduce) {
     .d3-sheet, .d3-lbl, .d3-room3d { transition: none; }
 }
+
+/* ---------- announcements, parcels, electricity usage, renting (tenant app + admin) ---------- */
+.hero-residence { display: flex; align-items: center; gap: 6px; font-weight: var(--fw-medium); }
+.hero-residence .lucide { width: 1rem; height: 1rem; }
+.news-item { display: flex; flex-direction: row; gap: var(--sp-3); align-items: flex-start; padding: var(--sp-3) var(--sp-4); color: var(--c-text); text-decoration: none; }
+a.news-item:hover { border-color: var(--c-border-strong); }
+.news-item .pin { width: 1em; height: 1em; color: var(--c-primary); vertical-align: -2px; }
+.news-thumb { width: 64px; height: 64px; object-fit: cover; border-radius: var(--r-sm); flex-shrink: 0; background: var(--c-border); }
+.admin-news { align-items: center; }
+.news-card { overflow: hidden; scroll-margin-top: 80px; }
+.news-image { width: 100%; max-height: 360px; object-fit: cover; display: block; background: var(--c-border); }
+.news-preview { max-width: 240px; max-height: 160px; object-fit: cover; border-radius: var(--r-sm); }
+.badge .lucide { width: 1em; height: 1em; vertical-align: -2px; }
+.pre-line { white-space: pre-line; }
+.parcel-card { display: flex; flex-direction: row; gap: var(--sp-3); align-items: flex-start; padding: var(--sp-3) var(--sp-4); }
+.parcel-photo { width: 76px; height: 76px; object-fit: cover; border-radius: var(--r-sm); flex-shrink: 0; display: block; background: var(--c-border); }
+.parcel-photo-empty { display: grid; place-items: center; color: var(--c-muted); }
+.parcel-thumb { width: 48px; height: 48px; object-fit: cover; border-radius: var(--r-sm); display: block; }
+.usage-list li { gap: var(--sp-3); }
+.usage-month { width: 64px; flex-shrink: 0; }
+.usage-units { width: 72px; flex-shrink: 0; text-align: right; }
+.usage-bar { flex: 1; height: 10px; border-radius: 5px; background: var(--c-border); overflow: hidden; }
+.usage-bar > span { display: block; height: 100%; border-radius: 5px; background: var(--s-warning-fg); }
+.usage-bar > span.is-high { background: var(--s-danger-fg); }
+.admin-reply { display: flex; gap: 6px; align-items: flex-start; font-size: var(--fs-xs); padding: 6px 10px; border-radius: var(--r-sm); background: var(--s-info-bg); color: var(--s-info-fg); }
+.admin-reply .lucide { width: 1rem; height: 1rem; flex-shrink: 0; margin-top: 1px; }
+.rent-3d { height: min(68vh, 560px); border-radius: var(--r-md); }
