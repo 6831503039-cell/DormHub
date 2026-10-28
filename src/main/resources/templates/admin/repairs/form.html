@@ -34,7 +34,19 @@
             </div>
         </div>
 
-        <div class="form-section">
+        <!-- updating: what the tenant reported is shown but cannot be changed (RepairController keeps it) -->
+        <div class="form-section" th:if="${repair.id != null}">
+            <h2 class="form-section-title" th:text="#{repair.jobDetails}">รายละเอียดงาน</h2>
+            <dl class="detail-list mb-0">
+                <div><dt th:text="#{common.room}">ห้อง</dt><dd th:text="${repair.room.roomNumber}"></dd></div>
+                <div><dt th:text="#{repair.reportedDate}">วันที่แจ้ง</dt><dd class="num" th:text="${repair.reportedDate != null} ? ${#temporals.format(repair.reportedDate, 'dd/MM/yyyy')} : '-'"></dd></div>
+                <div><dt th:text="#{repair.subject}">เรื่อง</dt><dd th:text="${repair.title}"></dd></div>
+                <div><dt th:text="#{repair.details}">รายละเอียด</dt><dd class="pre-line" th:text="${repair.description != null and !#strings.isEmpty(repair.description)} ? ${repair.description} : '-'"></dd></div>
+            </dl>
+            <p class="form-text mb-0 mt-2" th:text="#{repair.details.locked}">ข้อมูลที่แจ้งมาแก้ไขไม่ได้ เปลี่ยนได้เฉพาะสถานะและรายละเอียดการดำเนินงาน</p>
+        </div>
+
+        <div class="form-section" th:if="${repair.id == null}">
             <h2 class="form-section-title" th:text="#{repair.jobDetails}">รายละเอียดงาน</h2>
             <div class="row g-3">
                 <div class="col-sm-6">
@@ -57,7 +69,7 @@
                     <label class="form-label" for="description"><span th:text="#{repair.details}">รายละเอียด</span> <span class="optional" th:text="#{common.optional}">(ไม่บังคับ)</span></label>
                     <textarea class="form-control" rows="3" th:field="*{description}" maxlength="1000"></textarea>
                 </div>
-                <div class="col-sm-6" th:if="${repair.id == null}">
+                <div class="col-sm-6">
                     <label class="form-label" for="status" th:text="#{common.status}">สถานะ</label>
                     <select class="form-select" th:field="*{status}">
                         <option th:each="s : ${T(th.mfu.domain.RepairStatus).values()}" th:value="${s}" th:text="#{${s.key}}"></option>
