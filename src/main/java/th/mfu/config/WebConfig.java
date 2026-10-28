@@ -11,6 +11,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 
+import th.mfu.app.HasRoomInterceptor;
+
 /**
  * Language of the UI: Thai by default, English when chosen in Settings.
  * Any page accepts ?lang=th or ?lang=en; the choice is kept in the "lang" cookie.
@@ -29,11 +31,19 @@ public class WebConfig implements WebMvcConfigurer {
         return resolver;
     }
 
+    private final HasRoomInterceptor hasRoomInterceptor;
+
+    public WebConfig(HasRoomInterceptor hasRoomInterceptor) {
+        this.hasRoomInterceptor = hasRoomInterceptor;
+    }
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         LocaleChangeInterceptor interceptor = new LocaleChangeInterceptor();
         interceptor.setParamName("lang");
         interceptor.setIgnoreInvalidLocale(true);
         registry.addInterceptor(interceptor);
+        // accounts without a room: only the home page and renting a room
+        registry.addInterceptor(hasRoomInterceptor).addPathPatterns("/app/**").excludePathPatterns("/app", "/app/rent", "/app/rent/**");
     }
 }

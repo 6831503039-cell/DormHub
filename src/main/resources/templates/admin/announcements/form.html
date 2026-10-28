@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout(#{nav.announcements}, 'announcements', ~{::main})}">
+<body>
+<main class="form-page">
+    <a class="back-link" th:href="@{/admin/announcements}"><i data-lucide="chevron-left"></i> <span th:text="#{nav.announcements}">ประกาศ</span></a>
+    <div class="page-header">
+        <div>
+            <h1 class="page-title" th:text="${announcement.id == null} ? #{announcements.add} : #{announcements.edit}">สร้างประกาศ</h1>
+            <p class="page-sub" th:text="#{announcements.admin.sub}">ผู้เช่าทุกคนจะเห็นประกาศนี้ในแอป</p>
+        </div>
+    </div>
+
+    <form class="card card-body" th:action="@{/admin/announcements}" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="id" th:value="${announcement.id}">
+        <div class="form-section">
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label" for="title" th:text="#{announcements.field.title}">หัวข้อ</label>
+                    <input class="form-control" id="title" name="title" maxlength="200" th:value="${announcement.title}"
+                           th:placeholder="#{announcements.field.title.placeholder}" required>
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="body"><span th:text="#{announcements.field.body}">รายละเอียด</span> <span class="optional" th:text="#{common.optional}">(ไม่บังคับ)</span></label>
+                    <textarea class="form-control" id="body" name="body" rows="5" maxlength="4000" th:text="${announcement.body}"></textarea>
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="image"><span th:text="#{announcements.field.image}">รูปภาพ</span> <span class="optional" th:text="#{common.optional}">(ไม่บังคับ)</span></label>
+                    <img th:if="${announcement.hasImage()}" class="news-preview d-block mb-2" th:src="@{/announcements/{id}/image(id=${announcement.id})}" th:alt="#{announcements.field.image}">
+                    <input class="form-control" type="file" id="image" name="image" accept="image/*">
+                    <div class="form-text" th:text="${announcement.hasImage()} ? #{announcements.field.image.replace} : #{common.imageHint}">ไฟล์รูป ขนาดไม่เกิน 5 MB</div>
+                    <div class="form-check mt-2" th:if="${announcement.hasImage()}">
+                        <input class="form-check-input" type="checkbox" id="removeImage" name="removeImage" value="true">
+                        <label class="form-check-label" for="removeImage" th:text="#{announcements.field.removeImage}">ลบรูปนี้</label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="pinned" name="pinned" value="true" th:checked="${announcement.pinned}">
+                        <label class="form-check-label" for="pinned" th:text="#{announcements.field.pinned}">ปักหมุดไว้ด้านบน</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button class="btn btn-primary" type="submit"><i data-lucide="send"></i> <span th:text="${announcement.id == null} ? #{announcements.post} : #{common.save}">ประกาศ</span></button>
+            <a class="btn btn-secondary" th:href="@{/admin/announcements}" th:text="#{common.cancel}">ยกเลิก</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>

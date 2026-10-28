@@ -56,6 +56,14 @@ public class DormHubApplicationTest {
     private PaymentRepository paymentRepository;
     @Autowired
     private BookingRequestRepository bookingRepository;
+    @Autowired
+    private TenantRepository tenantRepository;
+    @Autowired
+    private RepairRequestRepository repairRepository;
+    @Autowired
+    private AnnouncementRepository announcementRepository;
+    @Autowired
+    private ParcelRepository parcelRepository;
 
     private static RequestPostProcessor admin() {
         return user(ADMIN_EMAIL).roles("ADMIN");
@@ -147,7 +155,8 @@ public class DormHubApplicationTest {
     public void allAdminPagesLoad() throws Exception {
         String[] urls = { "/admin", "/admin/analytics", "/admin/layout", "/admin/rooms", "/admin/rooms/new", "/admin/rooms/1",
                 "/admin/tenants", "/admin/tenants/new", "/admin/tenants/1", "/admin/bills", "/admin/bills/new", "/admin/bills/1",
-                "/admin/payments", "/admin/repairs", "/admin/repairs/new", "/admin/repairs/1", "/admin/feedback", "/admin/bookings" };
+                "/admin/payments", "/admin/repairs", "/admin/repairs/new", "/admin/repairs/1", "/admin/feedback", "/admin/bookings",
+                "/admin/announcements", "/admin/announcements/new", "/admin/parcels", "/admin/parcels/new" };
         for (String url : urls) {
             mvc.perform(get(url).with(admin())).andExpect(status().isOk());
         }
@@ -155,7 +164,8 @@ public class DormHubApplicationTest {
 
     @Test
     public void allTenantPagesLoad() throws Exception {
-        for (String url : new String[] { "/app", "/app/bills", "/app/chat", "/app/laundry", "/app/requests" }) {
+        for (String url : new String[] { "/app", "/app/bills", "/app/chat", "/app/laundry", "/app/requests",
+                "/app/rent", "/app/announcements", "/app/parcels", "/app/usage" }) {
             mvc.perform(get(url).with(tenant())).andExpect(status().isOk());
         }
     }
@@ -180,11 +190,29 @@ public class DormHubApplicationTest {
         mvc.perform(post("/register").with(csrf())
                 .param("fullName", "ยังไม่มี ห้อง").param("email", "noroom@example.com")
                 .param("password", "secret1").param("confirmPassword", "secret1"));
-        for (String url : new String[] { "/app", "/app/bills", "/app/requests" }) {
-            mvc.perform(get(url).with(user("noroom@example.com").roles("TENANT")))
-                    .andExpect(status().isOk())
-                    .andExpect(content().string(containsString("ยังไม่ผูกกับห้องพัก")));
+        RequestPostProcessor me = user("noroom@example.com").roles("TENANT");
+        mvc.perform(get("/app").with(me))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("ยังไม่ผูกกับห้องพัก")))
+                .andExpect(content().string(containsString("/app/rent")))
+                // no other menus or announcements until the account has a room
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("/app/laundry"))))
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("งดจ่ายน้ำ"))));
+        mvc.perform(get("/app/rent").with(me)).andExpect(status().isOk());
+    }
+
+    @Test
+    public void accountWithoutRoomCanOnlyRent() throws Exception {
+        RequestPostProcessor me = newAccount("fresh@example.com");
+        for (String url : new String[] { "/app/bills", "/app/chat", "/app/laundry", "/app/requests",
+                "/app/announcements", "/app/parcels", "/app/usage" }) {
+            mvc.perform(get(url).with(me)).andExpect(redirectedUrl("/app"));
         }
+        mvc.perform(post("/app/laundry/1/start").with(me).with(csrf())).andExpect(redirectedUrl("/app"));
+        mvc.perform(get("/app/laundry").with(tenant())).andExpect(content().string(org.hamcrest.Matchers.not(containsString("ผู้สนใจ เช่าห้อง"))));
+        mvc.perform(post("/app/chat/send").with(me).with(csrf()).accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON).content("{\"message\":\"wifi\"}"))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -336,6 +364,128 @@ public class DormHubApplicationTest {
         mvc.perform(post("/admin/bookings/" + booking.getId() + "/status").param("status", "CONFIRMED").with(admin()).with(csrf()))
                 .andExpect(redirectedUrl("/admin/bookings"));
         assertEquals(BookingStatus.CONFIRMED, bookingRepository.findById(booking.getId()).get().getStatus());
+    }
+
+    // ---------- accounts without a room ----------
+
+    private RequestPostProcessor newAccount(String email) throws Exception {
+        mvc.perform(post("/register").with(csrf())
+                .param("fullName", "ผู้สนใจ เช่าห้อง").param("email", email)
+                .param("password", "secret1").param("confirmPassword", "secret1"))
+                .andExpect(redirectedUrl("/login?registered"));
+        return user(email).roles("TENANT");
+    }
+
+    @Test
+    public void staleFormRedirectsToLoginInsteadOf403() throws Exception {
+        // no CSRF token, as after a server restart: plain forms go back to login, the chat gets 401
+        mvc.perform(post("/app/laundry/1/start").with(tenant())).andExpect(redirectedUrl("/login?expired"));
+        mvc.perform(post("/app/chat/send").with(tenant()).accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON).content("{\"message\":\"wifi\"}"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void accountWithoutRoomRentsOnThe3DMapAndIsLinkedWhenConfirmed() throws Exception {
+        RequestPostProcessor me = newAccount("renter@example.com");
+        mvc.perform(get("/app").with(me)).andExpect(content().string(containsString("/app/rent")));
+        mvc.perform(get("/app/rent").with(me))
+                .andExpect(content().string(containsString("dorm3d.js")))
+                .andExpect(content().string(containsString("renter@example.com")));
+
+        Room room = roomRepository.findByRoomNumber("A103").get(); // free, 1 bed
+        mvc.perform(post("/app/rent/book").with(me).with(csrf())
+                .param("room", room.getId().toString()).param("fullName", "ผู้สนใจ เช่าห้อง").param("phone", "089-111-2222")
+                .param("email", "someone-else@example.com").param("moveInDate", java.time.LocalDate.now().plusDays(3).toString()))
+                .andExpect(redirectedUrl("/app/rent"));
+        var booking = bookingRepository.findAllByOrderByCreatedAtDesc().get(0);
+        assertEquals("renter@example.com", booking.getApplicant().getEmail());
+        assertEquals("renter@example.com", booking.getEmail());
+
+        // a second request waits until the first one is answered
+        long before = bookingRepository.count();
+        mvc.perform(post("/app/rent/book").with(me).with(csrf())
+                .param("room", room.getId().toString()).param("fullName", "x").param("phone", "1")
+                .param("moveInDate", java.time.LocalDate.now().plusDays(3).toString()));
+        assertEquals(before, bookingRepository.count());
+
+        mvc.perform(post("/admin/bookings/" + booking.getId() + "/status").param("status", "CONFIRMED").with(admin()).with(csrf()))
+                .andExpect(redirectedUrl("/admin/bookings"));
+        var tenant = tenantRepository.findFirstByEmailIgnoreCase("renter@example.com").get();
+        assertEquals("A103", tenant.getRoom().getRoomNumber());
+        assertEquals(RoomStatus.OCCUPIED, roomRepository.findByRoomNumber("A103").get().getStatus());
+        mvc.perform(get("/app").with(me)).andExpect(content().string(containsString("A103")));
+        // with a room the full menu opens
+        mvc.perform(get("/app/laundry").with(me)).andExpect(status().isOk());
+    }
+
+    // ---------- repairs, announcements, parcels, electricity ----------
+
+    @Test
+    public void adminEditsRepairDetailsAndTenantSeesTheWorkNote() throws Exception {
+        Room a101 = roomRepository.findByRoomNumber("A101").get();
+        var repair = repairRepository.findByRoomOrderByReportedDateDescIdDesc(roomRepository.findByRoomNumber("A102").get()).get(0);
+        mvc.perform(post("/admin/repairs").with(admin()).with(csrf())
+                .param("id", repair.getId().toString()).param("room", a101.getId().toString())
+                .param("reportedDate", repair.getReportedDate().toString()).param("title", "ก๊อกน้ำอ่างล้างหน้ารั่ว")
+                .param("description", "รายละเอียดใหม่").param("status", "IN_PROGRESS").param("adminNote", "ช่างเข้าวันศุกร์ 10:00"))
+                .andExpect(redirectedUrl("/admin/repairs"));
+        var saved = repairRepository.findById(repair.getId()).get();
+        assertEquals("ก๊อกน้ำอ่างล้างหน้ารั่ว", saved.getTitle());
+        assertEquals("รายละเอียดใหม่", saved.getDescription());
+        assertEquals("A101", saved.getRoom().getRoomNumber());
+        mvc.perform(get("/app/requests").with(tenant())).andExpect(content().string(containsString("ช่างเข้าวันศุกร์ 10:00")));
+    }
+
+    @Test
+    public void announcementWithImageIsShownToTenants() throws Exception {
+        MockMultipartFile image = new MockMultipartFile("image", "a.png", "image/png", new byte[] { 1, 2, 3 });
+        mvc.perform(multipart("/admin/announcements").file(image).with(admin()).with(csrf())
+                .param("title", "ปิดลิฟต์ซ่อมบำรุง").param("body", "วันอังคาร").param("pinned", "true"))
+                .andExpect(redirectedUrl("/admin/announcements"));
+        var a = announcementRepository.findAllByOrderByPinnedDescCreatedAtDesc().get(0);
+        assertEquals("ปิดลิฟต์ซ่อมบำรุง", a.getTitle());
+        mvc.perform(get("/app").with(tenant())).andExpect(content().string(containsString("ปิดลิฟต์ซ่อมบำรุง")));
+        mvc.perform(get("/app/announcements").with(tenant())).andExpect(content().string(containsString("/announcements/" + a.getId() + "/image")));
+        mvc.perform(get("/announcements/" + a.getId() + "/image").with(tenant()))
+                .andExpect(status().isOk()).andExpect(content().contentType("image/png"));
+        // tenants cannot post announcements
+        mvc.perform(get("/admin/announcements/new").with(tenant())).andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void parcelIsShownOnlyToItsRoom() throws Exception {
+        Room a102 = roomRepository.findByRoomNumber("A102").get();
+        MockMultipartFile photo = new MockMultipartFile("photo", "p.jpg", "image/jpeg", new byte[] { 9, 9 });
+        mvc.perform(multipart("/admin/parcels").file(photo).with(admin()).with(csrf())
+                .param("room", a102.getId().toString()).param("recipientName", "สุดา รักเรียน").param("carrier", "Kerry Express"))
+                .andExpect(redirectedUrl("/admin/parcels"));
+        var parcel = parcelRepository.findByRoomOrderByArrivedAtDesc(a102).get(0);
+
+        RequestPostProcessor suda = user("suda@example.com").roles("TENANT");
+        mvc.perform(get("/app/parcels").with(suda)).andExpect(content().string(containsString("/parcels/" + parcel.getId() + "/photo")));
+        mvc.perform(get("/parcels/" + parcel.getId() + "/photo").with(suda)).andExpect(status().isOk());
+        // somchai lives in A101: neither the list nor the photo shows A102's parcel
+        mvc.perform(get("/app/parcels").with(tenant()))
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("/parcels/" + parcel.getId() + "/photo"))));
+        mvc.perform(get("/parcels/" + parcel.getId() + "/photo").with(tenant())).andExpect(status().isNotFound());
+
+        mvc.perform(post("/admin/parcels/" + parcel.getId() + "/picked-up").with(admin()).with(csrf()))
+                .andExpect(redirectedUrl("/admin/parcels"));
+        assertFalse(parcelRepository.findById(parcel.getId()).get().isWaiting());
+    }
+
+    @Test
+    public void latestElectricityCardOpensUsageNotBills() throws Exception {
+        mvc.perform(get("/app").with(tenant())).andExpect(content().string(containsString("href=\"/app/usage\"")));
+        mvc.perform(get("/app/usage").with(tenant()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("usage-bar")));
+    }
+
+    @Test
+    public void tenantSeesTheDormName() throws Exception {
+        mvc.perform(get("/app").with(tenant())).andExpect(content().string(containsString("SJD Mansion")));
     }
 
     private Bill unpaidBill(Room room) {
