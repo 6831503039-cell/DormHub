@@ -1,11 +1,14 @@
 package th.mfu.security;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CsrfException;
 
 @Configuration
 public class SecurityConfig {
@@ -32,7 +35,18 @@ public class SecurityConfig {
                 .permitAll())
             .logout(logout -> logout
                 .logoutUrl("/logout")
-                .logoutSuccessUrl("/login?logout"));
+                .logoutSuccessUrl("/login?logout"))
+            // a form sent after the session ended (server restart, another server instance, idle timeout)
+            // has a stale CSRF token: send the user back to log in instead of showing a bare 403 page
+            .exceptionHandling(ex -> ex.accessDeniedHandler((request, response, denied) -> {
+                if (!(denied instanceof CsrfException)) {
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                } else if (String.valueOf(request.getHeader("Accept")).contains("application/json")) {
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/login?expired");
+                }
+            }));
         return http.build();
     }
 }

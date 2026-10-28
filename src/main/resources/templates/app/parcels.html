@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/app :: layout(#{nav.parcels}, 'home', ~{::main})}">
+<body>
+<main th:with="linked=${tenant != null and tenant.room != null}">
+    <h1 class="app-title" th:text="#{nav.parcels}">พัสดุ</h1>
+    <p class="app-sub" th:text="${linked} ? #{parcels.sub(${tenant.room.roomNumber})} : #{parcels.sub.noRoom}">พัสดุที่มาส่งถึงห้องของคุณ</p>
+
+    <!-- parcels without a room number on the label cannot be announced -->
+    <div class="notice info mb-3" role="note">
+        <span class="ic"><i data-lucide="info"></i></span>
+        <div class="small" th:text="#{parcels.labelHint(${officeHours})}">ระบุเลขห้องในที่อยู่จัดส่งทุกครั้ง ถ้าไม่ได้เขียนเลขห้องไว้ สำนักงานจะแจ้งเตือนไม่ได้ ต้องมาตรวจสอบพัสดุที่สำนักงานเอง</div>
+    </div>
+
+    <div class="card" th:unless="${linked}">
+        <div th:replace="~{fragments/ui :: emptyState('link', #{parcels.notLinked.title}, #{requests.notLinked}, null, null)}"></div>
+    </div>
+
+    <th:block th:if="${linked}">
+        <h2 class="section-title mt-0" th:text="#{parcels.waiting}">รอรับที่สำนักงาน</h2>
+        <div class="card mb-3" th:if="${#lists.isEmpty(waiting)}">
+            <div th:replace="~{fragments/ui :: emptyState('package-check', #{parcels.none.title}, #{parcels.none.text}, null, null)}"></div>
+        </div>
+        <div class="d-grid gap-2 mb-4">
+            <article class="card parcel-card" th:each="p : ${waiting}">
+                <a th:if="${p.hasPhoto()}" th:href="@{/parcels/{id}/photo(id=${p.id})}" target="_blank" rel="noopener">
+                    <img class="parcel-photo" th:src="@{/parcels/{id}/photo(id=${p.id})}" th:alt="#{parcels.photoOf(${tenant.room.roomNumber})}" loading="lazy">
+                </a>
+                <span class="parcel-photo parcel-photo-empty" th:unless="${p.hasPhoto()}"><i data-lucide="package"></i></span>
+                <div class="min-w-0 flex-grow-1">
+                    <div class="fw-medium" th:text="${p.recipientName != null} ? #{parcels.to(${p.recipientName})} : #{parcels.forRoom(${tenant.room.roomNumber})}"></div>
+                    <div class="item-meta" th:text="#{parcels.arrived(${#temporals.format(p.arrivedAt, 'dd/MM/yyyy HH:mm')})} + (${p.carrier != null} ? ' · ' + ${p.carrier} : '')"></div>
+                    <div class="small text-muted" th:if="${p.note != null}" th:text="${p.note}"></div>
+                    <span class="badge status-warning mt-1" th:text="#{parcels.status.waiting}">รอรับ</span>
+                </div>
+            </article>
+        </div>
+
+        <section class="card mb-4" th:unless="${#lists.isEmpty(pickedUp)}" aria-labelledby="pickedTitle">
+            <div class="card-header"><h2 class="h2 mb-0" id="pickedTitle" th:text="#{parcels.history}">รับไปแล้ว</h2></div>
+            <ul class="list-plain">
+                <li th:each="p : ${pickedUp}">
+                    <div class="min-w-0">
+                        <div class="item-title" th:text="${p.recipientName != null} ? #{parcels.to(${p.recipientName})} : #{parcels.forRoom(${tenant.room.roomNumber})}"></div>
+                        <div class="item-meta" th:text="#{parcels.pickedUpAt(${#temporals.format(p.pickedUpAt, 'dd/MM/yyyy HH:mm')})}"></div>
+                    </div>
+                    <span class="badge status-success item-end" th:text="#{parcels.status.picked}">รับแล้ว</span>
+                </li>
+            </ul>
+        </section>
+    </th:block>
+</main>
+</body>
+</html>

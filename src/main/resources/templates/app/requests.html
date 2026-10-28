@@ -47,6 +47,9 @@
                             <div class="item-title" th:text="${r.title}"></div>
                             <div class="item-meta clamp-2"
                                  th:text="${#temporals.format(r.reportedDate, 'dd/MM/yyyy')} + (${r.description != null and !#strings.isEmpty(r.description)} ? ' · ' + ${r.description} : '')"></div>
+                            <div class="admin-reply mt-1" th:if="${r.adminNote != null and !#strings.isEmpty(r.adminNote)}">
+                                <i data-lucide="message-square-reply"></i> <span><b th:text="#{repair.adminNote.fromDorm}">จากหอพัก:</b> <span th:text="${r.adminNote}"></span></span>
+                            </div>
                         </div>
                         <span class="item-end" th:classappend="'badge status-' + ${repairTone[r.status.name()]}" th:text="#{${r.status.key}}"></span>
                     </li>
