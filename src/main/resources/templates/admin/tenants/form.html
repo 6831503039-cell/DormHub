@@ -38,9 +38,9 @@
             <div class="row g-3">
                 <div class="col-12">
                     <label class="form-label" for="room"><span th:text="#{common.room}">ห้อง</span> <span class="optional" th:text="#{common.optional}">(ไม่บังคับ)</span></label>
-                    <select class="form-select" id="room" name="room">
+                    <select class="form-select" id="room" name="room" data-room-picker>
                         <option value="" th:text="#{tenant.noRoom}">ยังไม่ระบุห้อง</option>
-                        <option th:each="r : ${rooms}" th:value="${r.id}"
+                        <option th:each="r : ${rooms}" th:value="${r.id}" th:attr="data-building=${r.building},data-floor=${r.floor}"
                                 th:text="${r.roomNumber} + ' · ' + #{${r.status.key}} + ' · ' + #{tenant.roomCapacity(${r.capacity})}"
                                 th:selected="${tenant.room != null and tenant.room.id == r.id}"></option>
                     </select>

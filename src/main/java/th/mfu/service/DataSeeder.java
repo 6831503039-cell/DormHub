@@ -9,21 +9,25 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import th.mfu.AnnouncementRepository;
 import th.mfu.AppUserRepository;
 import th.mfu.BillRepository;
 import th.mfu.BookingRequestRepository;
 import th.mfu.FeedbackRepository;
 import th.mfu.LaundryMachineRepository;
+import th.mfu.ParcelRepository;
 import th.mfu.RepairRequestRepository;
 import th.mfu.RoomRepository;
 import th.mfu.TenantRepository;
 import th.mfu.config.DormProperties;
+import th.mfu.domain.Announcement;
 import th.mfu.domain.AppUser;
 import th.mfu.domain.Bill;
 import th.mfu.domain.BookingRequest;
 import th.mfu.domain.Feedback;
 import th.mfu.domain.LaundryMachine;
 import th.mfu.domain.MachineType;
+import th.mfu.domain.Parcel;
 import th.mfu.domain.RepairRequest;
 import th.mfu.domain.RepairStatus;
 import th.mfu.domain.Role;
@@ -49,13 +53,16 @@ public class DataSeeder implements CommandLineRunner {
     private final FeedbackRepository feedbacks;
     private final LaundryMachineRepository machines;
     private final BookingRequestRepository bookings;
+    private final AnnouncementRepository announcements;
+    private final ParcelRepository parcels;
     private final PasswordEncoder passwordEncoder;
     private final DormProperties props;
     private final Clock clock;
 
     public DataSeeder(AppUserRepository users, RoomRepository rooms, TenantRepository tenants, BillRepository bills,
             RepairRequestRepository repairs, FeedbackRepository feedbacks, LaundryMachineRepository machines,
-            BookingRequestRepository bookings, PasswordEncoder passwordEncoder, DormProperties props, Clock clock) {
+            BookingRequestRepository bookings, AnnouncementRepository announcements, ParcelRepository parcels,
+            PasswordEncoder passwordEncoder, DormProperties props, Clock clock) {
         this.users = users;
         this.rooms = rooms;
         this.tenants = tenants;
@@ -64,6 +71,8 @@ public class DataSeeder implements CommandLineRunner {
         this.feedbacks = feedbacks;
         this.machines = machines;
         this.bookings = bookings;
+        this.announcements = announcements;
+        this.parcels = parcels;
         this.passwordEncoder = passwordEncoder;
         this.props = props;
         this.clock = clock;
@@ -158,6 +167,35 @@ public class DataSeeder implements CommandLineRunner {
         dryer1.setUsedBy("ห้อง A102");
         machines.save(dryer1);
         machines.save(new LaundryMachine("เครื่องอบผ้า 2", MachineType.DRYER));
+
+        announcement("งดจ่ายน้ำชั่วคราว วันเสาร์นี้ 10:00 - 14:00 น.",
+                "การประปาจะซ่อมท่อเมนหน้าหอพัก ขอให้ผู้เช่าสำรองน้ำไว้ล่วงหน้า ขออภัยในความไม่สะดวก", true, 1);
+        announcement("ทำความสะอาดใหญ่ทางเดินและบันได ทุกวันจันทร์แรกของเดือน",
+                "แม่บ้านจะทำความสะอาดช่วง 09:00 - 12:00 น. กรุณาเก็บรองเท้าและของใช้หน้าห้องเข้าห้องให้เรียบร้อย", false, 5);
+
+        parcel(r101, "สมชาย ใจดี", "Kerry Express", null, now.minusHours(3), null);
+        parcel(r101, "สมศักดิ์ มั่นคง", "Flash Express", "กล่องใหญ่ ฝากไว้หลังเคาน์เตอร์", now.minusDays(1), null);
+        parcel(r102, "สุดา รักเรียน", "Thailand Post", null, now.minusDays(4), now.minusDays(3));
+    }
+
+    private void announcement(String title, String body, boolean pinned, int daysAgo) {
+        Announcement a = new Announcement();
+        a.setTitle(title);
+        a.setBody(body);
+        a.setPinned(pinned);
+        a.setCreatedAt(LocalDateTime.now(clock).minusDays(daysAgo));
+        announcements.save(a);
+    }
+
+    private void parcel(Room room, String recipient, String carrier, String note, LocalDateTime arrived, LocalDateTime pickedUp) {
+        Parcel p = new Parcel();
+        p.setRoom(room);
+        p.setRecipientName(recipient);
+        p.setCarrier(carrier);
+        p.setNote(note);
+        p.setArrivedAt(arrived);
+        p.setPickedUpAt(pickedUp);
+        parcels.save(p);
     }
 
     private static final String[] FIRST_NAMES = { "กานต์", "ณัฐ", "ธนา", "พิมพ์", "ภูมิ", "มินตรา", "รวิ", "ศุภ", "อร", "ปาล์ม", "เจน", "ต้นข้าว" };

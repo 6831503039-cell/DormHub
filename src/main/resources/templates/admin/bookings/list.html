@@ -54,6 +54,8 @@
                     <tr th:each="b : ${bookings}" data-row th:attr="data-status=${#strings.toLowerCase(b.status.name())}">
                         <td class="td-title">
                             <span class="d-block fw-semibold" th:text="${b.fullName}"></span>
+                            <span class="badge status-info mb-1" th:if="${b.applicant != null}" th:title="#{bookings.fromApp.help}"
+                                  th:text="#{bookings.fromApp}">ส่งจากแอป</span>
                             <span class="item-meta" th:text="#{bookings.sentAt(${#temporals.format(b.createdAt, 'dd/MM/yyyy HH:mm')})}"></span>
                         </td>
                         <td><a class="fw-medium nowrap" th:href="@{/admin/rooms/{id}(id=${b.room.id})}" th:text="${b.room.roomNumber}"></a></td>
@@ -70,7 +72,8 @@
                             <form class="d-inline" th:action="@{/admin/bookings/{id}/status(id=${b.id})}" method="post" th:if="${b.status.name() != 'CONFIRMED'}">
                                 <input type="hidden" name="status" value="CONFIRMED">
                                 <button class="btn btn-soft btn-sm" type="submit"
-                                        th:attr="aria-label=#{bookings.confirmN(${b.fullName})}"><i data-lucide="check"></i> <span th:text="#{bookings.confirm}">ยืนยัน</span></button>
+                                        th:attr="aria-label=#{bookings.confirmN(${b.fullName})},data-confirm=${b.applicant != null} ? #{bookings.confirm.linkConfirm(${b.fullName}, ${b.room.roomNumber})} : null,data-confirm-title=${b.applicant != null} ? #{bookings.confirm} : null,data-confirm-ok=${b.applicant != null} ? #{bookings.confirm} : null"
+                                        th:data-confirm-tone="${b.applicant != null} ? 'primary' : null"><i data-lucide="check"></i> <span th:text="#{bookings.confirm}">ยืนยัน</span></button>
                             </form>
                             <form class="d-inline" th:action="@{/admin/bookings/{id}/status(id=${b.id})}" method="post" th:if="${b.status.name() != 'CANCELLED'}">
                                 <input type="hidden" name="status" value="CANCELLED">

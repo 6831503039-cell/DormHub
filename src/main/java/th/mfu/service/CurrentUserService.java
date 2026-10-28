@@ -32,4 +32,9 @@ public class CurrentUserService {
     public Optional<Tenant> tenant(AppUser user) {
         return tenants.findFirstByEmailIgnoreCase(user.getEmail());
     }
+
+    /** True when the logged-in account is a tenant with a room (the full tenant menu is shown). */
+    public boolean hasRoom(Principal principal) {
+        return tenants.findFirstByEmailIgnoreCase(principal.getName()).map(t -> t.getRoom() != null).orElse(false);
+    }
 }
