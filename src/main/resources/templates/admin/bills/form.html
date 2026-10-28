@@ -15,9 +15,9 @@
             <div class="row g-3">
                 <div class="col-12">
                     <label class="form-label" for="room" th:text="#{common.room}">ห้อง</label>
-                    <select class="form-select" id="room" name="room" required>
+                    <select class="form-select" id="room" name="room" required data-room-picker>
                         <option value="" th:text="#{bill.chooseRoom}">เลือกห้อง</option>
-                        <option th:each="r : ${rooms}" th:value="${r.id}" th:attr="data-rent=${r.monthlyRent}"
+                        <option th:each="r : ${rooms}" th:value="${r.id}" th:attr="data-rent=${r.monthlyRent},data-building=${r.building},data-floor=${r.floor}"
                                 th:text="${r.roomNumber} + ' · ' + #{bill.roomRent(${#numbers.formatDecimal(r.monthlyRent, 1, 'COMMA', 0, 'POINT')})}"
                                 th:selected="${bill.room != null and bill.room.id == r.id}"></option>
                     </select>

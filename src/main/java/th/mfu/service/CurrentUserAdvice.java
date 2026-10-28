@@ -15,10 +15,12 @@ public class CurrentUserAdvice {
 
     private final AppUserRepository users;
     private final DormProperties props;
+    private final CurrentUserService currentUser;
 
-    public CurrentUserAdvice(AppUserRepository users, DormProperties props) {
+    public CurrentUserAdvice(AppUserRepository users, DormProperties props, CurrentUserService currentUser) {
         this.users = users;
         this.props = props;
+        this.currentUser = currentUser;
     }
 
     @ModelAttribute("currentUser")
@@ -29,6 +31,12 @@ public class CurrentUserAdvice {
     @ModelAttribute("dormName")
     public String dormName() {
         return props.getDormName();
+    }
+
+    /** Tenant app: false for an account without a room, which only sees home and "rent a room". */
+    @ModelAttribute("hasRoom")
+    public boolean hasRoom(Principal principal) {
+        return principal != null && currentUser.hasRoom(principal);
     }
 
     @ModelAttribute("residenceName")

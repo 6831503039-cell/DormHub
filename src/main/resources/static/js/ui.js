@@ -14,7 +14,9 @@
  *                                      data-status contains the value as a token ("" = all)
  *  data-filter-count="#tableId"        element that shows "N items"
  *  data-filter-empty="#tableId"        element shown when no row matches
- *  #settingsModal                      Settings dialog (fragments/ui :: settingsModal): language links
+ *  <select data-room-picker>          room options with data-building / data-floor: shows building tabs
+ *                                      above the select and only that building's rooms, grouped by floor
+ *  #settingsModal                     Settings dialog (fragments/ui :: settingsModal): language links
  *                                      keep the current page, theme radios apply at once (prefs.js)
  * Texts in scripts use dhT('ไทย', 'English') from prefs.js.
  */
@@ -176,6 +178,75 @@
             el.hidden = shown !== 0 || rows.length === 0;
         });
     }
+
+    /* ---------- room picker: building tabs above a room <select>, rooms grouped by floor ---------- */
+    document.querySelectorAll('select[data-room-picker]').forEach(function (select) {
+        var empty = select.querySelector('option[value=""]');
+        var rooms = Array.prototype.filter.call(select.options, function (o) { return o.value !== ''; });
+        var buildings = [];
+        rooms.forEach(function (o) {
+            if (o.dataset.building && buildings.indexOf(o.dataset.building) === -1) {
+                buildings.push(o.dataset.building);
+            }
+        });
+        if (buildings.length < 2) {
+            return;
+        }
+        buildings.sort();
+        var picked = rooms.filter(function (o) { return o.selected; })[0];
+        var current = picked ? picked.dataset.building : buildings[0];
+
+        var tabs = document.createElement('div');
+        tabs.className = 'room-picker-tabs';
+        tabs.setAttribute('role', 'group');
+        tabs.setAttribute('aria-label', dhT('เลือกตึก', 'Choose building'));
+        buildings.forEach(function (b) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'room-picker-tab';
+            btn.dataset.building = b;
+            btn.textContent = dhT('ตึก ', 'Building ') + b;
+            btn.addEventListener('click', function () {
+                current = b;
+                render(true);
+                select.focus();
+            });
+            tabs.appendChild(btn);
+        });
+        select.parentNode.insertBefore(tabs, select);
+
+        function render(notify) {
+            var keep = select.value;
+            select.innerHTML = '';
+            if (empty) {
+                select.appendChild(empty);
+            }
+            var floors = {};
+            rooms.forEach(function (o) {
+                if (o.dataset.building !== current) {
+                    return;
+                }
+                var f = o.dataset.floor || '';
+                if (!floors[f]) {
+                    floors[f] = document.createElement('optgroup');
+                    floors[f].label = f ? dhT('ชั้น ', 'Floor ') + f : '';
+                    select.appendChild(floors[f]);
+                }
+                floors[f].appendChild(o);
+            });
+            // a room of another building stays chosen only while its building is shown
+            select.value = rooms.some(function (o) { return o.value === keep && o.dataset.building === current; }) ? keep : '';
+            tabs.querySelectorAll('.room-picker-tab').forEach(function (t) {
+                var on = t.dataset.building === current;
+                t.classList.toggle('active', on);
+                t.setAttribute('aria-pressed', on);
+            });
+            if (notify) {
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }
+        render();
+    });
 
     /* ---------- Settings dialog: language and theme ---------- */
     var settings = document.getElementById('settingsModal');
