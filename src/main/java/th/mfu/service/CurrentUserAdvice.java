@@ -9,7 +9,7 @@ import th.mfu.AppUserRepository;
 import th.mfu.config.DormProperties;
 import th.mfu.domain.AppUser;
 
-/** Makes the logged-in account and dorm name available to every template. */
+/** Makes the logged-in account, dorm name and office hours available to every template. */
 @ControllerAdvice
 public class CurrentUserAdvice {
 
@@ -29,5 +29,15 @@ public class CurrentUserAdvice {
     @ModelAttribute("dormName")
     public String dormName() {
         return props.getDormName();
+    }
+
+    @ModelAttribute("residenceName")
+    public String residenceName() {
+        return props.getResidenceName();
+    }
+
+    @ModelAttribute("officeHours")
+    public String officeHours() {
+        return props.getOfficeHours();
     }
 }

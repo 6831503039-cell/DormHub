@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout(#{parcels.add}, 'parcels', ~{::main})}">
+<body>
+<main class="form-page">
+    <a class="back-link" th:href="@{/admin/parcels}"><i data-lucide="chevron-left"></i> <span th:text="#{nav.parcels}">พัสดุ</span></a>
+    <div class="page-header">
+        <div>
+            <h1 class="page-title" th:text="#{parcels.add}">แจ้งพัสดุมาถึง</h1>
+            <p class="page-sub" th:text="#{parcels.form.sub}">ผู้เช่าห้องที่เลือกจะเห็นพัสดุนี้ในแอป</p>
+        </div>
+    </div>
+
+    <form class="card card-body" th:action="@{/admin/parcels}" method="post" enctype="multipart/form-data">
+        <div class="form-section">
+            <div class="row g-3">
+                <div class="col-sm-6">
+                    <label class="form-label" for="room" th:text="#{parcels.field.room}">ห้องที่เขียนบนพัสดุ</label>
+                    <select class="form-select" id="room" name="room" required>
+                        <option value="" th:text="#{bill.chooseRoom}">เลือกห้อง</option>
+                        <option th:each="r : ${rooms}" th:value="${r.id}" th:text="${r.roomNumber}"></option>
+                    </select>
+                    <div class="form-text" th:text="#{parcels.field.room.help}">ไม่มีเลขห้องบนกล่อง ไม่ต้องบันทึก ให้เก็บไว้ที่สำนักงาน</div>
+                </div>
+                <div class="col-sm-6">
+                    <label class="form-label" for="carrier"><span th:text="#{parcels.field.carrier}">บริษัทขนส่ง</span> <span class="optional" th:text="#{common.optional}">(ไม่บังคับ)</span></label>
+                    <input class="form-control" id="carrier" name="carrier" maxlength="60" list="carriers" th:placeholder="#{parcels.field.carrier.placeholder}">
+                    <datalist id="carriers">
+                        <option value="Kerry Express"></option><option value="Flash Express"></option><option value="J&amp;T Express"></option>
+                        <option value="Thailand Post"></option><option value="Shopee Express"></option><option value="Lazada Express"></option>
+                    </datalist>
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="recipientName"><span th:text="#{parcels.field.recipient}">ชื่อผู้รับบนพัสดุ</span> <span class="optional" th:text="#{common.optional}">(ไม่บังคับ)</span></label>
+                    <input class="form-control" id="recipientName" name="recipientName" maxlength="100">
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="photo"><span th:text="#{parcels.field.photo}">รูปพัสดุ</span> <span class="optional" th:text="#{common.optional}">(ไม่บังคับ)</span></label>
+                    <input class="form-control" type="file" id="photo" name="photo" accept="image/*" capture="environment">
+                    <div class="form-text" th:text="#{common.imageHint}">ไฟล์รูป ขนาดไม่เกิน 5 MB</div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="note"><span th:text="#{parcels.field.note}">หมายเหตุ</span> <span class="optional" th:text="#{common.optional}">(ไม่บังคับ)</span></label>
+                    <input class="form-control" id="note" name="note" maxlength="200" th:placeholder="#{parcels.field.note.placeholder}">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button class="btn btn-primary" type="submit"><i data-lucide="send"></i> <span th:text="#{parcels.notify}">แจ้งผู้เช่า</span></button>
+            <a class="btn btn-secondary" th:href="@{/admin/parcels}" th:text="#{common.cancel}">ยกเลิก</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>
