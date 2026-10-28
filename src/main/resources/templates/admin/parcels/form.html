@@ -15,9 +15,9 @@
             <div class="row g-3">
                 <div class="col-sm-6">
                     <label class="form-label" for="room" th:text="#{parcels.field.room}">ห้องที่เขียนบนพัสดุ</label>
-                    <select class="form-select" id="room" name="room" required>
+                    <select class="form-select" id="room" name="room" required data-room-picker>
                         <option value="" th:text="#{bill.chooseRoom}">เลือกห้อง</option>
-                        <option th:each="r : ${rooms}" th:value="${r.id}" th:text="${r.roomNumber}"></option>
+                        <option th:each="r : ${rooms}" th:value="${r.id}" th:attr="data-building=${r.building},data-floor=${r.floor}" th:text="${r.roomNumber}"></option>
                     </select>
                     <div class="form-text" th:text="#{parcels.field.room.help}">ไม่มีเลขห้องบนกล่อง ไม่ต้องบันทึก ให้เก็บไว้ที่สำนักงาน</div>
                 </div>
