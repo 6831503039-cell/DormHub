@@ -1,5 +1,7 @@
 package th.mfu.admin;
 
+import java.util.Optional;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,17 +17,21 @@ import th.mfu.BookingRequestRepository;
 import th.mfu.config.Messages;
 import th.mfu.domain.BookingRequest;
 import th.mfu.domain.BookingStatus;
+import th.mfu.domain.Tenant;
+import th.mfu.service.BookingService;
 
-/** Booking requests sent from the public 3D room map (/explore). */
+/** Booking requests sent from the 3D room map (public /explore page and the tenant app's /app/rent). */
 @Controller
 @RequestMapping("/admin")
 public class BookingController {
 
     private final BookingRequestRepository repository;
+    private final BookingService bookingService;
     private final Messages messages;
 
-    public BookingController(BookingRequestRepository repository, Messages messages) {
+    public BookingController(BookingRequestRepository repository, BookingService bookingService, Messages messages) {
         this.repository = repository;
+        this.bookingService = bookingService;
         this.messages = messages;
     }
 
@@ -42,8 +48,16 @@ public class BookingController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         booking.setStatus(status);
         repository.save(booking);
-        redirect.addFlashAttribute("success", messages.get("flash.booking.status",
-                booking.getRoom().getRoomNumber(), booking.getFullName(), messages.get(status.getKey())));
+        String message = messages.get("flash.booking.status",
+                booking.getRoom().getRoomNumber(), booking.getFullName(), messages.get(status.getKey()));
+        if (status == BookingStatus.CONFIRMED && booking.getApplicant() != null) {
+            // sent from the app: the account becomes a tenant of the room (unless it already is one or the room is full)
+            Optional<Tenant> tenant = bookingService.moveIn(booking);
+            message += " " + (tenant.isPresent()
+                    ? messages.get("flash.booking.linked", booking.getApplicant().getEmail(), booking.getRoom().getRoomNumber())
+                    : messages.get("flash.booking.notLinked"));
+        }
+        redirect.addFlashAttribute("success", message);
         return "redirect:/admin/bookings";
     }
 }

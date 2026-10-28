@@ -37,6 +37,8 @@
             <div class="nav-section" th:text="#{nav.section.services}">บริการ</div>
             <a class="nav-link" th:classappend="${active == 'repairs'} ? 'active'" th:href="@{/admin/repairs}"><i data-lucide="wrench"></i> <span th:text="#{nav.repairs}">แจ้งซ่อม</span></a>
             <a class="nav-link" th:classappend="${active == 'feedback'} ? 'active'" th:href="@{/admin/feedback}"><i data-lucide="message-square"></i> <span th:text="#{nav.feedback}">ฟีดแบ็ก</span></a>
+            <a class="nav-link" th:classappend="${active == 'announcements'} ? 'active'" th:href="@{/admin/announcements}"><i data-lucide="megaphone"></i> <span th:text="#{nav.announcements}">ประกาศ</span></a>
+            <a class="nav-link" th:classappend="${active == 'parcels'} ? 'active'" th:href="@{/admin/parcels}"><i data-lucide="package"></i> <span th:text="#{nav.parcels}">พัสดุ</span></a>
         </nav>
         <!-- account menu: settings and log out -->
         <div class="user-box mt-auto dropup">

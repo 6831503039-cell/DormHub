@@ -37,34 +37,7 @@
 <main id="dormMap" class="explore-map" th:aria-label="#{map.aria}"></main>
 
 <!-- booking form, copied into the room panel by dorm3d.js -->
-<template id="bookTpl">
-    <form class="d3-book" th:action="@{/explore/book}" method="post">
-        <div class="fw-semibold" data-field="title" th:text="#{book.title}">จองห้อง</div>
-        <input type="hidden" name="room" data-field="room">
-        <div>
-            <label class="form-label" for="bkName" th:text="#{common.fullName}">ชื่อ-นามสกุล</label>
-            <input class="form-control" id="bkName" name="fullName" maxlength="100" autocomplete="name" required>
-        </div>
-        <div>
-            <label class="form-label" for="bkPhone" th:text="#{book.phone}">เบอร์โทรศัพท์</label>
-            <input class="form-control" id="bkPhone" name="phone" type="tel" maxlength="20" placeholder="08x-xxx-xxxx" autocomplete="tel" required>
-        </div>
-        <div>
-            <label class="form-label" for="bkEmail" th:text="#{common.email} + ' ' + #{common.optional}">อีเมล (ไม่บังคับ)</label>
-            <input class="form-control" id="bkEmail" name="email" type="email" maxlength="100" autocomplete="email">
-        </div>
-        <div>
-            <label class="form-label" for="bkDate" th:text="#{book.moveIn}">วันที่ต้องการเข้าอยู่</label>
-            <input class="form-control" id="bkDate" name="moveInDate" type="date" data-field="date" required>
-        </div>
-        <div>
-            <label class="form-label" for="bkNote" th:text="#{book.note} + ' ' + #{common.optional}">ข้อความถึงหอ (ไม่บังคับ)</label>
-            <textarea class="form-control" id="bkNote" name="note" rows="2" maxlength="500"></textarea>
-        </div>
-        <button class="btn btn-primary w-100" type="submit"><i data-lucide="send"></i> <span th:text="#{book.send}">ส่งคำขอจอง</span></button>
-        <div class="small text-muted" th:text="#{book.noPayment}">ยังไม่ต้องโอนเงิน เจ้าหน้าที่หอจะติดต่อกลับเพื่อยืนยันการจอง</div>
-    </form>
-</template>
+<template th:replace="~{fragments/ui :: bookTemplate(@{/explore/book}, null, null, false)}"></template>
 
 <div th:replace="~{fragments/ui :: settingsModal}"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

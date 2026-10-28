@@ -26,6 +26,11 @@
                     </select>
                     <div class="form-text" th:text="#{repair.status.help}">ผู้เช่าจะเห็นสถานะนี้ในแอป</div>
                 </div>
+                <div class="col-12">
+                    <label class="form-label" for="adminNote"><span th:text="#{repair.adminNote}">รายละเอียดการดำเนินงาน</span> <span class="optional" th:text="#{common.optional}">(ไม่บังคับ)</span></label>
+                    <textarea class="form-control" rows="3" th:field="*{adminNote}" maxlength="1000" th:placeholder="#{repair.adminNote.placeholder}"></textarea>
+                    <div class="form-text" th:text="#{repair.adminNote.help}">ผู้เช่าห้องนี้จะเห็นข้อความนี้ใต้รายการแจ้งซ่อม</div>
+                </div>
             </div>
         </div>
 
@@ -50,7 +55,7 @@
                 </div>
                 <div class="col-12">
                     <label class="form-label" for="description"><span th:text="#{repair.details}">รายละเอียด</span> <span class="optional" th:text="#{common.optional}">(ไม่บังคับ)</span></label>
-                    <textarea class="form-control" rows="3" th:field="*{description}"></textarea>
+                    <textarea class="form-control" rows="3" th:field="*{description}" maxlength="1000"></textarea>
                 </div>
                 <div class="col-sm-6" th:if="${repair.id == null}">
                     <label class="form-label" for="status" th:text="#{common.status}">สถานะ</label>
