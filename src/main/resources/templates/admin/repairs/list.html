@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout('แจ้งซ่อม', 'repairs', ~{::main})}">
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout(#{nav.repairs}, 'repairs', ~{::main})}">
 <body>
 <main th:with="today=${#temporals.createToday()}, DAYS=${T(java.time.temporal.ChronoUnit).DAYS},
                pendingCount=${#lists.size(repairs.?[status.name() == 'PENDING'])},
@@ -7,32 +7,32 @@
                tone=${ {'PENDING': 'warning', 'IN_PROGRESS': 'info', 'DONE': 'success'} }">
     <div class="page-header">
         <div>
-            <h1 class="page-title">แจ้งซ่อม</h1>
+            <h1 class="page-title" th:text="#{nav.repairs}">แจ้งซ่อม</h1>
             <p class="page-sub" th:text="${pendingCount + progressCount > 0}
-                    ? 'รอดำเนินการ ' + ${pendingCount} + ' · กำลังซ่อม ' + ${progressCount}
-                    : 'ไม่มีงานซ่อมค้าง'">ไม่มีงานซ่อมค้าง</p>
+                    ? #{repairs.counts(${pendingCount}, ${progressCount})}
+                    : #{repairs.noneOpen}">ไม่มีงานซ่อมค้าง</p>
         </div>
-        <a class="btn btn-primary" th:href="@{/admin/repairs/new}"><i data-lucide="plus"></i> เพิ่มรายการ</a>
+        <a class="btn btn-primary" th:href="@{/admin/repairs/new}"><i data-lucide="plus"></i> <span th:text="#{repairs.add}">เพิ่มรายการ</span></a>
     </div>
 
     <th:block th:if="${#lists.isEmpty(repairs)}">
         <div class="card">
-            <div th:replace="~{fragments/ui :: emptyState('wrench', 'ยังไม่มีรายการแจ้งซ่อม', 'เมื่อผู้เช่าแจ้งซ่อมจากแอป หรือเพิ่มเอง รายการจะแสดงที่นี่', @{/admin/repairs/new}, 'เพิ่มรายการ')}"></div>
+            <div th:replace="~{fragments/ui :: emptyState('wrench', #{repairs.empty.title}, #{repairs.empty.text}, @{/admin/repairs/new}, #{repairs.add})}"></div>
         </div>
     </th:block>
 
     <th:block th:unless="${#lists.isEmpty(repairs)}">
         <div class="list-toolbar" role="search">
             <label class="search-input">
-                <span class="visually-hidden">ค้นหางานซ่อม</span>
+                <span class="visually-hidden" th:text="#{repairs.search}">ค้นหางานซ่อม</span>
                 <i data-lucide="search"></i>
-                <input class="form-control" type="search" placeholder="ค้นหาห้อง เรื่อง หรือผู้แจ้ง" data-filter-target="#repairTable" autocomplete="off">
+                <input class="form-control" type="search" th:placeholder="#{repairs.search.placeholder}" data-filter-target="#repairTable" autocomplete="off">
             </label>
-            <label class="visually-hidden" for="filterStatus">สถานะ</label>
+            <label class="visually-hidden" for="filterStatus" th:text="#{common.status}">สถานะ</label>
             <select class="form-select" id="filterStatus" data-filter-target="#repairTable" data-filter-key="status">
-                <option value="open" th:selected="${pendingCount + progressCount > 0}">ยังไม่เสร็จ</option>
-                <option value="" th:selected="${pendingCount + progressCount == 0}">ทุกสถานะ</option>
-                <option th:each="s : ${T(th.mfu.domain.RepairStatus).values()}" th:value="${#strings.toLowerCase(s.name())}" th:text="${s.label}"></option>
+                <option value="open" th:selected="${pendingCount + progressCount > 0}" th:text="#{repairs.open}">ยังไม่เสร็จ</option>
+                <option value="" th:selected="${pendingCount + progressCount == 0}" th:text="#{common.allStatuses}">ทุกสถานะ</option>
+                <option th:each="s : ${T(th.mfu.domain.RepairStatus).values()}" th:value="${#strings.toLowerCase(s.name())}" th:text="#{${s.key}}"></option>
             </select>
             <span class="list-count" data-filter-count="#repairTable" aria-live="polite"></span>
         </div>
@@ -42,12 +42,12 @@
                 <table class="table table-hover table-cards" id="repairTable">
                     <thead>
                     <tr>
-                        <th scope="col">เรื่อง</th>
-                        <th scope="col">ห้อง</th>
-                        <th scope="col">ผู้แจ้ง</th>
-                        <th scope="col">วันที่แจ้ง</th>
-                        <th scope="col">สถานะ</th>
-                        <th scope="col"><span class="visually-hidden">จัดการ</span></th>
+                        <th scope="col" th:text="#{repair.subject}">เรื่อง</th>
+                        <th scope="col" th:text="#{common.room}">ห้อง</th>
+                        <th scope="col" th:text="#{repairs.col.reporter}">ผู้แจ้ง</th>
+                        <th scope="col" th:text="#{repair.reportedDate}">วันที่แจ้ง</th>
+                        <th scope="col" th:text="#{common.status}">สถานะ</th>
+                        <th scope="col"><span class="visually-hidden" th:text="#{common.actions}">จัดการ</span></th>
                     </tr>
                     </thead>
                     <tbody>
@@ -62,31 +62,31 @@
                         <td class="fw-medium nowrap" th:text="${r.room.roomNumber}"></td>
                         <td>
                             <span th:if="${r.reportedBy != null}" th:text="${r.reportedBy}"></span>
-                            <span th:unless="${r.reportedBy != null}" class="text-muted">แอดมิน</span>
+                            <span th:unless="${r.reportedBy != null}" class="text-muted" th:text="#{repairs.byAdmin}">แอดมิน</span>
                         </td>
                         <td>
                             <span class="cell-stack">
                                 <span class="num nowrap" th:text="${r.reportedDate != null} ? ${#temporals.format(r.reportedDate, 'dd/MM/yyyy')} : '-'"></span>
                                 <span class="item-meta" th:if="${open and waited != null}"
-                                      th:text="${waited == 0} ? 'วันนี้' : 'รอมา ' + ${waited} + ' วัน'"></span>
+                                      th:text="${waited == 0} ? #{repairs.today} : #{repairs.waited(${waited})}"></span>
                             </span>
                         </td>
-                        <td><span th:class="'badge status-' + ${tone[r.status.name()]}" th:text="${r.status.label}"></span></td>
+                        <td><span th:class="'badge status-' + ${tone[r.status.name()]}" th:text="#{${r.status.key}}"></span></td>
                         <td class="td-actions">
                             <a class="btn btn-soft btn-sm" th:href="@{/admin/repairs/{id}(id=${r.id})}"
-                               th:attr="aria-label='อัปเดตงานซ่อม ' + ${r.title} + ' ห้อง ' + ${r.room.roomNumber}">
-                                <i data-lucide="pencil"></i> <span th:text="${open} ? 'อัปเดต' : 'แก้ไข'">อัปเดต</span>
+                               th:attr="aria-label=#{repairs.updateN(${r.title}, ${r.room.roomNumber})}">
+                                <i data-lucide="pencil"></i> <span th:text="${open} ? #{repairs.update} : #{common.edit}">อัปเดต</span>
                             </a>
                             <a class="btn btn-ghost-danger btn-icon btn-sm" th:href="@{/admin/repairs/{id}/delete(id=${r.id})}"
-                               th:attr="aria-label='ลบงานซ่อม ' + ${r.title} + ' ห้อง ' + ${r.room.roomNumber},data-confirm='ลบแล้วกู้คืนไม่ได้ ผู้เช่าจะไม่เห็นรายการนี้ในแอปอีก',data-confirm-title='ลบ &quot;' + ${r.title} + '&quot;'"
-                               title="ลบ"><i data-lucide="trash-2"></i></a>
+                               th:attr="aria-label=#{repairs.deleteN(${r.title}, ${r.room.roomNumber})},data-confirm=#{repairs.delete.confirm},data-confirm-title=#{repairs.deleteTitle(${r.title})}"
+                               th:title="#{common.delete}"><i data-lucide="trash-2"></i></a>
                         </td>
                     </tr>
                     </tbody>
                 </table>
             </div>
             <div data-filter-empty="#repairTable" hidden>
-                <div th:replace="~{fragments/ui :: emptyState('circle-check', 'ไม่มีงานซ่อมในกลุ่มนี้', 'ถ้าเลือก &quot;ยังไม่เสร็จ&quot; แปลว่าซ่อมครบทุกงานแล้ว', null, null)}"></div>
+                <div th:replace="~{fragments/ui :: emptyState('circle-check', #{repairs.noMatch.title}, #{repairs.noMatch.text}, null, null)}"></div>
             </div>
         </div>
     </th:block>

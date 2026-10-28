@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout('ข้อมูลแจ้งซ่อม', 'repairs', ~{::main})}">
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout(#{repair.form.title}, 'repairs', ~{::main})}">
 <body>
 <main class="form-page">
-    <a class="back-link" th:href="@{/admin/repairs}"><i data-lucide="chevron-left"></i> แจ้งซ่อม</a>
+    <a class="back-link" th:href="@{/admin/repairs}"><i data-lucide="chevron-left"></i> <span th:text="#{nav.repairs}">แจ้งซ่อม</span></a>
     <div class="page-header">
         <div>
-            <h1 class="page-title" th:text="${repair.id == null} ? 'เพิ่มรายการแจ้งซ่อม' : ${repair.title}">แจ้งซ่อม</h1>
+            <h1 class="page-title" th:text="${repair.id == null} ? #{repair.new} : ${repair.title}">แจ้งซ่อม</h1>
             <p class="page-sub" th:if="${repair.id != null}"
-               th:text="'ห้อง ' + ${repair.room.roomNumber} + (${repair.reportedBy != null} ? ' · แจ้งโดย ' + ${repair.reportedBy} : '')"></p>
+               th:text="#{common.roomN(${repair.room.roomNumber})} + (${repair.reportedBy != null} ? ' · ' + #{repair.reportedBy(${repair.reportedBy})} : '')"></p>
         </div>
     </div>
 
@@ -17,53 +17,53 @@
 
         <!-- when editing, the status is what changes most often, so it comes first -->
         <div class="form-section" th:if="${repair.id != null}">
-            <h2 class="form-section-title">สถานะงาน</h2>
+            <h2 class="form-section-title" th:text="#{repair.jobStatus}">สถานะงาน</h2>
             <div class="row g-3">
                 <div class="col-sm-6">
-                    <label class="form-label" for="status">สถานะ</label>
+                    <label class="form-label" for="status" th:text="#{common.status}">สถานะ</label>
                     <select class="form-select" th:field="*{status}">
-                        <option th:each="s : ${T(th.mfu.domain.RepairStatus).values()}" th:value="${s}" th:text="${s.label}"></option>
+                        <option th:each="s : ${T(th.mfu.domain.RepairStatus).values()}" th:value="${s}" th:text="#{${s.key}}"></option>
                     </select>
-                    <div class="form-text">ผู้เช่าจะเห็นสถานะนี้ในแอป</div>
+                    <div class="form-text" th:text="#{repair.status.help}">ผู้เช่าจะเห็นสถานะนี้ในแอป</div>
                 </div>
             </div>
         </div>
 
         <div class="form-section">
-            <h2 class="form-section-title">รายละเอียดงาน</h2>
+            <h2 class="form-section-title" th:text="#{repair.jobDetails}">รายละเอียดงาน</h2>
             <div class="row g-3">
                 <div class="col-sm-6">
-                    <label class="form-label" for="room">ห้อง</label>
+                    <label class="form-label" for="room" th:text="#{common.room}">ห้อง</label>
                     <select class="form-select" id="room" name="room" required>
-                        <option value="">เลือกห้อง</option>
+                        <option value="" th:text="#{bill.chooseRoom}">เลือกห้อง</option>
                         <option th:each="r : ${rooms}" th:value="${r.id}" th:text="${r.roomNumber}"
                                 th:selected="${repair.room != null and repair.room.id == r.id}"></option>
                     </select>
                 </div>
                 <div class="col-sm-6">
-                    <label class="form-label" for="reportedDate">วันที่แจ้ง</label>
+                    <label class="form-label" for="reportedDate" th:text="#{repair.reportedDate}">วันที่แจ้ง</label>
                     <input class="form-control" type="date" th:field="*{reportedDate}" required>
                 </div>
                 <div class="col-12">
-                    <label class="form-label" for="title">เรื่อง</label>
-                    <input class="form-control" th:field="*{title}" placeholder="เช่น แอร์ไม่เย็น, ก๊อกน้ำรั่ว" required>
+                    <label class="form-label" for="title" th:text="#{repair.subject}">เรื่อง</label>
+                    <input class="form-control" th:field="*{title}" th:placeholder="#{repair.subject.placeholder}" required>
                 </div>
                 <div class="col-12">
-                    <label class="form-label" for="description">รายละเอียด <span class="optional">(ไม่บังคับ)</span></label>
+                    <label class="form-label" for="description"><span th:text="#{repair.details}">รายละเอียด</span> <span class="optional" th:text="#{common.optional}">(ไม่บังคับ)</span></label>
                     <textarea class="form-control" rows="3" th:field="*{description}"></textarea>
                 </div>
                 <div class="col-sm-6" th:if="${repair.id == null}">
-                    <label class="form-label" for="status">สถานะ</label>
+                    <label class="form-label" for="status" th:text="#{common.status}">สถานะ</label>
                     <select class="form-select" th:field="*{status}">
-                        <option th:each="s : ${T(th.mfu.domain.RepairStatus).values()}" th:value="${s}" th:text="${s.label}"></option>
+                        <option th:each="s : ${T(th.mfu.domain.RepairStatus).values()}" th:value="${s}" th:text="#{${s.key}}"></option>
                     </select>
                 </div>
             </div>
         </div>
 
         <div class="form-actions">
-            <button class="btn btn-primary" type="submit"><i data-lucide="check"></i> บันทึก</button>
-            <a class="btn btn-secondary" th:href="@{/admin/repairs}">ยกเลิก</a>
+            <button class="btn btn-primary" type="submit"><i data-lucide="check"></i> <span th:text="#{common.save}">บันทึก</span></button>
+            <a class="btn btn-secondary" th:href="@{/admin/repairs}" th:text="#{common.cancel}">ยกเลิก</a>
         </div>
     </form>
 </main>

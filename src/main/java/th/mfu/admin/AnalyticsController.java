@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import th.mfu.config.Messages;
 import th.mfu.domain.Season;
 import th.mfu.service.AnalyticsService;
 
@@ -16,9 +17,11 @@ import th.mfu.service.AnalyticsService;
 public class AnalyticsController {
 
     private final AnalyticsService analyticsService;
+    private final Messages messages;
 
-    public AnalyticsController(AnalyticsService analyticsService) {
+    public AnalyticsController(AnalyticsService analyticsService, Messages messages) {
         this.analyticsService = analyticsService;
+        this.messages = messages;
     }
 
     @GetMapping("/admin/analytics")
@@ -43,7 +46,7 @@ public class AnalyticsController {
 
         Map<Season, Double> seasonAverages = analyticsService.seasonAverages();
         model.addAttribute("seasonAverages", seasonAverages);
-        model.addAttribute("seasonLabels", seasonAverages.keySet().stream().map(Season::getLabel).toArray());
+        model.addAttribute("seasonLabels", seasonAverages.keySet().stream().map(s -> messages.get(s.getKey())).toArray());
         model.addAttribute("seasonValues", seasonAverages.values());
         model.addAttribute("abnormal", analyticsService.abnormalRooms());
         return "admin/analytics";

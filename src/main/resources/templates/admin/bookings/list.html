@@ -1,37 +1,37 @@
 <!DOCTYPE html>
-<html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout('คำขอจอง', 'bookings', ~{::main})}">
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout(#{nav.bookings}, 'bookings', ~{::main})}">
 <body>
 <main>
     <div class="page-header">
         <div>
-            <h1 class="page-title">คำขอจองห้อง</h1>
-            <p class="page-sub" th:text="${pendingCount > 0} ? 'รอติดต่อกลับ ' + ${pendingCount} + ' รายการ' : 'ไม่มีคำขอที่รอติดต่อกลับ'"></p>
+            <h1 class="page-title" th:text="#{bookings.title}">คำขอจองห้อง</h1>
+            <p class="page-sub" th:text="${pendingCount > 0} ? #{bookings.pendingN(${pendingCount})} : #{bookings.nonePending}"></p>
         </div>
-        <a class="btn btn-secondary" th:href="@{/explore}" target="_blank" rel="noopener"><i data-lucide="external-link"></i> เปิดหน้าจองห้อง</a>
+        <a class="btn btn-secondary" th:href="@{/explore}" target="_blank" rel="noopener"><i data-lucide="external-link"></i> <span th:text="#{bookings.openPage}">เปิดหน้าจองห้อง</span></a>
     </div>
     <p class="form-text d-flex gap-2 mb-3">
         <i data-lucide="info"></i>
-        <span>คำขอส่งมาจากหน้าแผนผัง 3D สำหรับคนทั่วไป ติดต่อกลับแล้วกดยืนยันหรือยกเลิก</span>
+        <span th:text="#{bookings.hint}">คำขอส่งมาจากหน้าแผนผัง 3D สำหรับคนทั่วไป ติดต่อกลับแล้วกดยืนยันหรือยกเลิก</span>
     </p>
 
     <th:block th:if="${#lists.isEmpty(bookings)}">
         <div class="card">
-            <div th:replace="~{fragments/ui :: emptyState('inbox', 'ยังไม่มีคำขอจอง', 'เมื่อมีคนขอจองห้องจากหน้าแผนผัง 3D รายการจะแสดงที่นี่', null, null)}"></div>
+            <div th:replace="~{fragments/ui :: emptyState('inbox', #{bookings.empty.title}, #{bookings.empty.text}, null, null)}"></div>
         </div>
     </th:block>
 
     <th:block th:unless="${#lists.isEmpty(bookings)}">
         <div class="list-toolbar" role="search">
             <label class="search-input">
-                <span class="visually-hidden">ค้นหาคำขอจอง</span>
+                <span class="visually-hidden" th:text="#{bookings.search}">ค้นหาคำขอจอง</span>
                 <i data-lucide="search"></i>
-                <input class="form-control" type="search" placeholder="ค้นหาชื่อ ห้อง หรือเบอร์โทร" data-filter-target="#bookingTable" autocomplete="off">
+                <input class="form-control" type="search" th:placeholder="#{bookings.search.placeholder}" data-filter-target="#bookingTable" autocomplete="off">
             </label>
-            <label class="visually-hidden" for="filterStatus">สถานะ</label>
+            <label class="visually-hidden" for="filterStatus" th:text="#{common.status}">สถานะ</label>
             <select class="form-select" id="filterStatus" data-filter-target="#bookingTable" data-filter-key="status">
-                <option value="" th:selected="${pendingCount == 0}">ทุกสถานะ</option>
+                <option value="" th:selected="${pendingCount == 0}" th:text="#{common.allStatuses}">ทุกสถานะ</option>
                 <option th:each="s : ${T(th.mfu.domain.BookingStatus).values()}" th:value="${#strings.toLowerCase(s.name())}"
-                        th:text="${s.label}" th:selected="${s.name() == 'PENDING' and pendingCount > 0}"></option>
+                        th:text="#{${s.key}}" th:selected="${s.name() == 'PENDING' and pendingCount > 0}"></option>
             </select>
             <span class="list-count" data-filter-count="#bookingTable" aria-live="polite"></span>
         </div>
@@ -41,20 +41,20 @@
                 <table class="table table-hover table-cards" id="bookingTable">
                     <thead>
                     <tr>
-                        <th scope="col">ผู้ขอจอง</th>
-                        <th scope="col">ห้อง</th>
-                        <th scope="col">ติดต่อ</th>
-                        <th scope="col">เข้าอยู่</th>
-                        <th scope="col">ข้อความ</th>
-                        <th scope="col">สถานะ</th>
-                        <th scope="col"><span class="visually-hidden">จัดการ</span></th>
+                        <th scope="col" th:text="#{bookings.col.name}">ผู้ขอจอง</th>
+                        <th scope="col" th:text="#{common.room}">ห้อง</th>
+                        <th scope="col" th:text="#{bookings.col.contact}">ติดต่อ</th>
+                        <th scope="col" th:text="#{bookings.col.moveIn}">เข้าอยู่</th>
+                        <th scope="col" th:text="#{bookings.col.message}">ข้อความ</th>
+                        <th scope="col" th:text="#{common.status}">สถานะ</th>
+                        <th scope="col"><span class="visually-hidden" th:text="#{common.actions}">จัดการ</span></th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="b : ${bookings}" data-row th:attr="data-status=${#strings.toLowerCase(b.status.name())}">
                         <td class="td-title">
                             <span class="d-block fw-semibold" th:text="${b.fullName}"></span>
-                            <span class="item-meta" th:text="'ส่งเมื่อ ' + ${#temporals.format(b.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
+                            <span class="item-meta" th:text="#{bookings.sentAt(${#temporals.format(b.createdAt, 'dd/MM/yyyy HH:mm')})}"></span>
                         </td>
                         <td><a class="fw-medium nowrap" th:href="@{/admin/rooms/{id}(id=${b.room.id})}" th:text="${b.room.roomNumber}"></a></td>
                         <td>
@@ -65,18 +65,18 @@
                         </td>
                         <td class="num nowrap" th:text="${b.moveInDate != null} ? ${#temporals.format(b.moveInDate, 'dd/MM/yyyy')} : '-'"></td>
                         <td class="td-wide"><span class="item-meta clamp-2" th:text="${b.note != null and !#strings.isEmpty(b.note)} ? ${b.note} : '-'"></span></td>
-                        <td><span th:class="'badge soft-' + ${b.status.badge}" th:text="${b.status.label}"></span></td>
+                        <td><span th:class="'badge soft-' + ${b.status.badge}" th:text="#{${b.status.key}}"></span></td>
                         <td class="td-actions">
                             <form class="d-inline" th:action="@{/admin/bookings/{id}/status(id=${b.id})}" method="post" th:if="${b.status.name() != 'CONFIRMED'}">
                                 <input type="hidden" name="status" value="CONFIRMED">
                                 <button class="btn btn-soft btn-sm" type="submit"
-                                        th:attr="aria-label='ยืนยันคำขอจองของ ' + ${b.fullName}"><i data-lucide="check"></i> ยืนยัน</button>
+                                        th:attr="aria-label=#{bookings.confirmN(${b.fullName})}"><i data-lucide="check"></i> <span th:text="#{bookings.confirm}">ยืนยัน</span></button>
                             </form>
                             <form class="d-inline" th:action="@{/admin/bookings/{id}/status(id=${b.id})}" method="post" th:if="${b.status.name() != 'CANCELLED'}">
                                 <input type="hidden" name="status" value="CANCELLED">
                                 <button class="btn btn-ghost btn-sm" type="submit"
-                                        th:attr="aria-label='ยกเลิกคำขอจองของ ' + ${b.fullName},data-confirm='คำขอจองห้อง ' + ${b.room.roomNumber} + ' ของ ' + ${b.fullName} + ' จะถูกยกเลิก',data-confirm-title='ยกเลิกคำขอจอง'"
-                                        data-confirm-ok="ยกเลิกคำขอ" data-confirm-tone="primary">ยกเลิก</button>
+                                        th:attr="aria-label=#{bookings.cancelN(${b.fullName})},data-confirm=#{bookings.cancel.confirm(${b.room.roomNumber}, ${b.fullName})},data-confirm-title=#{bookings.cancel.title},data-confirm-ok=#{bookings.cancel.ok}"
+                                        data-confirm-tone="primary" th:text="#{common.cancel}">ยกเลิก</button>
                             </form>
                         </td>
                     </tr>
@@ -84,7 +84,7 @@
                 </table>
             </div>
             <div data-filter-empty="#bookingTable" hidden>
-                <div th:replace="~{fragments/ui :: emptyState('circle-check', 'ไม่มีคำขอในกลุ่มนี้', 'ลองเปลี่ยนคำค้นหรือตัวกรอง', null, null)}"></div>
+                <div th:replace="~{fragments/ui :: emptyState('circle-check', #{bookings.noMatch}, #{common.noMatch.text}, null, null)}"></div>
             </div>
         </div>
     </th:block>

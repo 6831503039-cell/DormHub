@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import th.mfu.config.Messages;
 import th.mfu.domain.AppUser;
 import th.mfu.domain.Tenant;
 import th.mfu.service.CurrentUserService;
@@ -21,10 +22,12 @@ public class LaundryController {
 
     private final LaundryService laundryService;
     private final CurrentUserService currentUser;
+    private final Messages messages;
 
-    public LaundryController(LaundryService laundryService, CurrentUserService currentUser) {
+    public LaundryController(LaundryService laundryService, CurrentUserService currentUser, Messages messages) {
         this.laundryService = laundryService;
         this.currentUser = currentUser;
+        this.messages = messages;
     }
 
     @GetMapping("/app/laundry")
@@ -39,12 +42,12 @@ public class LaundryController {
         AppUser user = currentUser.user(principal);
         Optional<Tenant> tenant = currentUser.tenant(user);
         String who = tenant.isPresent() && tenant.get().getRoom() != null
-                ? "ห้อง " + tenant.get().getRoom().getRoomNumber()
+                ? messages.get("laundry.usedByRoom", tenant.get().getRoom().getRoomNumber())
                 : user.getFullName();
         if (laundryService.start(id, who)) {
-            redirect.addFlashAttribute("success", "เริ่มใช้งานแล้ว (จำลอง) ระบบจะแสดงเวลาที่เหลือ");
+            redirect.addFlashAttribute("success", messages.get("flash.laundry.started"));
         } else {
-            redirect.addFlashAttribute("error", "เครื่องนี้กำลังมีคนใช้อยู่");
+            redirect.addFlashAttribute("error", messages.get("flash.laundry.busy"));
         }
         return "redirect:/app/laundry";
     }

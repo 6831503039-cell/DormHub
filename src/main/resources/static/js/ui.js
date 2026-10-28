@@ -2,7 +2,7 @@
  * DormHub shared UI behaviour (design system). Loaded once by every layout.
  *
  *  data-confirm="ลบห้อง A101?"        on <a> or a submit <button>: asks in the confirm modal first
- *      data-confirm-title, data-confirm-ok (button label, default "ลบ"),
+ *      data-confirm-title, data-confirm-ok (button label, default "ลบ" / "Delete"),
  *      data-confirm-tone="primary" for a non-destructive confirmation (default "danger")
  *  POST forms                          the submit button shows a spinner and is disabled while sending
  *      add data-no-loading to a form to opt out
@@ -12,8 +12,11 @@
  *                                      (table rows or list items) that do not contain the text
  *  data-filter-key="status"            on a <select> with data-filter-target: keeps rows whose
  *                                      data-status contains the value as a token ("" = all)
- *  data-filter-count="#tableId"        element that shows "N รายการ"
+ *  data-filter-count="#tableId"        element that shows "N items"
  *  data-filter-empty="#tableId"        element shown when no row matches
+ *  #settingsModal                      Settings dialog (fragments/ui :: settingsModal): language links
+ *                                      keep the current page, theme radios apply at once (prefs.js)
+ * Texts in scripts use dhT('ไทย', 'English') from prefs.js.
  */
 (function () {
     'use strict';
@@ -42,10 +45,10 @@
             }
             return;
         }
-        modalEl.querySelector('[data-confirm-title]').textContent = trigger.getAttribute('data-confirm-title') || 'ยืนยันการลบ';
+        modalEl.querySelector('[data-confirm-title]').textContent = trigger.getAttribute('data-confirm-title') || dhT('ยืนยันการลบ', 'Confirm delete');
         modalEl.querySelector('[data-confirm-message]').textContent = message;
         var okButton = modalEl.querySelector('[data-confirm-ok]');
-        okButton.textContent = trigger.getAttribute('data-confirm-ok') || 'ลบ';
+        okButton.textContent = trigger.getAttribute('data-confirm-ok') || dhT('ลบ', 'Delete');
         // tone "danger" (default) = delete style with the trash icon; "primary" = normal confirmation
         var danger = (trigger.getAttribute('data-confirm-tone') || 'danger') === 'danger';
         okButton.classList.toggle('btn-danger', danger);
@@ -167,10 +170,37 @@
             }
         });
         document.querySelectorAll('[data-filter-count="' + target + '"]').forEach(function (el) {
-            el.textContent = shown + ' รายการ';
+            el.textContent = shown + dhT(' รายการ', shown === 1 ? ' item' : ' items');
         });
         document.querySelectorAll('[data-filter-empty="' + target + '"]').forEach(function (el) {
             el.hidden = shown !== 0 || rows.length === 0;
         });
+    }
+
+    /* ---------- Settings dialog: language and theme ---------- */
+    var settings = document.getElementById('settingsModal');
+    if (settings) {
+        // the language links reload the current page with ?lang=..., keeping its other query parameters
+        settings.querySelectorAll('[data-set-lang]').forEach(function (link) {
+            var url = new URL(window.location.href);
+            url.searchParams.set('lang', link.getAttribute('data-set-lang'));
+            link.href = url.pathname + url.search + url.hash;
+        });
+        var current = window.dhTheme ? window.dhTheme.get() : 'light';
+        settings.querySelectorAll('input[name="theme"]').forEach(function (radio) {
+            radio.checked = radio.value === current;
+            radio.addEventListener('change', function () {
+                if (radio.checked && window.dhTheme) {
+                    window.dhTheme.set(radio.value);
+                }
+            });
+        });
+    }
+
+    // after switching language, drop ?lang= from the address so a reload or shared link stays clean
+    if (window.history.replaceState && /[?&]lang=/.test(window.location.search)) {
+        var clean = new URL(window.location.href);
+        clean.searchParams.delete('lang');
+        window.history.replaceState(window.history.state, '', clean.pathname + clean.search + clean.hash);
     }
 })();

@@ -93,6 +93,26 @@ public class DormHubApplicationTest {
                 .andExpect(redirectedUrl("/login?error"));
     }
 
+    // ---------- language and settings ----------
+
+    @Test
+    public void pagesAreThaiByDefaultAndEnglishOnRequest() throws Exception {
+        mvc.perform(get("/login")).andExpect(content().string(containsString("เข้าสู่ระบบ")));
+        mvc.perform(get("/login").param("lang", "en"))
+                .andExpect(content().string(containsString("Log in")))
+                .andExpect(content().string(containsString("lang=\"en\"")));
+        mvc.perform(get("/app").param("lang", "en").with(tenant()))
+                .andExpect(content().string(containsString("Amount due")));
+    }
+
+    @Test
+    public void accountMenusOpenTheSettingsDialog() throws Exception {
+        mvc.perform(get("/app").with(tenant())).andExpect(content().string(containsString("data-bs-target=\"#settingsModal\"")))
+                .andExpect(content().string(containsString("id=\"settingsModal\"")));
+        mvc.perform(get("/admin").with(admin())).andExpect(content().string(containsString("data-bs-target=\"#settingsModal\"")))
+                .andExpect(content().string(containsString("value=\"dark\"")));
+    }
+
     @Test
     public void adminEmailCannotBeRegistered() throws Exception {
         mvc.perform(post("/register").with(csrf())
