@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="th" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="'สมัครสมาชิก · ' + ${dormName}">สมัครสมาชิก</title>
+    <title th:text="#{common.register} + ' · ' + ${dormName}">สมัครสมาชิก</title>
+    <script th:src="@{/js/prefs.js}"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
@@ -12,50 +13,54 @@
     <link rel="icon" type="image/png" th:href="@{/img/logo-icon.png}">
 </head>
 <body>
+<button class="btn btn-ghost btn-icon page-settings" type="button" data-bs-toggle="modal" data-bs-target="#settingsModal"
+        th:aria-label="#{settings.title}" th:title="#{settings.title}"><i data-lucide="settings"></i></button>
 <div class="auth-wrap">
     <div class="card auth-card">
         <div class="text-center mb-4">
             <img th:src="@{/img/logo-icon.png}" alt="DormHub" class="brand-logo d-block mx-auto mb-3" style="width:64px;height:64px;border-radius:16px">
-            <h1 class="h4 mb-1">สมัครสมาชิก</h1>
-            <div class="text-muted small">ใช้อีเมลเดียวกับที่แจ้งไว้กับหอพัก ระบบจะเชื่อมบัญชีกับห้องของคุณให้อัตโนมัติ</div>
+            <h1 class="h4 mb-1" th:text="#{common.register}">สมัครสมาชิก</h1>
+            <div class="text-muted small" th:text="#{register.hint}">ใช้อีเมลเดียวกับที่แจ้งไว้กับหอพัก ระบบจะเชื่อมบัญชีกับห้องของคุณให้อัตโนมัติ</div>
         </div>
 
         <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
         <form th:action="@{/register}" th:object="${form}" method="post">
             <div class="mb-3">
-                <label class="form-label" for="fullName">ชื่อ-นามสกุล</label>
+                <label class="form-label" for="fullName" th:text="#{common.fullName}">ชื่อ-นามสกุล</label>
                 <input class="form-control" th:field="*{fullName}" required>
             </div>
             <div class="mb-3">
-                <label class="form-label" for="email">อีเมล</label>
+                <label class="form-label" for="email" th:text="#{common.email}">อีเมล</label>
                 <input class="form-control" type="email" th:field="*{email}" autocomplete="username" required>
             </div>
             <div class="mb-3">
-                <label class="form-label" for="password">รหัสผ่าน (อย่างน้อย 6 ตัวอักษร)</label>
+                <label class="form-label" for="password" th:text="#{register.password}">รหัสผ่าน (อย่างน้อย 6 ตัวอักษร)</label>
                 <div class="password-field">
                     <input class="form-control" type="password" th:field="*{password}" minlength="6" autocomplete="new-password" required>
-                    <button class="password-eye" type="button" data-toggle-password="password" aria-label="แสดงรหัสผ่าน" aria-pressed="false">
+                    <button class="password-eye" type="button" data-toggle-password="password" th:aria-label="#{common.showPassword}" aria-pressed="false">
                         <span class="when-hidden"><i data-lucide="eye"></i></span><span class="when-shown" hidden><i data-lucide="eye-off"></i></span>
                     </button>
                 </div>
             </div>
             <div class="mb-4">
-                <label class="form-label" for="confirmPassword">ยืนยันรหัสผ่าน</label>
+                <label class="form-label" for="confirmPassword" th:text="#{register.confirmPassword}">ยืนยันรหัสผ่าน</label>
                 <div class="password-field">
                     <input class="form-control" type="password" th:field="*{confirmPassword}" minlength="6" autocomplete="new-password" required>
-                    <button class="password-eye" type="button" data-toggle-password="confirmPassword" aria-label="แสดงรหัสผ่าน" aria-pressed="false">
+                    <button class="password-eye" type="button" data-toggle-password="confirmPassword" th:aria-label="#{common.showPassword}" aria-pressed="false">
                         <span class="when-hidden"><i data-lucide="eye"></i></span><span class="when-shown" hidden><i data-lucide="eye-off"></i></span>
                     </button>
                 </div>
             </div>
-            <button class="btn btn-primary w-100 py-2" type="submit">สมัครสมาชิก</button>
+            <button class="btn btn-primary w-100 py-2" type="submit" th:text="#{common.register}">สมัครสมาชิก</button>
         </form>
         <div class="text-center mt-4 text-muted">
-            มีบัญชีแล้ว? <a th:href="@{/login}">เข้าสู่ระบบ</a>
+            <span th:text="#{register.haveAccount}">มีบัญชีแล้ว?</span> <a th:href="@{/login}" th:text="#{common.login}">เข้าสู่ระบบ</a>
         </div>
     </div>
 </div>
+<div th:replace="~{fragments/ui :: settingsModal}"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <script th:src="@{/js/ui.js}"></script>
 <script th:src="@{/js/password-toggle.js}"></script>
