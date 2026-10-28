@@ -422,19 +422,40 @@ public class DormHubApplicationTest {
     // ---------- repairs, announcements, parcels, electricity ----------
 
     @Test
-    public void adminEditsRepairDetailsAndTenantSeesTheWorkNote() throws Exception {
+    public void updatingARepairOnlyChangesStatusAndWorkNote() throws Exception {
         Room a101 = roomRepository.findByRoomNumber("A101").get();
         var repair = repairRepository.findByRoomOrderByReportedDateDescIdDesc(roomRepository.findByRoomNumber("A102").get()).get(0);
+        String title = repair.getTitle();
+        String description = repair.getDescription();
+        // the update page shows the reported details as text, not as inputs
+        mvc.perform(get("/admin/repairs/" + repair.getId()).with(admin()))
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("name=\"title\""))));
+        // even a crafted request cannot change what the tenant reported
         mvc.perform(post("/admin/repairs").with(admin()).with(csrf())
                 .param("id", repair.getId().toString()).param("room", a101.getId().toString())
-                .param("reportedDate", repair.getReportedDate().toString()).param("title", "ก๊อกน้ำอ่างล้างหน้ารั่ว")
-                .param("description", "รายละเอียดใหม่").param("status", "IN_PROGRESS").param("adminNote", "ช่างเข้าวันศุกร์ 10:00"))
+                .param("reportedDate", "2020-01-01").param("title", "แก้หัวข้อ")
+                .param("description", "แก้รายละเอียด").param("status", "IN_PROGRESS").param("adminNote", "ช่างเข้าวันศุกร์ 10:00"))
                 .andExpect(redirectedUrl("/admin/repairs"));
         var saved = repairRepository.findById(repair.getId()).get();
-        assertEquals("ก๊อกน้ำอ่างล้างหน้ารั่ว", saved.getTitle());
-        assertEquals("รายละเอียดใหม่", saved.getDescription());
-        assertEquals("A101", saved.getRoom().getRoomNumber());
-        mvc.perform(get("/app/requests").with(tenant())).andExpect(content().string(containsString("ช่างเข้าวันศุกร์ 10:00")));
+        assertEquals(title, saved.getTitle());
+        assertEquals(description, saved.getDescription());
+        assertEquals("A102", saved.getRoom().getRoomNumber());
+        assertEquals(repair.getReportedDate(), saved.getReportedDate());
+        assertEquals("สุดา รักเรียน", saved.getReportedBy());
+        assertEquals(th.mfu.domain.RepairStatus.IN_PROGRESS, saved.getStatus());
+        mvc.perform(get("/app/requests").with(user("suda@example.com").roles("TENANT")))
+                .andExpect(content().string(containsString("ช่างเข้าวันศุกร์ 10:00")));
+    }
+
+    @Test
+    public void adminCanStillAddARepairWithAllDetails() throws Exception {
+        Room a101 = roomRepository.findByRoomNumber("A101").get();
+        mvc.perform(get("/admin/repairs/new").with(admin())).andExpect(content().string(containsString("name=\"title\"")));
+        mvc.perform(post("/admin/repairs").with(admin()).with(csrf())
+                .param("room", a101.getId().toString()).param("reportedDate", "2026-10-01")
+                .param("title", "แอร์ไม่เย็น").param("description", "มีน้ำหยด").param("status", "PENDING"))
+                .andExpect(redirectedUrl("/admin/repairs"));
+        assertTrue(repairRepository.findByRoomOrderByReportedDateDescIdDesc(a101).stream().anyMatch(r -> r.getTitle().equals("แอร์ไม่เย็น")));
     }
 
     @Test
