@@ -821,3 +821,23 @@ a.news-item:hover { border-color: var(--c-border-strong); }
 .detail-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--sp-3); }
 .detail-list dt { font-size: var(--fs-xs); font-weight: var(--fw-medium); color: var(--c-muted); margin-bottom: 2px; }
 .detail-list dd { margin: 0; }
+/* collapsible groups (rooms / tenants by building): <details class="card group-card" data-group> */
+.group-list { display: grid; gap: var(--sp-2); }
+.group-card { overflow: hidden; }
+.group-head {
+    display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-3) var(--sp-4);
+    cursor: pointer; list-style: none; user-select: none;
+}
+.group-head::-webkit-details-marker { display: none; }
+.group-head:hover { background: var(--c-primary-soft); }
+.group-head:focus-visible { outline: 3px solid var(--c-focus); outline-offset: -3px; }
+.group-badge {
+    width: 36px; height: 36px; border-radius: var(--r-sm); display: grid; place-items: center; flex-shrink: 0;
+    background: var(--c-primary-soft); color: var(--c-primary-text); font-weight: var(--fw-medium);
+}
+.group-title { font-weight: var(--fw-medium); }
+.group-meta { color: var(--c-muted); font-size: var(--fs-xs); margin-left: auto; }
+.group-chevron { width: 1.1rem; height: 1.1rem; color: var(--c-muted); transition: transform .15s; }
+.group-card[open] > .group-head { border-bottom: 1px solid var(--c-border); }
+.group-card[open] .group-chevron { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) { .group-chevron { transition: none; } }
