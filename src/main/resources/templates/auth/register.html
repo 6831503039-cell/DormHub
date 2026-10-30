@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- read the CSRF token here so its session exists before the page body (with the inline drawing) is streamed -->
+    <meta name="_csrf" th:content="${_csrf.token}">
     <title th:text="#{common.register} + ' · ' + ${dormName}">สมัครสมาชิก</title>
     <script th:src="@{/js/prefs.js}"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
