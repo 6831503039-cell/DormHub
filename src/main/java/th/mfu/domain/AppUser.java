@@ -1,12 +1,15 @@
 package th.mfu.domain;
 
+import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 
 /** A login account. Tenants are linked to their Tenant record by email. */
 @Entity
@@ -29,6 +32,14 @@ public class AppUser {
     @Enumerated(EnumType.STRING)
     private Role role = Role.TENANT;
 
+    // profile picture chosen on the profile page (optional)
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
+    private byte[] avatar;
+    private String avatarContentType;
+    // goes up every time a new picture is saved, so the browser loads the new one
+    private int avatarVersion;
+
     public AppUser() {
     }
 
@@ -37,6 +48,10 @@ public class AppUser {
         this.password = password;
         this.fullName = fullName;
         this.role = role;
+    }
+
+    public boolean hasAvatar() {
+        return avatarContentType != null;
     }
 
     public boolean isAdmin() {
@@ -76,5 +91,26 @@ public class AppUser {
     }
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public byte[] getAvatar() {
+        return avatar;
+    }
+    public void setAvatar(byte[] avatar) {
+        this.avatar = avatar;
+    }
+
+    public String getAvatarContentType() {
+        return avatarContentType;
+    }
+    public void setAvatarContentType(String avatarContentType) {
+        this.avatarContentType = avatarContentType;
+    }
+
+    public int getAvatarVersion() {
+        return avatarVersion;
+    }
+    public void setAvatarVersion(int avatarVersion) {
+        this.avatarVersion = avatarVersion;
     }
 }
