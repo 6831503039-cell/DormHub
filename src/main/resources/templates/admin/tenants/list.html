@@ -98,14 +98,14 @@
                             <td>
                                 <span class="cell text-nowrap" th:if="${t.contractEndDate != null}">
                                     <span class="num" th:text="${#temporals.format(t.contractEndDate, 'dd/MM/yyyy')}"></span>
-                                    <span th:if="${contract == 'soon'}" class="badge status-soon" th:text="#{tenants.daysLeft(${daysLeft})}"></span>
-                                    <span th:if="${contract == 'expired'}" class="badge status-danger" th:text="#{tenants.contract.expired}">หมดแล้ว</span>
+                                    <th:block th:if="${contract == 'soon'}"><span th:replace="~{fragments/ui :: status('soon', #{tenants.daysLeft(${daysLeft})})}"></span></th:block>
+                                    <th:block th:if="${contract == 'expired'}"><span th:replace="~{fragments/ui :: status('danger', #{tenants.contract.expired})}"></span></th:block>
                                 </span>
                                 <span th:if="${t.contractEndDate == null}" class="text-muted">-</span>
                             </td>
                             <td>
-                                <span th:if="${hasApp}" class="badge status-success" th:text="#{tenants.app.yes}">ใช้แอปแล้ว</span>
-                                <span th:unless="${hasApp}" class="badge status-neutral" th:text="#{tenants.app.no}">ยังไม่สมัคร</span>
+                                <th:block th:if="${hasApp}"><span th:replace="~{fragments/ui :: status('success', #{tenants.app.yes})}"></span></th:block>
+                                <th:block th:unless="${hasApp}"><span th:replace="~{fragments/ui :: status('neutral', #{tenants.app.no})}"></span></th:block>
                             </td>
                             <td class="td-actions">
                                 <a class="btn btn-soft btn-icon btn-sm" th:href="@{/admin/tenants/{id}(id=${t.id})}"

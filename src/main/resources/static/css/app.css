@@ -416,18 +416,47 @@ a.card-link:hover { text-decoration: underline; }
     .table-cards td.td-empty::before { content: none; }
 }
 
-/* =========================== Badge =========================== */
-.badge {
-    display: inline-flex; align-items: center; gap: var(--sp-1);
-    font-size: var(--fs-xs); font-weight: var(--fw-medium); line-height: 1.4;
-    padding: 2px var(--sp-2); border-radius: var(--r-pill); white-space: nowrap;
+/* =========================== Status (fragments/ui :: status) ===========================
+   A small 8px dot + normal text, e.g. "● ชำระแล้ว". Only urgent states (danger: unpaid, overdue,
+   suspicious slip) keep a coloured background so they stand out from everything else. */
+.status {
+    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+    font-size: var(--fs-sm); line-height: 1.4; color: var(--c-text);
 }
-.badge.soft-success, .badge.status-success { background: var(--s-success-bg); color: var(--s-success-fg); }
-.badge.soft-primary, .badge.soft-info, .badge.status-info { background: var(--s-info-bg); color: var(--s-info-fg); }
-.badge.soft-warning, .badge.status-warning { background: var(--s-warning-bg); color: var(--s-warning-fg); }
-.badge.soft-soon, .badge.status-soon { background: var(--s-soon-bg); color: var(--s-soon-fg); }
-.badge.soft-danger, .badge.status-danger { background: var(--s-danger-bg); color: var(--s-danger-fg); }
-.badge.soft-secondary, .badge.status-neutral { background: var(--s-neutral-bg); color: var(--s-neutral-fg); }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: var(--s-neutral); }
+.status-success .status-dot { background: var(--s-success); }
+.status-info .status-dot, .status-primary .status-dot { background: var(--s-info); }
+.status-warning .status-dot { background: var(--s-warning); }
+.status-soon .status-dot { background: var(--s-soon); }
+.status.status-danger {
+    padding: 2px var(--sp-2); border-radius: var(--r-sm); font-size: var(--fs-xs); font-weight: var(--fw-semibold);
+    background: var(--s-danger-bg); color: var(--s-danger-fg);
+}
+.status-danger .status-dot { background: var(--s-danger); }
+/* plain label without status meaning (category, "simulated", "you", "pinned") */
+.tag { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-xs); font-weight: var(--fw-medium); color: var(--c-muted); white-space: nowrap; }
+.tag .lucide { width: 12px; height: 12px; }
+/* change against the average, e.g. "+71%" */
+.delta-up { font-family: var(--font-mono); font-weight: var(--fw-semibold); color: var(--s-danger-fg); white-space: nowrap; }
+
+/* legacy badge classes (and the 3D panel) look the same as .status: dot + text */
+.badge {
+    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+    font-size: var(--fs-sm); font-weight: var(--fw-regular); line-height: 1.4; padding: 0; border-radius: 0;
+    background: none; color: var(--c-text);
+}
+.badge[class*="soft-"]::before, .badge[class*="status-"]::before {
+    content: ""; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: var(--s-neutral);
+}
+.badge.soft-success::before, .badge.status-success::before { background: var(--s-success); }
+.badge.soft-primary::before, .badge.soft-info::before, .badge.status-info::before { background: var(--s-info); }
+.badge.soft-warning::before, .badge.status-warning::before { background: var(--s-warning); }
+.badge.soft-soon::before, .badge.status-soon::before { background: var(--s-soon); }
+.badge.soft-danger, .badge.status-danger {
+    padding: 2px var(--sp-2); border-radius: var(--r-sm); font-size: var(--fs-xs); font-weight: var(--fw-semibold);
+    background: var(--s-danger-bg); color: var(--s-danger-fg);
+}
+.badge.soft-danger::before, .badge.status-danger::before { background: var(--s-danger); }
 /* small colored dot, e.g. legends */
 .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; background: var(--s-neutral); }
 .dot.success { background: var(--s-success); } .dot.info { background: var(--s-info); }

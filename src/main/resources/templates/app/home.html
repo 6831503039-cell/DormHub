@@ -11,7 +11,7 @@
                 <p class="text-muted small mb-0" th:utext="#{home.notLinked.text(${'<b>' + #strings.escapeXml(currentUser.email) + '</b>'})}"></p>
                 <p class="small mb-0 mt-2" th:if="${latestBooking != null}">
                     <span th:text="#{home.rentRequest(${latestBooking.room.roomNumber})}"></span>
-                    <span th:class="'badge soft-' + ${latestBooking.status.badge}" th:text="#{${latestBooking.status.key}}"></span>
+                    <span th:replace="~{fragments/ui :: status(${latestBooking.status.badge}, #{${latestBooking.status.key}})}"></span>
                 </p>
                 <a class="btn btn-primary mt-3" th:href="@{/app/rent}"><i data-lucide="building-2"></i> <span th:text="#{home.rentRoom}">เช่าห้องพัก</span></a>
             </div>
@@ -110,7 +110,7 @@
         <ul class="list-plain">
             <li th:each="m : ${roommates}">
                 <span th:text="${m.fullName}"></span>
-                <span class="badge status-info" th:if="${m.id == tenant.id}" th:text="#{home.you}">คุณ</span>
+                <span class="tag" th:if="${m.id == tenant.id}" th:text="#{home.you}">คุณ</span>
             </li>
         </ul>
         <p class="form-text px-4 pb-3 mb-0" th:text="#{home.splitNote}">ค่าห้อง ค่าน้ำ และค่าไฟ หารเท่ากันทุกคนในห้อง</p>

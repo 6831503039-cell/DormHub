@@ -19,7 +19,7 @@
                  th:attr="aria-label=#{bills.billFor(${v.bill.billMonth})}">
             <div class="card-header">
                 <span th:text="#{bills.billFor(${v.bill.billMonth})}"></span>
-                <span class="badge status-danger ms-auto" th:text="${overdue} ? #{bills.overdueDays(${DAYS.between(v.bill.dueDate, today)})} : #{common.unpaid}"></span>
+                <span class="status status-danger ms-auto" th:text="${overdue} ? #{bills.overdueDays(${DAYS.between(v.bill.dueDate, today)})} : #{common.unpaid}"></span>
             </div>
             <div class="card-body">
                 <!-- my share first: this is the number to pay -->
@@ -76,7 +76,7 @@
                     <ul class="list-unstyled mb-0">
                         <li class="d-flex justify-content-between align-items-center gap-2 py-1 small" th:each="p : ${v.payments}">
                             <span class="num" th:text="${#temporals.format(p.submittedAt, 'dd/MM HH:mm')} + ' · ' + (${p.tenant != null} ? ${p.tenant.firstName} : '-') + ' · ฿' + ${#numbers.formatDecimal(p.amount, 1, 'COMMA', 2, 'POINT')}"></span>
-                            <span th:class="'badge status-' + ${payTone[p.status.name()]}" th:text="#{${p.status.key}}"></span>
+                            <span th:replace="~{fragments/ui :: status(${payTone[p.status.name()]}, #{${p.status.key}})}"></span>
                         </li>
                     </ul>
                 </div>
@@ -99,7 +99,7 @@
                     </div>
                     <div class="item-end">
                         <div class="num fw-medium" th:text="'฿' + ${#numbers.formatDecimal(v.bill.total, 1, 'COMMA', 2, 'POINT')}"></div>
-                        <span class="badge status-success" th:text="#{common.paid}">ชำระแล้ว</span>
+                        <span th:replace="~{fragments/ui :: status('success', #{common.paid})}"></span>
                     </div>
                 </li>
             </ul>

@@ -84,7 +84,7 @@
                         </td>
                         <td style="max-width: 320px">
                             <span class="cell-stack">
-                                <span th:class="'badge soft-' + ${p.status.badge}" th:text="#{${p.status.key}}"></span>
+                                <span th:replace="~{fragments/ui :: status(${p.status.badge}, #{${p.status.key}})}"></span>
                                 <span class="item-meta text-start" th:if="${p.aiNote != null}" th:text="${p.aiNote}"></span>
                             </span>
                         </td>

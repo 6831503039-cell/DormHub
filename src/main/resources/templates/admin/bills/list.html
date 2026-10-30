@@ -81,12 +81,12 @@
                         <td>
                             <span class="cell text-nowrap">
                                 <span class="num" th:text="${b.dueDate != null} ? ${#temporals.format(b.dueDate, 'dd/MM/yyyy')} : '-'"></span>
-                                <span th:if="${overdue}" class="badge status-danger" th:text="#{common.daysLate(${DAYS.between(b.dueDate, today)})}"></span>
+                                <th:block th:if="${overdue}"><span th:replace="~{fragments/ui :: status('danger', #{common.daysLate(${DAYS.between(b.dueDate, today)})})}"></span></th:block>
                             </span>
                         </td>
                         <td>
-                            <span th:if="${b.paid}" class="badge status-success" th:text="#{common.paid}">ชำระแล้ว</span>
-                            <span th:unless="${b.paid}" class="badge status-danger" th:text="#{common.unpaid}">ค้างชำระ</span>
+                            <th:block th:if="${b.paid}"><span th:replace="~{fragments/ui :: status('success', #{common.paid})}"></span></th:block>
+                            <th:block th:unless="${b.paid}"><span th:replace="~{fragments/ui :: status('danger', #{common.unpaid})}"></span></th:block>
                         </td>
                         <td class="td-actions">
                             <a th:unless="${b.paid}" class="btn btn-soft btn-sm" th:href="@{/admin/bills/{id}/pay(id=${b.id})}"

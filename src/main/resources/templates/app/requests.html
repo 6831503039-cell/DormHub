@@ -51,7 +51,7 @@
                                 <i data-lucide="message-square-reply"></i> <span><b th:text="#{repair.adminNote.fromDorm}">จากหอพัก:</b> <span th:text="${r.adminNote}"></span></span>
                             </div>
                         </div>
-                        <span class="item-end" th:classappend="'badge status-' + ${repairTone[r.status.name()]}" th:text="#{${r.status.key}}"></span>
+                        <span class="item-end"><span th:replace="~{fragments/ui :: status(${repairTone[r.status.name()]}, #{${r.status.key}})}"></span></span>
                     </li>
                 </ul>
                 <p class="text-muted small px-4 py-3 mb-0" th:if="${#lists.isEmpty(repairs)}" th:text="#{requests.noRepairs}">ยังไม่มีรายการ</p>
@@ -92,12 +92,12 @@
                     <li th:each="f : ${feedbacks}" class="align-items-start">
                         <div class="min-w-0">
                             <div class="mb-1">
-                                <span class="badge status-neutral" th:text="${f.categoryKey != null} ? #{${f.categoryKey}} : ${f.category}"></span>
+                                <span class="tag" th:text="${f.categoryKey != null} ? #{${f.categoryKey}} : ${f.category}"></span>
                                 <span class="item-meta num ms-1" th:text="${#temporals.format(f.createdAt, 'dd/MM/yyyy')}"></span>
                             </div>
                             <div th:text="${f.message}"></div>
                         </div>
-                        <span class="badge status-success item-end" th:if="${f.readByOwner}" th:text="#{common.read}">อ่านแล้ว</span>
+                        <span class="item-end" th:if="${f.readByOwner}"><span th:replace="~{fragments/ui :: status('success', #{common.read})}"></span></span>
                     </li>
                 </ul>
                 <p class="text-muted small px-4 py-3 mb-0" th:if="${#lists.isEmpty(feedbacks)}" th:text="#{requests.noFeedback}">ยังไม่เคยส่ง</p>

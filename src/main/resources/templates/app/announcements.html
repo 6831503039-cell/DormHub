@@ -14,7 +14,7 @@
             <img th:if="${a.hasImage()}" class="news-image" th:src="@{/announcements/{id}/image(id=${a.id})}" th:alt="${a.title}" loading="lazy">
             <div class="card-body">
                 <div class="d-flex gap-2 align-items-center mb-1">
-                    <span class="badge status-info" th:if="${a.pinned}"><i data-lucide="pin"></i> <span th:text="#{announcements.pinned}">ปักหมุด</span></span>
+                    <span class="tag" th:if="${a.pinned}"><i data-lucide="pin"></i> <span th:text="#{announcements.pinned}">ปักหมุด</span></span>
                     <span class="item-meta num" th:text="${#temporals.format(a.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
                 </div>
                 <h2 class="h2 mb-2" th:text="${a.title}"></h2>

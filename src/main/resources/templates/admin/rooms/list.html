@@ -75,11 +75,11 @@
                             <td>
                                 <span class="cell">
                                     <span class="num" th:text="${occ} + ' / ' + ${r.capacity}"></span>
-                                    <span class="badge status-neutral" th:if="${r.capacity != null and occ >= r.capacity}" th:text="#{rooms.full}">เต็ม</span>
+                                    <span class="tag" th:if="${r.capacity != null and occ >= r.capacity}" th:text="#{rooms.full}">เต็ม</span>
                                 </span>
                             </td>
                             <td class="text-end num" th:text="${r.monthlyRent != null} ? ${#numbers.formatDecimal(r.monthlyRent, 1, 'COMMA', 0, 'POINT')} : '-'"></td>
-                            <td><span th:class="'badge soft-' + ${r.status.badge}" th:text="#{${r.status.key}}"></span></td>
+                            <td><span th:replace="~{fragments/ui :: status(${r.status.badge}, #{${r.status.key}})}"></span></td>
                             <td class="td-actions">
                                 <a class="btn btn-soft btn-icon btn-sm" th:href="@{/admin/rooms/{id}(id=${r.id})}"
                                    th:attr="aria-label=#{rooms.editN(${r.roomNumber})}" th:title="#{common.edit}"><i data-lucide="pencil"></i></a>

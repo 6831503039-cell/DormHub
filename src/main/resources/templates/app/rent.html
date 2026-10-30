@@ -27,7 +27,7 @@
                     <div class="item-meta" th:text="#{rent.requestMeta(${#temporals.format(b.createdAt, 'dd/MM/yyyy')}, ${b.moveInDate != null} ? ${#temporals.format(b.moveInDate, 'dd/MM/yyyy')} : '-')}"></div>
                     <div class="item-meta" th:if="${b.status.name() == 'PENDING'}" th:text="#{rent.waiting}">รอเจ้าของหอยืนยัน</div>
                 </div>
-                <span class="item-end" th:classappend="'badge soft-' + ${b.status.badge}" th:text="#{${b.status.key}}"></span>
+                <span class="item-end"><span th:replace="~{fragments/ui :: status(${b.status.badge}, #{${b.status.key}})}"></span></span>
             </li>
         </ul>
     </section>
