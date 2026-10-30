@@ -241,10 +241,9 @@ a.card { color: inherit; text-decoration: none; }
 a.kpi:hover { background: var(--c-surface-2); color: inherit; }
 .kpi-head { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-2); font-size: var(--fs-sm); font-weight: var(--fw-regular); color: var(--c-muted); }
 .kpi-head .lucide { display: none; }
-.kpi-value { font-family: var(--font-mono); font-size: var(--fs-xl); font-weight: var(--fw-medium); line-height: var(--lh-tight); font-variant-numeric: tabular-nums; color: var(--c-text); letter-spacing: -.01em; }
-.kpi-value small { font-family: var(--font-mono); font-size: var(--fs-sm); font-weight: var(--fw-regular); color: var(--c-muted); }
+.kpi-value { font-family: var(--font); font-size: var(--fs-xl); font-weight: var(--fw-medium); line-height: var(--lh-tight); font-variant-numeric: tabular-nums; color: var(--c-text); letter-spacing: -.01em; }
+.kpi-value small { font-family: var(--font); font-size: var(--fs-sm); font-weight: var(--fw-regular); color: var(--c-muted); }
 .kpi-meta { font-size: var(--fs-xs); color: var(--c-muted); }
-.kpi.is-alert.tone-danger .kpi-value { color: var(--s-danger-fg); }
 .kpi.is-alert.tone-warning .kpi-value { color: var(--s-warning-fg); }
 /* the first figure is the one that matters most: a little larger */
 .figures > .kpi:first-child .kpi-value { font-size: var(--fs-2xl); }
@@ -481,7 +480,7 @@ a.card-link:hover { text-decoration: underline; }
 /* the amount I owe: the first thing on the home page, plain type on the page */
 .hero { padding: var(--sp-2) 0 var(--sp-5); color: var(--c-text); border-bottom: 1px solid var(--c-border); }
 .hero .hero-label { font-size: var(--fs-sm); color: var(--c-muted); }
-.hero .amount { font-family: var(--font-mono); font-size: 2.5rem; font-weight: var(--fw-medium); line-height: 1.15; letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin-top: var(--sp-1); }
+.hero .amount { font-family: var(--font); font-size: 2.5rem; font-weight: var(--fw-medium); line-height: 1.15; letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin-top: var(--sp-1); }
 .hero.is-clear .amount { color: var(--c-muted); }
 .hero .btn-light {
     --bs-btn-bg: var(--btn-primary-bg); --bs-btn-border-color: var(--btn-primary-bg); --bs-btn-color: var(--btn-primary-fg);
@@ -786,7 +785,7 @@ a.news-item:hover { color: var(--c-primary-text); }
 
 /* fixed transfer amount on the bill page */
 .pay-amount { padding: var(--sp-3) 0; border-top: 1px solid var(--c-border); border-bottom: 1px solid var(--c-border); }
-.pay-amount-value { font-family: var(--font-mono); font-size: var(--fs-2xl); font-weight: var(--fw-medium); line-height: var(--lh-tight); color: var(--c-text); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.pay-amount-value { font-family: var(--font); font-size: var(--fs-2xl); font-weight: var(--fw-medium); line-height: var(--lh-tight); color: var(--c-text); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
 
 /* popup after sending a rental request */
 .sent-icon { display: grid; place-items: start; color: var(--s-success-fg); }

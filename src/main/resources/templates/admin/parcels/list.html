@@ -36,10 +36,10 @@
 
         <div class="card">
             <div class="table-wrap">
-                <table class="table table-hover table-cards" id="parcelTable">
+                <table class="table table-hover table-cards" id="parcelTable" th:with="anyPhoto=${!#lists.isEmpty(parcels.?[hasPhoto()])}">
                     <thead>
                     <tr>
-                        <th scope="col" th:text="#{parcels.col.photo}">รูป</th>
+                        <th scope="col" th:if="${anyPhoto}" th:text="#{parcels.col.photo}">รูป</th>
                         <th scope="col" th:text="#{common.room}">ห้อง</th>
                         <th scope="col" th:text="#{parcels.col.recipient}">ผู้รับ / ขนส่ง</th>
                         <th scope="col" th:text="#{parcels.col.arrived}">มาถึง</th>
@@ -49,7 +49,7 @@
                     </thead>
                     <tbody>
                     <tr th:each="p : ${parcels}" data-row th:attr="data-status=${p.waiting} ? 'waiting' : 'picked'">
-                        <td>
+                        <td th:if="${anyPhoto}">
                             <a th:if="${p.hasPhoto()}" th:href="@{/parcels/{id}/photo(id=${p.id})}" target="_blank" rel="noopener">
                                 <img class="parcel-thumb" th:src="@{/parcels/{id}/photo(id=${p.id})}" th:alt="#{parcels.photoOf(${p.room.roomNumber})}" loading="lazy">
                             </a>

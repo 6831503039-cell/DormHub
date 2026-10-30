@@ -133,9 +133,9 @@
     --panel-border: var(--c-border);
     --table-head-fg: var(--c-muted);
     --table-row-border: var(--c-border);
-    --nav-active-bg: var(--c-primary-soft);
+    --nav-active-bg: transparent;
     --nav-active-fg: var(--c-primary-text);
-    --nav-active-mark: var(--c-primary-mark);
+    --nav-active-mark: var(--c-primary-text);   /* 6.5:1, a state indicator */
     --badge-radius: var(--r-sm);
     --focus-ring: 0 0 0 2px var(--c-surface), 0 0 0 4px var(--c-focus);
     --logo-size: 32px;

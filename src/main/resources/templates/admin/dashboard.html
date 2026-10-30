@@ -11,10 +11,13 @@
 
     <!-- 1. what needs attention: money, free rooms, repairs, slips -->
     <div class="figures">
-        <a class="kpi tone-danger" th:classappend="${unpaidTotal > 0} ? 'is-alert'" th:href="@{/admin/bills}">
+        <a class="kpi" th:href="@{/admin/bills}">
             <span class="kpi-head"><span th:text="#{dash.unpaidTotal}">ยอดค้างชำระ</span></span>
             <span class="kpi-value" th:text="'฿' + ${#numbers.formatDecimal(unpaidTotal, 1, 'COMMA', 0, 'POINT')}">฿0</span>
-            <span class="kpi-meta" th:text="#{dash.unpaidBills(${#lists.size(unpaidBills)})}"></span>
+            <span class="kpi-meta">
+                <span class="badge status-danger" th:if="${unpaidTotal > 0}" th:text="#{dash.unpaidBills(${#lists.size(unpaidBills)})}"></span>
+                <span th:unless="${unpaidTotal > 0}" th:text="#{dash.unpaidBills(${#lists.size(unpaidBills)})}"></span>
+            </span>
         </a>
         <a class="kpi tone-success" th:href="@{/admin/layout}">
             <span class="kpi-head"><span th:text="#{dash.freeRooms}">ห้องว่าง</span></span>
