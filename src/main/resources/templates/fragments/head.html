@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<!-- Shared <head> assets and the brand mark. Every page includes these, so fonts, styles,
+     favicon and logo are set in this one file.
+     Head:  <th:block th:replace="~{fragments/head :: assets}"></th:block>   (after <title>)
+     Logo:  <img th:replace="~{fragments/head :: logo}">          small mark for bars and menus -->
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<th:block th:fragment="assets">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#121414" media="(prefers-color-scheme: dark)">
+    <script th:src="@{/js/prefs.js}"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link th:href="@{/css/tokens.css}" rel="stylesheet">
+    <link th:href="@{/css/app.css}" rel="stylesheet">
+    <!-- favicon: change the logo file here -->
+    <link rel="icon" type="image/png" th:href="@{/img/logo-icon.png}">
+</th:block>
+</head>
+<body>
+<!-- logo mark: change the logo file here -->
+<img th:fragment="logo" class="brand-logo" th:src="@{/img/logo-icon.png}" alt="">
+</body>
+</html>

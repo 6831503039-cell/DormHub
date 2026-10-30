@@ -1,0 +1,180 @@
+/* =====================================================================
+   DormHub design tokens
+   Three layers:
+     1. primitive  raw values (--p-*). Never used by components directly.
+     2. semantic   purpose (--c-*, --s-*, --fs-*, --sp-*, --r-*). Light and dark
+                   themes only change this layer.
+     3. component  per-component values (--btn-*, --input-*, --table-*, ...).
+   Palette: grey + one accent (sage from the DormHub logo) + muted status colours.
+   Contrast ratios are against the background the token is meant for.
+   ===================================================================== */
+
+:root {
+    /* ---------------- 1. primitive ---------------- */
+    --p-white: #ffffff;
+    --p-grey-50: #f6f6f3;
+    --p-grey-100: #f0f0ed;
+    --p-grey-200: #e4e4e0;
+    --p-grey-300: #cfcfca;
+    --p-grey-400: #8f969c;   /* 3:1 on white, input borders */
+    --p-slate-600: #5c6670;  /* logo lettering #788490, darkened: 5.85:1 on white */
+    --p-grey-700: #3f464c;
+    --p-grey-800: #2b3034;
+    --p-grey-900: #1a1d1f;   /* near-black: text and primary buttons, 16.9:1 */
+
+    --p-dark-950: #121414;
+    --p-dark-900: #181b1c;
+    --p-dark-850: #1e2122;
+    --p-dark-800: #24282a;
+    --p-dark-700: #2e3335;
+    --p-dark-600: #41474a;
+    --p-dark-500: #6b7377;
+    --p-dark-400: #9aa3aa;
+    --p-dark-300: #c3c8ca;
+    --p-dark-100: #e8eaea;
+
+    --p-sage-50: #f2f4f0;
+    --p-sage-100: #e7ece4;
+    --p-sage-300: #a9b99f;
+    --p-sage-500: #8a9c80;   /* logo sage: decoration only, 2.9:1 on white */
+    --p-sage-600: #5e6e55;   /* focus ring, 5.5:1 */
+    --p-sage-700: #536349;   /* accent text and links, 6.5:1 on white */
+    --p-sage-900: #252b23;
+
+    --p-dark-450: #7c858b;   /* dark placeholder, 4.6:1 */
+
+    /* muted status hues: 50 = light tint, 300 = text on dark, 400 = dot, 600 = text on light, 950 = dark tint */
+    --p-green-50: #eef4f0;  --p-green-300: #8fbf9f;  --p-green-400: #6e9a7e;  --p-green-600: #3d6b4f;  --p-green-950: #1c2a21;
+    --p-blue-50: #eff2f5;   --p-blue-300: #a3b6ca;   --p-blue-400: #7d8ea0;   --p-blue-600: #4e5f70;   --p-blue-950: #1e252d;
+    --p-ochre-50: #f7f2e7;  --p-ochre-300: #d4b06a;  --p-ochre-400: #b8913f;  --p-ochre-600: #7a5c24;  --p-ochre-950: #2b2518;
+    --p-rust-50: #f8efea;   --p-rust-300: #e0a47e;   --p-rust-400: #c27b55;   --p-rust-600: #94502c;   --p-rust-950: #2d211b;
+    --p-red-50: #f8edeb;    --p-red-300: #e39a8f;    --p-red-400: #c0695e;    --p-red-600: #a2463b;    --p-red-950: #2f1f1d;
+    --p-grey-dot: #a3a9ae;
+    --p-sage-950: #2e362b;
+    --p-sage-dark-border: #44513e;
+
+    --p-font-sans: 'Geist', 'Anuphan', system-ui, sans-serif;
+    --p-font-mono: 'Geist Mono', 'Anuphan', ui-monospace, monospace;
+
+    /* ---------------- 2. semantic (light) ---------------- */
+    --c-bg: var(--p-white);
+    --c-surface: var(--p-white);
+    --c-surface-2: var(--p-grey-50);       /* quiet fill: summary rows, code-like values */
+    --c-hover: var(--p-grey-100);
+    --c-border: var(--p-grey-200);
+    --c-border-strong: var(--p-grey-400);
+    --c-border-hover: var(--p-grey-700);
+    --c-text: var(--p-grey-900);
+    --c-text-2: var(--p-grey-700);
+    --c-muted: var(--p-slate-600);
+    --c-placeholder: var(--p-slate-600);
+    --c-ink: var(--p-grey-900);            /* primary buttons */
+    --c-ink-hover: var(--p-grey-800);
+    --c-on-ink: var(--p-white);
+
+    --c-primary: var(--p-sage-700);        /* the one accent: links, active menu, selected */
+    --c-primary-hover: var(--p-grey-900);
+    --c-primary-soft: var(--p-sage-50);
+    --c-primary-soft-hover: var(--p-sage-100);
+    --c-primary-border: var(--p-sage-300);
+    --c-primary-text: var(--p-sage-700);
+    --c-primary-mark: var(--p-sage-500);   /* active indicator bar, never text */
+    --c-focus: var(--p-sage-600);
+    --c-scene: var(--p-grey-50);           /* 3D map backdrop */
+    --c-backdrop: var(--p-grey-900);       /* behind modals, both themes */
+
+    /* status: dot = marker, fg = label text (>= 6:1), bg = quiet fill. Always shown with a word. */
+    --s-success: var(--p-green-400);  --s-success-fg: var(--p-green-600);  --s-success-bg: var(--p-green-50);   /* ชำระแล้ว, ว่าง */
+    --s-info: var(--p-blue-400);     --s-info-fg: var(--p-blue-600);      --s-info-bg: var(--p-blue-50);      /* มีผู้เช่า */
+    --s-warning: var(--p-ochre-400);  --s-warning-fg: var(--p-ochre-600);  --s-warning-bg: var(--p-ochre-50);   /* รอซ่อม, รอตรวจ */
+    --s-soon: var(--p-rust-400);     --s-soon-fg: var(--p-rust-600);      --s-soon-bg: var(--p-rust-50);      /* ใกล้หมดสัญญา */
+    --s-danger: var(--p-red-400);    --s-danger-fg: var(--p-red-600);     --s-danger-bg: var(--p-red-50);    /* ค้างชำระ */
+    --s-neutral: var(--p-grey-dot);  --s-neutral-fg: var(--p-slate-600);  --s-neutral-bg: var(--p-grey-100);
+
+    --font: var(--p-font-sans);
+    --font-mono: var(--p-font-mono);
+    --fs-xs: .75rem;     /* 12  column heads, badges */
+    --fs-sm: .875rem;    /* 14  tables, labels, buttons */
+    --fs-base: 1rem;     /* 16  body, inputs */
+    --fs-lg: 1.125rem;   /* 18  section titles */
+    --fs-xl: 1.5rem;     /* 24  page titles */
+    --fs-2xl: 2rem;      /* 32  the one key number on a page */
+    --lh: 1.65;          /* Thai vowels and tone marks need room */
+    --lh-tight: 1.3;
+    --fw-regular: 400;
+    --fw-medium: 500;
+    --fw-semibold: 600;
+
+    --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;
+    --sp-5: 24px; --sp-6: 32px; --sp-7: 48px; --sp-8: 64px;
+
+    --r-sm: 4px;         /* inputs, buttons, badges */
+    --r-md: 6px;         /* panels, modals */
+    --r-pill: 999px;     /* avatars only */
+    --shadow-overlay: 0 4px 16px rgba(26, 29, 31, .08);   /* dropdowns, modals, floating map panels */
+
+    --tap: 44px;
+    --dur: 150ms;        /* hover / focus */
+    --dur-open: 200ms;   /* open / close */
+    --ease: cubic-bezier(.2, 0, 0, 1);
+
+    /* ---------------- 3. component ---------------- */
+    --btn-h: 40px;
+    --btn-radius: var(--r-sm);
+    --btn-primary-bg: var(--c-ink);
+    --btn-primary-bg-hover: var(--c-ink-hover);
+    --btn-primary-fg: var(--c-on-ink);
+    --btn-secondary-bg: var(--c-surface);
+    --btn-secondary-border: var(--c-border-strong);
+    --input-h: var(--tap);
+    --input-border: var(--c-border-strong);
+    --input-radius: var(--r-sm);
+    --panel-radius: var(--r-md);
+    --panel-border: var(--c-border);
+    --table-head-fg: var(--c-muted);
+    --table-row-border: var(--c-border);
+    --nav-active-bg: var(--c-primary-soft);
+    --nav-active-fg: var(--c-primary-text);
+    --nav-active-mark: var(--c-primary-mark);
+    --badge-radius: var(--r-sm);
+    --focus-ring: 0 0 0 2px var(--c-surface), 0 0 0 4px var(--c-focus);
+    --logo-size: 32px;
+}
+
+/* ---------------- 2. semantic (dark), same names ---------------- */
+:root[data-bs-theme="dark"] {
+    color-scheme: dark;
+    --c-bg: var(--p-dark-950);
+    --c-surface: var(--p-dark-900);
+    --c-surface-2: var(--p-dark-850);
+    --c-hover: var(--p-dark-800);
+    --c-border: var(--p-dark-700);
+    --c-border-strong: var(--p-dark-500);   /* 3.6:1 on surface */
+    --c-border-hover: var(--p-dark-400);
+    --c-text: var(--p-dark-100);
+    --c-text-2: var(--p-dark-300);
+    --c-muted: var(--p-dark-400);
+    --c-placeholder: var(--p-dark-450);
+    --c-ink: var(--p-dark-100);
+    --c-ink-hover: var(--p-white);
+    --c-on-ink: var(--p-dark-950);
+
+    --c-primary: var(--p-sage-300);
+    --c-primary-hover: var(--p-dark-100);
+    --c-primary-soft: var(--p-sage-900);
+    --c-primary-soft-hover: var(--p-sage-950);
+    --c-primary-border: var(--p-sage-dark-border);
+    --c-primary-text: var(--p-sage-300);
+    --c-primary-mark: var(--p-sage-500);
+    --c-focus: var(--p-sage-300);
+    --c-scene: var(--p-dark-850);
+
+    --s-success: var(--p-green-400);  --s-success-fg: var(--p-green-300);  --s-success-bg: var(--p-green-950);
+    --s-info: var(--p-blue-400);     --s-info-fg: var(--p-blue-300);      --s-info-bg: var(--p-blue-950);
+    --s-warning: var(--p-ochre-400);  --s-warning-fg: var(--p-ochre-300);  --s-warning-bg: var(--p-ochre-950);
+    --s-soon: var(--p-rust-400);     --s-soon-fg: var(--p-rust-300);      --s-soon-bg: var(--p-rust-950);
+    --s-danger: var(--p-red-400);    --s-danger-fg: var(--p-red-300);     --s-danger-bg: var(--p-red-950);
+    --s-neutral: var(--p-dark-500);  --s-neutral-fg: var(--p-dark-300);   --s-neutral-bg: var(--p-dark-800);
+
+    --shadow-overlay: 0 4px 16px rgba(0, 0, 0, .4);
+}

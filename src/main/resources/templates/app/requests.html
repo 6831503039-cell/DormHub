@@ -54,7 +54,7 @@
                         <span class="item-end" th:classappend="'badge status-' + ${repairTone[r.status.name()]}" th:text="#{${r.status.key}}"></span>
                     </li>
                 </ul>
-                <p class="text-muted small px-4 py-3 mb-0" th:if="${#lists.isEmpty(repairs)}" th:text="#{requests.noRepairs}">ยังไม่มีรายการ</p>
+                <p class="text-muted small py-3 mb-0" th:if="${#lists.isEmpty(repairs)}" th:text="#{requests.noRepairs}">ยังไม่มีรายการ</p>
             </section>
         </div>
 
@@ -100,7 +100,7 @@
                         <span class="badge status-success item-end" th:if="${f.readByOwner}" th:text="#{common.read}">อ่านแล้ว</span>
                     </li>
                 </ul>
-                <p class="text-muted small px-4 py-3 mb-0" th:if="${#lists.isEmpty(feedbacks)}" th:text="#{requests.noFeedback}">ยังไม่เคยส่ง</p>
+                <p class="text-muted small py-3 mb-0" th:if="${#lists.isEmpty(feedbacks)}" th:text="#{requests.noFeedback}">ยังไม่เคยส่ง</p>
             </section>
         </div>
     </div>

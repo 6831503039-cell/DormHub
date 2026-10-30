@@ -10,39 +10,31 @@
     </div>
 
     <!-- 1. what needs attention: money, free rooms, repairs, slips -->
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-xl-3">
-            <a class="card kpi tone-danger" th:classappend="${unpaidTotal > 0} ? 'is-alert'" th:href="@{/admin/bills}">
-                <span class="kpi-head"><span th:text="#{dash.unpaidTotal}">ยอดค้างชำระ</span> <i data-lucide="receipt"></i></span>
-                <span class="kpi-value" th:text="'฿' + ${#numbers.formatDecimal(unpaidTotal, 1, 'COMMA', 0, 'POINT')}">฿0</span>
-                <span class="kpi-meta" th:text="#{dash.unpaidBills(${#lists.size(unpaidBills)})}"></span>
-            </a>
-        </div>
-        <div class="col-6 col-xl-3">
-            <a class="card kpi tone-success" th:href="@{/admin/layout}">
-                <span class="kpi-head"><span th:text="#{dash.freeRooms}">ห้องว่าง</span> <i data-lucide="door-open"></i></span>
-                <span class="kpi-value"><span th:text="${availableCount}">0</span> <small th:text="'/ ' + ${roomCount}"></small></span>
-                <span class="kpi-meta" th:text="#{dash.tenants(${tenantCount})}"></span>
-            </a>
-        </div>
-        <div class="col-6 col-xl-3">
-            <a class="card kpi tone-warning" th:classappend="${openRepairCount > 0} ? 'is-alert'" th:href="@{/admin/repairs}">
-                <span class="kpi-head"><span th:text="#{dash.openRepairs}">งานซ่อมที่รอ</span> <i data-lucide="wrench"></i></span>
-                <span class="kpi-value" th:text="${openRepairCount}">0</span>
-                <span class="kpi-meta" th:text="${openRepairCount > 0} ? #{dash.openRepairs.some} : #{dash.openRepairs.none}"></span>
-            </a>
-        </div>
-        <div class="col-6 col-xl-3">
-            <a class="card kpi tone-info" th:classappend="${slipsToReview > 0} ? 'is-alert'" th:href="@{/admin/payments}">
-                <span class="kpi-head"><span th:text="#{dash.slips}">สลิปรอตรวจ</span> <i data-lucide="scan-line"></i></span>
-                <span class="kpi-value" th:text="${slipsToReview}">0</span>
-                <span class="kpi-meta" th:text="${slipsToReview > 0} ? #{dash.slips.some} : #{dash.slips.none}"></span>
-            </a>
-        </div>
+    <div class="figures">
+        <a class="kpi tone-danger" th:classappend="${unpaidTotal > 0} ? 'is-alert'" th:href="@{/admin/bills}">
+            <span class="kpi-head"><span th:text="#{dash.unpaidTotal}">ยอดค้างชำระ</span></span>
+            <span class="kpi-value" th:text="'฿' + ${#numbers.formatDecimal(unpaidTotal, 1, 'COMMA', 0, 'POINT')}">฿0</span>
+            <span class="kpi-meta" th:text="#{dash.unpaidBills(${#lists.size(unpaidBills)})}"></span>
+        </a>
+        <a class="kpi tone-success" th:href="@{/admin/layout}">
+            <span class="kpi-head"><span th:text="#{dash.freeRooms}">ห้องว่าง</span></span>
+            <span class="kpi-value"><span th:text="${availableCount}">0</span> <small th:text="'/ ' + ${roomCount}"></small></span>
+            <span class="kpi-meta" th:text="#{dash.tenants(${tenantCount})}"></span>
+        </a>
+        <a class="kpi tone-warning" th:classappend="${openRepairCount > 0} ? 'is-alert'" th:href="@{/admin/repairs}">
+            <span class="kpi-head"><span th:text="#{dash.openRepairs}">งานซ่อมที่รอ</span></span>
+            <span class="kpi-value" th:text="${openRepairCount}">0</span>
+            <span class="kpi-meta" th:text="${openRepairCount > 0} ? #{dash.openRepairs.some} : #{dash.openRepairs.none}"></span>
+        </a>
+        <a class="kpi tone-info" th:classappend="${slipsToReview > 0} ? 'is-alert'" th:href="@{/admin/payments}">
+            <span class="kpi-head"><span th:text="#{dash.slips}">สลิปรอตรวจ</span></span>
+            <span class="kpi-value" th:text="${slipsToReview}">0</span>
+            <span class="kpi-meta" th:text="${slipsToReview > 0} ? #{dash.slips.some} : #{dash.slips.none}"></span>
+        </a>
     </div>
 
-    <div class="row g-3">
-        <div class="col-lg-8 d-flex flex-column gap-3">
+    <div class="row g-5">
+        <div class="col-lg-8 d-flex flex-column gap-5">
 
             <!-- 2. unpaid bills, oldest first -->
             <section class="card" aria-labelledby="unpaidTitle">
@@ -82,7 +74,7 @@
                     <span class="badge status-danger" th:if="${unreadFeedback > 0}" th:text="#{dash.unreadN(${unreadFeedback})}"></span>
                     <a class="card-link" th:href="@{/admin/feedback}" th:text="#{common.viewAll}">ดูทั้งหมด</a>
                 </div>
-                <div class="px-4 pt-3 d-flex align-items-baseline gap-2" th:unless="${#lists.isEmpty(latestFeedback)}">
+                <div class="pt-3 d-flex align-items-baseline gap-2" th:unless="${#lists.isEmpty(latestFeedback)}">
                     <span class="kpi-value" th:text="${#numbers.formatDecimal(averageRating, 1, 1)}">0</span>
                     <span class="text-muted small" th:text="#{dash.avgRating}">คะแนนเฉลี่ยจาก 5</span>
                 </div>
@@ -109,7 +101,7 @@
             </section>
         </div>
 
-        <div class="col-lg-4 d-flex flex-column gap-3">
+        <div class="col-lg-4 d-flex flex-column gap-5">
 
             <!-- 4. rooms using unusually much electricity -->
             <section class="card" aria-labelledby="abnormalTitle">
@@ -126,7 +118,7 @@
                         <span class="badge status-danger item-end" th:text="'+' + ${a.percentAbove} + '%'"></span>
                     </li>
                 </ul>
-                <p class="text-muted small px-4 py-3 mb-0" th:if="${#lists.isEmpty(abnormal)}" th:text="#{dash.noAbnormal}">ไม่มีห้องที่ใช้ไฟสูงกว่าปกติ</p>
+                <p class="text-muted small py-3 mb-0" th:if="${#lists.isEmpty(abnormal)}" th:text="#{dash.noAbnormal}">ไม่มีห้องที่ใช้ไฟสูงกว่าปกติ</p>
             </section>
 
             <!-- 5. shared laundry room (simulated) -->

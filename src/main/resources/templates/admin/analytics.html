@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout(#{nav.analytics}, 'analytics', ~{::main})}">
 <body>
-<main th:with="seasonTone=${ {'HOT': 'warning', 'RAINY': 'info', 'COOL': ''} },
-               seasonIcon=${ {'HOT': 'sun', 'RAINY': 'cloud-rain', 'COOL': 'snowflake'} }">
+<main th:with="seasonTone=${ {'HOT': 'warning', 'RAINY': 'info', 'COOL': ''} }">
     <div class="page-header">
         <div>
             <h1 class="page-title" th:text="#{nav.analytics}">วิเคราะห์ค่าไฟ</h1>
@@ -16,7 +15,7 @@
             <h2 class="h2 mb-0" id="abnormalTitle" th:text="#{analytics.abnormal}">ห้องที่ใช้ไฟสูงผิดปกติ</h2>
             <span class="badge status-danger" th:text="#{analytics.roomsN(${#lists.size(abnormal)})}"></span>
         </div>
-        <p class="form-text px-4 pt-3 mb-0" th:text="#{analytics.abnormal.rule}">สูงกว่าค่าเฉลี่ย 3 เดือนก่อนหน้าเกิน 30%</p>
+        <p class="form-text pt-3 mb-0" th:text="#{analytics.abnormal.rule}">สูงกว่าค่าเฉลี่ย 3 เดือนก่อนหน้าเกิน 30%</p>
         <ul class="list-plain">
             <li th:each="a : ${abnormal}">
                 <div>
@@ -29,16 +28,13 @@
     </section>
 
     <!-- average units per room-month in each season -->
-    <div class="row g-3 mb-4">
-        <div class="col-12 col-md-4" th:each="entry : ${seasonAverages}">
-            <div class="card kpi" th:classappend="${seasonTone[entry.key.name()] != ''} ? 'tone-' + ${seasonTone[entry.key.name()]}">
-                <span class="kpi-head">
-                    <span th:text="#{${entry.key.key}} + ' · ' + #{${entry.key.key + '.months'}}"></span>
-                    <i th:data-lucide="${seasonIcon[entry.key.name()]}"></i>
-                </span>
-                <span class="kpi-value"><span th:text="${entry.value}">0</span> <small th:text="#{common.units}">หน่วย</small></span>
-                <span class="kpi-meta" th:text="#{analytics.perRoomMonth}">เฉลี่ยต่อห้องต่อเดือน</span>
-            </div>
+    <div class="figures cols-3">
+        <div class="kpi" th:each="entry : ${seasonAverages}" th:classappend="${seasonTone[entry.key.name()] != ''} ? 'tone-' + ${seasonTone[entry.key.name()]}">
+            <span class="kpi-head">
+                <span th:text="#{${entry.key.key}} + ' · ' + #{${entry.key.key + '.months'}}"></span>
+            </span>
+            <span class="kpi-value"><span th:text="${entry.value}">0</span> <small th:text="#{common.units}">หน่วย</small></span>
+            <span class="kpi-meta" th:text="#{analytics.perRoomMonth}">เฉลี่ยต่อห้องต่อเดือน</span>
         </div>
     </div>
 

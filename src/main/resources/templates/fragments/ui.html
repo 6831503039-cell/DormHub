@@ -28,7 +28,6 @@
 <!-- Empty state: icon (Lucide name), title, text; action link optional (pass null to hide it).
      Usage: <div th:replace="~{fragments/ui :: emptyState('door-closed', #{rooms.empty.title}, #{rooms.empty.text}, @{/admin/rooms/new}, #{rooms.add})}"></div> -->
 <div th:fragment="emptyState(icon, title, text, actionHref, actionLabel)" class="empty-state">
-    <div class="empty-icon"><i th:data-lucide="${icon}"></i></div>
     <p class="empty-title" th:text="${title}"></p>
     <p class="empty-text" th:if="${text != null}" th:text="${text}"></p>
     <a th:if="${actionHref != null}" class="btn btn-primary" th:href="${actionHref}">

@@ -20,15 +20,9 @@
 
     <!-- 1. what I owe -->
     <section class="hero mb-3" th:if="${linked}" th:classappend="${myOutstanding <= 0} ? 'is-clear'" th:aria-label="#{home.amountDue}">
-        <div class="d-flex justify-content-between align-items-start">
-            <div>
-                <div class="hero-label hero-residence"><i data-lucide="building-2"></i> <span th:text="${residenceName}">SJD Mansion</span></div>
-                <div class="hero-label" th:text="#{common.roomN(${tenant.room.roomNumber})} + (${tenant.room.roomType != null} ? ' · ' + ${tenant.room.roomType} : '')"></div>
-                <div class="hero-label mt-2" th:text="${myOutstanding > 0} ? #{home.amountDueShare} : #{home.amountDue}"></div>
-                <div class="amount" th:text="'฿' + ${#numbers.formatDecimal(myOutstanding, 1, 'COMMA', 2, 'POINT')}">฿0</div>
-            </div>
-            <i class="hero-icon" th:data-lucide="${myOutstanding > 0} ? 'wallet' : 'badge-check'"></i>
-        </div>
+        <div class="hero-label" th:text="#{common.roomN(${tenant.room.roomNumber})} + (${tenant.room.roomType != null} ? ' · ' + ${tenant.room.roomType} : '')"></div>
+        <div class="hero-label mt-3" th:text="${myOutstanding > 0} ? #{home.amountDueShare} : #{home.amountDue}"></div>
+        <div class="amount" th:text="'฿' + ${#numbers.formatDecimal(myOutstanding, 1, 'COMMA', 2, 'POINT')}">฿0</div>
         <a class="btn mt-3" th:classappend="${myOutstanding > 0} ? 'btn-light' : 'btn-secondary'" th:href="@{/app/bills}">
             <i th:data-lucide="${myOutstanding > 0} ? 'scan-line' : 'receipt'"></i>
             <span th:text="${myOutstanding > 0} ? #{home.pay} : #{home.viewBills}"></span>
@@ -53,7 +47,7 @@
     <th:block th:if="${linked}">
     <nav class="quick-grid mb-3" th:aria-label="#{home.shortcuts}">
         <a class="quick" th:href="@{/app/bills}"><i data-lucide="receipt"></i><span th:text="#{tab.bills}">บิล</span></a>
-        <a class="quick" th:href="@{/app/chat}"><i data-lucide="sparkles"></i><span th:text="#{tab.chat}">ถาม AI</span></a>
+        <a class="quick" th:href="@{/app/chat}"><i data-lucide="message-circle"></i><span th:text="#{tab.chat}">ถาม AI</span></a>
         <a class="quick" th:href="@{/app/laundry}"><i data-lucide="washing-machine"></i><span th:text="#{tab.laundry}">ซักผ้า</span></a>
         <a class="quick" th:href="@{/app/requests}"><i data-lucide="wrench"></i><span th:text="#{nav.repairs}">แจ้งซ่อม</span></a>
         <a class="quick" th:href="@{/app/announcements}"><i data-lucide="megaphone"></i><span th:text="#{nav.announcements}">ประกาศ</span></a>
@@ -68,7 +62,7 @@
     <section class="mb-3" th:unless="${#lists.isEmpty(announcements)}" aria-labelledby="newsTitle">
         <div class="d-flex justify-content-between align-items-baseline">
             <h2 class="section-title mt-0" id="newsTitle" th:text="#{nav.announcements}">ประกาศ</h2>
-            <a class="small" th:href="@{/app/announcements}" th:text="#{common.viewAll}">ดูทั้งหมด</a>
+            <a class="card-link" th:href="@{/app/announcements}" th:text="#{common.viewAll}">ดูทั้งหมด</a>
         </div>
         <div class="d-grid gap-2">
             <a class="card news-item" th:each="a : ${announcements}" th:href="@{'/app/announcements#a' + ${a.id}}">
@@ -84,20 +78,16 @@
         </div>
     </section>
 
-    <div class="row g-2 mb-3">
-        <div class="col-6">
-            <a class="card kpi tone-success" th:href="@{/app/laundry}">
-                <span class="kpi-head"><span th:text="#{home.washersFree}">เครื่องซักผ้าว่าง</span> <i data-lucide="washing-machine"></i></span>
-                <span class="kpi-value"><span th:text="${laundryAvailable}">0</span> <small th:text="'/ ' + ${laundryTotal}"></small></span>
-            </a>
-        </div>
-        <div class="col-6" th:if="${latestBill != null}">
-            <a class="card kpi tone-warning" th:href="@{/app/usage}">
-                <span class="kpi-head"><span th:text="#{home.lastElectric}">ไฟเดือนล่าสุด</span> <i data-lucide="zap"></i></span>
-                <span class="kpi-value"><span th:text="${latestBill.electricUnits}">0</span> <small th:text="#{common.units}">หน่วย</small></span>
-                <span class="kpi-meta" th:text="${latestBill.billMonth}"></span>
-            </a>
-        </div>
+    <div class="figures cols-2">
+        <a class="kpi" th:href="@{/app/laundry}">
+            <span class="kpi-head"><span th:text="#{home.washersFree}">เครื่องซักผ้าว่าง</span></span>
+            <span class="kpi-value"><span th:text="${laundryAvailable}">0</span> <small th:text="'/ ' + ${laundryTotal}"></small></span>
+        </a>
+        <a class="kpi" th:if="${latestBill != null}" th:href="@{/app/usage}">
+            <span class="kpi-head"><span th:text="#{home.lastElectric}">ไฟเดือนล่าสุด</span></span>
+            <span class="kpi-value"><span th:text="${latestBill.electricUnits}">0</span> <small th:text="#{common.units}">หน่วย</small></span>
+            <span class="kpi-meta" th:text="${latestBill.billMonth}"></span>
+        </a>
     </div>
     </th:block>
 
@@ -113,7 +103,7 @@
                 <span class="badge status-info" th:if="${m.id == tenant.id}" th:text="#{home.you}">คุณ</span>
             </li>
         </ul>
-        <p class="form-text px-4 pb-3 mb-0" th:text="#{home.splitNote}">ค่าห้อง ค่าน้ำ และค่าไฟ หารเท่ากันทุกคนในห้อง</p>
+        <p class="form-text pb-3 mb-0" th:text="#{home.splitNote}">ค่าห้อง ค่าน้ำ และค่าไฟ หารเท่ากันทุกคนในห้อง</p>
     </section>
 </main>
 </body>

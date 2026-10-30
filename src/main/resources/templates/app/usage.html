@@ -10,20 +10,16 @@
     </div>
 
     <th:block th:unless="${#lists.isEmpty(bills)}">
-        <div class="row g-2 mb-3">
-            <div class="col-6">
-                <div class="card kpi tone-warning">
-                    <span class="kpi-head"><span th:text="#{home.lastElectric}">ไฟเดือนล่าสุด</span> <i data-lucide="zap"></i></span>
-                    <span class="kpi-value"><span th:text="${bills[0].electricUnits}">0</span> <small th:text="#{common.units}">หน่วย</small></span>
-                    <span class="kpi-meta" th:text="${bills[0].billMonth} + ' · ฿' + ${#numbers.formatDecimal(bills[0].electricCost, 1, 'COMMA', 2, 'POINT')}"></span>
-                </div>
+        <div class="figures cols-2">
+            <div class="kpi">
+                <span class="kpi-head"><span th:text="#{home.lastElectric}">ไฟเดือนล่าสุด</span></span>
+                <span class="kpi-value"><span th:text="${bills[0].electricUnits}">0</span> <small th:text="#{common.units}">หน่วย</small></span>
+                <span class="kpi-meta" th:text="${bills[0].billMonth} + ' · ฿' + ${#numbers.formatDecimal(bills[0].electricCost, 1, 'COMMA', 2, 'POINT')}"></span>
             </div>
-            <div class="col-6">
-                <div class="card kpi">
-                    <span class="kpi-head"><span th:text="#{usage.average}">เฉลี่ยต่อเดือน</span> <i data-lucide="activity"></i></span>
-                    <span class="kpi-value"><span th:text="${avgUnits}">0</span> <small th:text="#{common.units}">หน่วย</small></span>
-                    <span class="kpi-meta" th:text="#{usage.monthsN(${#lists.size(bills)})}"></span>
-                </div>
+            <div class="kpi">
+                <span class="kpi-head"><span th:text="#{usage.average}">เฉลี่ยต่อเดือน</span></span>
+                <span class="kpi-value"><span th:text="${avgUnits}">0</span> <small th:text="#{common.units}">หน่วย</small></span>
+                <span class="kpi-meta" th:text="#{usage.monthsN(${#lists.size(bills)})}"></span>
             </div>
         </div>
 
@@ -39,7 +35,7 @@
                     <span class="num usage-units" th:text="${b.electricUnits} + ' ' + #{common.units}"></span>
                 </li>
             </ul>
-            <p class="form-text px-4 pb-3 mb-0" th:text="#{usage.note}">ค่าไฟแสดงเป็นยอดรวมของทั้งห้อง ดูยอดที่ต้องชำระได้ที่เมนูบิล</p>
+            <p class="form-text pb-3 mb-0" th:text="#{usage.note}">ค่าไฟแสดงเป็นยอดรวมของทั้งห้อง ดูยอดที่ต้องชำระได้ที่เมนูบิล</p>
         </section>
     </th:block>
 </main>
