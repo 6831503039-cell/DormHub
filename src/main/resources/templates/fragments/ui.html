@@ -86,6 +86,54 @@
     <i data-lucide="settings"></i> <span th:text="#{settings.title}">ตั้งค่า</span>
 </button>
 
+<!-- Line drawing of SJD Mansion: three 4-storey buildings in a U (C left, A in the middle at the back, B right).
+     Strokes only, in the current text colour (set it with CSS). css: extra classes for size; label: alt text,
+     or null when the drawing is decorative. Used on the login / register pages and in empty states. -->
+<svg th:fragment="sjdDrawing(css, label)" class="sjd-drawing" th:classappend="${css}" viewBox="0 0 320 190"
+     xmlns="http://www.w3.org/2000/svg" th:attr="role=${label != null} ? 'img' : null,aria-label=${label},aria-hidden=${label == null} ? 'true' : null">
+    <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
+        <!-- ground and courtyard -->
+        <path d="M8 178 H312"/>
+        <path d="M100 160 H220" stroke-dasharray="3 4"/>
+        <!-- A: middle, at the back, with the stair tower -->
+        <rect x="100" y="40" width="120" height="120"/>
+        <path d="M100 70 H220 M100 100 H220 M100 130 H220"/>
+        <rect x="150" y="22" width="20" height="18"/>
+        <path d="M156 40 V160 M164 40 V160" stroke-width="1"/>
+        <!-- C: left wing, coming forward -->
+        <path d="M80 62 L100 50 V160 L80 178 Z"/>
+        <rect x="22" y="62" width="58" height="116"/>
+        <path d="M22 91 H80 M22 120 H80 M22 149 H80"/>
+        <!-- B: right wing, coming forward -->
+        <path d="M240 62 L220 50 V160 L240 178 Z"/>
+        <rect x="240" y="62" width="58" height="116"/>
+        <path d="M240 91 H298 M240 120 H298 M240 149 H298"/>
+    </g>
+    <!-- windows -->
+    <g fill="none" stroke="currentColor" stroke-width="1">
+        <th:block th:each="f : ${#numbers.sequence(0, 3)}">
+            <rect th:each="c : ${#numbers.sequence(0, 4)}" th:unless="${c == 2}" th:x="${108 + c * 22}" th:y="${48 + f * 30}" width="8" height="12"/>
+            <rect th:each="c : ${#numbers.sequence(0, 2)}" th:x="${30 + c * 17}" th:y="${70 + f * 29}" width="7" height="11"/>
+            <rect th:each="c : ${#numbers.sequence(0, 2)}" th:x="${249 + c * 17}" th:y="${70 + f * 29}" width="7" height="11"/>
+        </th:block>
+    </g>
+    <!-- building letters -->
+    <g fill="currentColor" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="600" text-anchor="middle">
+        <text x="51" y="58">C</text>
+        <text x="160" y="35">A</text>
+        <text x="269" y="58">B</text>
+    </g>
+</svg>
+
+<!-- Left half of the login / register pages on wide screens: the SJD drawing, the dorm name and one line. -->
+<aside th:fragment="authArt" class="auth-art">
+    <svg th:replace="~{fragments/ui :: sjdDrawing('auth-art-drawing', #{drawing.sjd.alt(${residenceName})})}"></svg>
+    <div class="auth-art-text">
+        <p class="auth-art-name" th:text="${residenceName}">SJD Mansion</p>
+        <p class="auth-art-line" th:text="#{auth.art.line(${dormName})}">จัดการหอพักด้วย DormHub</p>
+    </div>
+</aside>
+
 <!-- Status: 8px dot + text, e.g. "● ชำระแล้ว". tone: success | info | warning | soon | danger | neutral
      (enum badge names primary / secondary work too). Only danger gets a coloured background.
      Use: <span th:replace="~{fragments/ui :: status('success', #{common.paid})}"></span>
