@@ -404,7 +404,7 @@ a.card-link:hover { text-decoration: underline; }
     .table-cards tbody tr:last-child { border-bottom: 0; }
     .table-cards > :not(caption) > * > * { padding: var(--sp-1) 0; border: 0; }
     .table-cards td { display: flex; justify-content: space-between; align-items: baseline; gap: var(--sp-3); text-align: right !important; }
-    .table-cards td::before { content: attr(data-label); color: var(--c-muted); font-family: var(--font); font-size: var(--fs-xs); text-align: left; flex-shrink: 0; }
+    .table-cards td::before { content: attr(data-label); color: var(--c-muted); font-size: var(--fs-xs); font-family: var(--font); font-weight: var(--fw-medium); letter-spacing: 0; text-align: left; flex-shrink: 0; }
     .table-cards td.td-title { display: block; font-size: var(--fs-base); font-weight: var(--fw-semibold); text-align: left !important; padding-bottom: var(--sp-2); }
     /* keep a cell's own content (value + badge) together on the right */
     .table-cards td > .cell { display: inline-flex; align-items: center; gap: var(--sp-1); flex-wrap: wrap; justify-content: flex-end; }
@@ -1020,7 +1020,7 @@ a.room-plate:hover { border-color: var(--c-primary); color: var(--c-primary-text
 .auth-main { display: flex; align-items: center; padding: var(--sp-7) var(--sp-4) var(--sp-6); }
 .auth-form { width: 100%; max-width: 380px; margin: 0 auto; }
 .auth-head { margin-bottom: var(--sp-5); }
-.auth-mini { width: 132px; margin-bottom: var(--sp-4); }
+.auth-mini { width: 168px; margin-bottom: var(--sp-4); }
 .auth-brand { display: flex; align-items: center; gap: var(--sp-2); font-weight: var(--fw-semibold); color: var(--c-text-2); font-size: var(--fs-sm); }
 .auth-brand .brand-logo { width: 28px; height: 28px; }
 .auth-title { font-size: var(--fs-2xl); margin: var(--sp-3) 0 0; }
