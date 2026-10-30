@@ -59,7 +59,7 @@
                             <span class="d-block fw-semibold" th:text="${r.title}"></span>
                             <span class="item-meta clamp-2 fw-normal" th:if="${r.description != null and !#strings.isEmpty(r.description)}" th:text="${r.description}"></span>
                         </td>
-                        <td class="fw-medium nowrap" th:text="${r.room.roomNumber}"></td>
+                        <td><span class="room-plate" th:text="${r.room.roomNumber}"></span></td>
                         <td>
                             <span th:if="${r.reportedBy != null}" th:text="${r.reportedBy}"></span>
                             <span th:unless="${r.reportedBy != null}" class="text-muted" th:text="#{repairs.byAdmin}">แอดมิน</span>

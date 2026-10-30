@@ -14,8 +14,8 @@
         <div th:replace="~{fragments/ui :: emptyState('megaphone', #{announcements.empty.title}, #{announcements.admin.empty}, @{/admin/announcements/new}, #{announcements.add})}"></div>
     </div>
 
-    <div class="d-grid gap-2" th:unless="${#lists.isEmpty(announcements)}">
-        <article class="card news-item admin-news" th:each="a : ${announcements}">
+    <div class="card news-list admin-news-list" th:unless="${#lists.isEmpty(announcements)}">
+        <article class="news-item admin-news" th:each="a : ${announcements}">
             <img th:if="${a.hasImage()}" class="news-thumb" th:src="@{/announcements/{id}/image(id=${a.id})}" alt="" loading="lazy">
             <div class="min-w-0 flex-grow-1">
                 <div class="d-flex gap-2 align-items-center">

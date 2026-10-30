@@ -68,7 +68,7 @@
                             th:with="occ=${occupants.getOrDefault(r.id, 0L)}"
                             th:attr="data-building=${r.building},data-status=${r.status.name()}">
                             <td class="td-title">
-                                <span class="d-block fw-semibold" th:text="${r.roomNumber}"></span>
+                                <span class="room-plate" th:text="${r.roomNumber}"></span>
                                 <span class="item-meta" th:text="${r.roomType}"></span>
                             </td>
                             <td th:text="${r.floor != null} ? #{common.floorN(${r.floor})} : '-'"></td>

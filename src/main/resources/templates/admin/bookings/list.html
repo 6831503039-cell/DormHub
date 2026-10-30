@@ -58,7 +58,7 @@
                                   th:text="#{bookings.fromApp}">ส่งจากแอป</span>
                             <span class="item-meta" th:text="#{bookings.sentAt(${#temporals.format(b.createdAt, 'dd/MM/yyyy HH:mm')})}"></span>
                         </td>
-                        <td><a class="fw-medium nowrap" th:href="@{/admin/rooms/{id}(id=${b.room.id})}" th:text="${b.room.roomNumber}"></a></td>
+                        <td><a class="room-plate" th:href="@{/admin/rooms/{id}(id=${b.room.id})}" th:text="${b.room.roomNumber}"></a></td>
                         <td>
                             <span class="cell-stack">
                                 <a class="link-quiet num nowrap" th:href="'tel:' + ${#strings.replace(b.phone, '-', '')}" th:text="${b.phone}"></a>

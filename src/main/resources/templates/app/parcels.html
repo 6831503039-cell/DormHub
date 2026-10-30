@@ -20,8 +20,8 @@
         <div class="card mb-3" th:if="${#lists.isEmpty(waiting)}">
             <div th:replace="~{fragments/ui :: emptyState('package-check', #{parcels.none.title}, #{parcels.none.text}, null, null)}"></div>
         </div>
-        <div class="d-grid gap-2 mb-4">
-            <article class="card parcel-card" th:each="p : ${waiting}">
+        <div class="parcel-list mb-5">
+            <article class="parcel-card" th:each="p : ${waiting}">
                 <a th:if="${p.hasPhoto()}" th:href="@{/parcels/{id}/photo(id=${p.id})}" target="_blank" rel="noopener">
                     <img class="parcel-photo" th:src="@{/parcels/{id}/photo(id=${p.id})}" th:alt="#{parcels.photoOf(${tenant.room.roomNumber})}" loading="lazy">
                 </a>
@@ -41,8 +41,8 @@
             </article>
         </div>
 
-        <section class="card mb-4" th:unless="${#lists.isEmpty(pickedUp)}" aria-labelledby="pickedTitle">
-            <div class="card-header"><h2 class="h2 mb-0" id="pickedTitle" th:text="#{parcels.history}">รับไปแล้ว</h2></div>
+        <section class="plain-section mb-4" th:unless="${#lists.isEmpty(pickedUp)}" aria-labelledby="pickedTitle">
+            <div class="section-head"><h2 id="pickedTitle" th:text="#{parcels.history}">รับไปแล้ว</h2></div>
             <ul class="list-plain">
                 <li th:each="p : ${pickedUp}">
                     <div class="min-w-0">

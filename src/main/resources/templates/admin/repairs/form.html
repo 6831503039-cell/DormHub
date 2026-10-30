@@ -38,7 +38,7 @@
         <div class="form-section" th:if="${repair.id != null}">
             <h2 class="form-section-title" th:text="#{repair.jobDetails}">รายละเอียดงาน</h2>
             <dl class="detail-list mb-0">
-                <div><dt th:text="#{common.room}">ห้อง</dt><dd th:text="${repair.room.roomNumber}"></dd></div>
+                <div><dt th:text="#{common.room}">ห้อง</dt><dd><span class="room-plate" th:text="${repair.room.roomNumber}"></span></dd></div>
                 <div><dt th:text="#{repair.reportedDate}">วันที่แจ้ง</dt><dd class="num" th:text="${repair.reportedDate != null} ? ${#temporals.format(repair.reportedDate, 'dd/MM/yyyy')} : '-'"></dd></div>
                 <div><dt th:text="#{repair.subject}">เรื่อง</dt><dd th:text="${repair.title}"></dd></div>
                 <div><dt th:text="#{repair.details}">รายละเอียด</dt><dd class="pre-line" th:text="${repair.description != null and !#strings.isEmpty(repair.description)} ? ${repair.description} : '-'"></dd></div>

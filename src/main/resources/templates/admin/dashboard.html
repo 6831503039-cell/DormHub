@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout(#{nav.dashboard}, 'dashboard', ~{::main})}">
 <body>
-<main th:with="today=${now.toLocalDate()}, DAYS=${T(java.time.temporal.ChronoUnit).DAYS}">
+<main th:with="today=${now.toLocalDate()}, DAYS=${T(java.time.temporal.ChronoUnit).DAYS},
+               unpaidCount=${#lists.size(unpaidBills)}">
     <div class="page-header">
         <div>
             <h1 class="page-title" th:text="#{nav.dashboard}">ภาพรวม</h1>
@@ -9,40 +10,44 @@
         </div>
     </div>
 
-    <!-- 1. what needs attention: money, free rooms, repairs, slips -->
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-xl-3">
-            <a class="card kpi tone-danger" th:classappend="${unpaidTotal > 0} ? 'is-alert'" th:href="@{/admin/bills}">
-                <span class="kpi-head"><span th:text="#{dash.unpaidTotal}">ยอดค้างชำระ</span> <i data-lucide="receipt"></i></span>
-                <span class="kpi-value" th:text="'฿' + ${#numbers.formatDecimal(unpaidTotal, 1, 'COMMA', 0, 'POINT')}">฿0</span>
-                <span class="kpi-meta" th:text="#{dash.unpaidBills(${#lists.size(unpaidBills)})}"></span>
-            </a>
-        </div>
-        <div class="col-6 col-xl-3">
-            <a class="card kpi tone-success" th:href="@{/admin/layout}">
-                <span class="kpi-head"><span th:text="#{dash.freeRooms}">ห้องว่าง</span> <i data-lucide="door-open"></i></span>
-                <span class="kpi-value"><span th:text="${availableCount}">0</span> <small th:text="'/ ' + ${roomCount}"></small></span>
-                <span class="kpi-meta" th:text="#{dash.tenants(${tenantCount})}"></span>
-            </a>
-        </div>
-        <div class="col-6 col-xl-3">
-            <a class="card kpi tone-warning" th:classappend="${openRepairCount > 0} ? 'is-alert'" th:href="@{/admin/repairs}">
-                <span class="kpi-head"><span th:text="#{dash.openRepairs}">งานซ่อมที่รอ</span> <i data-lucide="wrench"></i></span>
-                <span class="kpi-value" th:text="${openRepairCount}">0</span>
-                <span class="kpi-meta" th:text="${openRepairCount > 0} ? #{dash.openRepairs.some} : #{dash.openRepairs.none}"></span>
-            </a>
-        </div>
-        <div class="col-6 col-xl-3">
-            <a class="card kpi tone-info" th:classappend="${slipsToReview > 0} ? 'is-alert'" th:href="@{/admin/payments}">
-                <span class="kpi-head"><span th:text="#{dash.slips}">สลิปรอตรวจ</span> <i data-lucide="scan-line"></i></span>
-                <span class="kpi-value" th:text="${slipsToReview}">0</span>
-                <span class="kpi-meta" th:text="${slipsToReview > 0} ? #{dash.slips.some} : #{dash.slips.none}"></span>
-            </a>
-        </div>
+    <!-- 1. one sentence: what is waiting today; each part opens its page -->
+    <p class="today-line" th:if="${unpaidCount + openRepairCount + slipsToReview > 0}">
+        <span th:text="#{dash.today}">วันนี้มี</span>
+        <a th:href="@{/admin/bills}" th:text="#{dash.today.bills(${unpaidCount})}">3 บิลค้างชำระ</a>
+        <span class="sep" aria-hidden="true">·</span>
+        <a th:href="@{/admin/repairs}" th:text="#{dash.today.repairs(${openRepairCount})}">2 งานซ่อมรอ</a>
+        <span class="sep" aria-hidden="true">·</span>
+        <a th:href="@{/admin/payments}" th:text="#{dash.today.slips(${slipsToReview})}">0 สลิปรอตรวจ</a>
+    </p>
+    <p class="today-line" th:unless="${unpaidCount + openRepairCount + slipsToReview > 0}" th:text="#{dash.today.none}">วันนี้ไม่มีงานค้าง</p>
+
+    <!-- 2. key figures: one row, no frames or icons; 2 x 2 on phones -->
+    <div class="figure-row mb-5">
+        <a class="figure" th:href="@{/admin/bills}">
+            <span class="figure-label" th:text="#{dash.unpaidTotal}">ยอดค้างชำระ</span>
+            <span class="figure-value" th:classappend="${unpaidTotal > 0} ? 'is-alert'"
+                  th:text="'฿' + ${#numbers.formatDecimal(unpaidTotal, 1, 'COMMA', 0, 'POINT')}">฿0</span>
+            <span class="figure-meta" th:text="#{dash.unpaidBills(${unpaidCount})}"></span>
+        </a>
+        <a class="figure" th:href="@{/admin/layout}">
+            <span class="figure-label" th:text="#{dash.freeRooms}">ห้องว่าง</span>
+            <span class="figure-value"><span th:text="${availableCount}">0</span><small th:text="' / ' + ${roomCount}"></small></span>
+            <span class="figure-meta" th:text="#{dash.tenants(${tenantCount})}"></span>
+        </a>
+        <a class="figure" th:href="@{/admin/repairs}">
+            <span class="figure-label" th:text="#{dash.openRepairs}">งานซ่อมที่รอ</span>
+            <span class="figure-value" th:text="${openRepairCount}">0</span>
+            <span class="figure-meta" th:text="${openRepairCount > 0} ? #{dash.openRepairs.some} : #{dash.openRepairs.none}"></span>
+        </a>
+        <a class="figure" th:href="@{/admin/payments}">
+            <span class="figure-label" th:text="#{dash.slips}">สลิปรอตรวจ</span>
+            <span class="figure-value" th:text="${slipsToReview}">0</span>
+            <span class="figure-meta" th:text="${slipsToReview > 0} ? #{dash.slips.some} : #{dash.slips.none}"></span>
+        </a>
     </div>
 
-    <div class="row g-3">
-        <div class="col-lg-8 d-flex flex-column gap-3">
+    <div class="row g-5">
+        <div class="col-lg-8 d-flex flex-column gap-5">
 
             <!-- 2. unpaid bills, oldest first -->
             <section class="card" aria-labelledby="unpaidTitle">
@@ -56,7 +61,7 @@
                         <thead><tr><th th:text="#{common.room}">ห้อง</th><th th:text="#{common.month}">เดือน</th><th th:text="#{bill.due}">ครบกำหนด</th><th class="text-end" th:text="#{dash.amountBaht}">ยอด (บาท)</th></tr></thead>
                         <tbody>
                         <tr th:each="b, st : ${unpaidBills}" th:if="${st.index < 6}">
-                            <td class="td-title" th:text="${b.room.roomNumber}"></td>
+                            <td class="td-title"><span class="room-plate" th:text="${b.room.roomNumber}"></span></td>
                             <td class="num" th:text="${b.billMonth}"></td>
                             <td>
                                 <span class="cell">
@@ -76,13 +81,13 @@
             </section>
 
             <!-- 3. what tenants say -->
-            <section class="card" aria-labelledby="feedbackTitle">
-                <div class="card-header">
+            <section class="plain-section" aria-labelledby="feedbackTitle">
+                <div class="section-head">
                     <h2 class="h2 mb-0" id="feedbackTitle" th:text="#{dash.latestFeedback}">ฟีดแบ็กล่าสุด</h2>
                     <th:block th:if="${unreadFeedback > 0}"><span th:replace="~{fragments/ui :: status('info', #{dash.unreadN(${unreadFeedback})})}"></span></th:block>
                     <a class="card-link" th:href="@{/admin/feedback}" th:text="#{common.viewAll}">ดูทั้งหมด</a>
                 </div>
-                <div class="px-4 pt-3 d-flex align-items-baseline gap-2" th:unless="${#lists.isEmpty(latestFeedback)}">
+                <div class="pt-3 d-flex align-items-baseline gap-2" th:unless="${#lists.isEmpty(latestFeedback)}">
                     <span class="kpi-value" th:text="${#numbers.formatDecimal(averageRating, 1, 1)}">0</span>
                     <span class="text-muted small" th:text="#{dash.avgRating}">คะแนนเฉลี่ยจาก 5</span>
                 </div>
@@ -109,11 +114,11 @@
             </section>
         </div>
 
-        <div class="col-lg-4 d-flex flex-column gap-3">
+        <div class="col-lg-4 d-flex flex-column gap-5">
 
             <!-- 4. rooms using unusually much electricity -->
-            <section class="card" aria-labelledby="abnormalTitle">
-                <div class="card-header">
+            <section class="plain-section" aria-labelledby="abnormalTitle">
+                <div class="section-head">
                     <h2 class="h2 mb-0" id="abnormalTitle" th:text="#{notice.abnormal.title}">ค่าไฟสูงผิดปกติ</h2>
                     <a class="card-link" th:href="@{/admin/analytics}" th:text="#{dash.viewCharts}">ดูกราฟ</a>
                 </div>
@@ -126,13 +131,13 @@
                         <span class="delta-up item-end" th:text="'+' + ${a.percentAbove} + '%'"></span>
                     </li>
                 </ul>
-                <p class="text-muted small px-4 py-3 mb-0" th:if="${#lists.isEmpty(abnormal)}" th:text="#{dash.noAbnormal}">ไม่มีห้องที่ใช้ไฟสูงกว่าปกติ</p>
+                <p class="text-muted small py-3 mb-0" th:if="${#lists.isEmpty(abnormal)}" th:text="#{dash.noAbnormal}">ไม่มีห้องที่ใช้ไฟสูงกว่าปกติ</p>
             </section>
 
             <!-- 5. shared laundry room (simulated) -->
-            <section class="card" aria-labelledby="laundryTitle"
+            <section class="plain-section" aria-labelledby="laundryTitle"
                      th:with="freeMachines=${#lists.size(machines.?[isAvailableAt(#vars.now)])}">
-                <div class="card-header">
+                <div class="section-head">
                     <h2 class="h2 mb-0" id="laundryTitle" th:text="#{laundry.title}">ห้องซักผ้า</h2>
                     <span class="tag" th:text="#{common.simulated}">จำลอง</span>
                     <span class="card-link text-muted" th:text="#{common.freeOf(${freeMachines}, ${#lists.size(machines)})}"></span>

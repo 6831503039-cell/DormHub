@@ -9,8 +9,8 @@
         <div th:replace="~{fragments/ui :: emptyState('megaphone', #{announcements.empty.title}, #{announcements.empty.text}, null, null)}"></div>
     </div>
 
-    <div class="d-grid gap-3 mb-4">
-        <article class="card news-card" th:each="a : ${announcements}" th:id="'a' + ${a.id}">
+    <div class="news-feed mb-4">
+        <article class="news-card" th:each="a : ${announcements}" th:id="'a' + ${a.id}">
             <img th:if="${a.hasImage()}" class="news-image" th:src="@{/announcements/{id}/image(id=${a.id})}" th:alt="${a.title}" loading="lazy">
             <div class="card-body">
                 <div class="d-flex gap-2 align-items-center mb-1">
