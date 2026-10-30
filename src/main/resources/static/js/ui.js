@@ -12,6 +12,8 @@
  *                                      (table rows or list items) that do not contain the text
  *  data-filter-key="status"            on a <select> with data-filter-target: keeps rows whose
  *                                      data-status contains the value as a token ("" = all)
+ *  <details data-group> inside the target: a collapsible group of rows (one per building); filtering
+ *                                      opens the groups with matches and hides the empty ones
  *  data-filter-count="#tableId"        element that shows "N items"
  *  data-filter-empty="#tableId"        element shown when no row matches
  *  <select data-room-picker>          room options with data-building / data-floor: shows building tabs
@@ -171,6 +173,19 @@
                 shown++;
             }
         });
+        // collapsible groups (<details data-group>, e.g. one per building): while searching or filtering, groups with
+        // matches open and the others hide; when every filter is cleared they close again
+        var filtering = controls.some(function (c) { return c.value.trim() !== ''; });
+        table.querySelectorAll('details[data-group]').forEach(function (g) {
+            var matches = g.querySelectorAll('[data-row]:not([hidden])').length;
+            g.hidden = matches === 0 && rows.length > 0;
+            if (filtering) {
+                g.open = matches > 0;
+            } else if (table.dataset.wasFiltering === 'yes') {
+                g.open = false;
+            }
+        });
+        table.dataset.wasFiltering = filtering ? 'yes' : 'no';
         document.querySelectorAll('[data-filter-count="' + target + '"]').forEach(function (el) {
             el.textContent = shown + dhT(' รายการ', shown === 1 ? ' item' : ' items');
         });

@@ -1,7 +1,12 @@
 package th.mfu.admin;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -45,7 +50,17 @@ public class TenantController {
 
     @GetMapping("/tenants")
     public String listTenants(Model model) {
-        model.addAttribute("tenants", repository.findAllByOrderByFirstNameAsc());
+        List<Tenant> tenants = repository.findAllByOrderByFirstNameAsc();
+        model.addAttribute("tenants", tenants);
+        // building -> tenants ordered by room, one collapsible card per building; "none" = no room yet (last)
+        Map<String, List<Tenant>> groups = new TreeMap<>(Comparator.comparing((String b) -> b.equals("none")).thenComparing(b -> b));
+        tenants.stream()
+                .sorted(Comparator.comparing((Tenant t) -> t.getRoom() == null ? "~" : t.getRoom().getRoomNumber())
+                        .thenComparing(Tenant::getFullName))
+                .forEach(t -> groups.computeIfAbsent(t.getRoom() == null ? "none"
+                        : (t.getRoom().getBuilding() == null || t.getRoom().getBuilding().isBlank() ? "-" : t.getRoom().getBuilding()),
+                        b -> new ArrayList<>()).add(t));
+        model.addAttribute("tenantGroups", groups);
         // emails that already have a login, so the list can show which tenants use the app
         Set<String> accountEmails = new HashSet<>();
         userRepository.findAll().forEach(u -> accountEmails.add(u.getEmail().toLowerCase()));
