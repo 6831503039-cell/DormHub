@@ -56,10 +56,11 @@
                         <span class="step-num">2</span>
                         <div class="flex-grow-1">
                             <p class="fw-medium mb-2" th:text="#{bills.step2}">แนบสลิป</p>
-                            <div class="mb-3">
-                                <label class="form-label" th:for="'amount' + ${v.bill.id}" th:text="#{bills.amount}">ยอดที่โอน (บาท)</label>
-                                <input class="form-control" type="number" inputmode="decimal" name="amount" min="1" step="0.01"
-                                       th:id="'amount' + ${v.bill.id}" th:value="${v.share < v.outstanding ? v.share : v.outstanding}" required>
+                            <!-- fixed amount: the tenant transfers exactly this, the form has no amount field -->
+                            <div class="pay-amount mb-3" th:with="due=${v.share < v.outstanding ? v.share : v.outstanding}">
+                                <div class="form-label mb-1" th:text="#{bills.amount}">ยอดที่ต้องโอน</div>
+                                <div class="pay-amount-value num" th:text="'฿' + ${#numbers.formatDecimal(due, 1, 'COMMA', 2, 'POINT')}">฿2,727.00</div>
+                                <div class="form-text" th:text="#{bills.amountFixed}">โอนตามยอดนี้ ระบบคำนวณส่วนของคุณให้แล้ว</div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label" th:for="'slip' + ${v.bill.id}" th:text="#{bills.slip}">รูปสลิป</label>
