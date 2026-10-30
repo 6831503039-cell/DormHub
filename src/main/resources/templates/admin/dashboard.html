@@ -57,10 +57,10 @@
                         <tbody>
                         <tr th:each="b, st : ${unpaidBills}" th:if="${st.index < 6}">
                             <td class="td-title" th:text="${b.room.roomNumber}"></td>
-                            <td th:text="${b.billMonth}"></td>
+                            <td class="num" th:text="${b.billMonth}"></td>
                             <td>
                                 <span class="cell">
-                                    <span th:text="${b.dueDate != null} ? ${#temporals.format(b.dueDate, 'dd/MM/yyyy')} : '-'"></span>
+                                    <span class="num" th:text="${b.dueDate != null} ? ${#temporals.format(b.dueDate, 'dd/MM/yyyy')} : '-'"></span>
                                     <span th:if="${b.dueDate != null and b.dueDate.isBefore(today)}" class="badge status-danger ms-1"
                                           th:text="#{common.daysLate(${DAYS.between(b.dueDate, today)})}"></span>
                                 </span>

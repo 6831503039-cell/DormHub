@@ -77,7 +77,7 @@
             <li th:each="t : ${tenants}">
                 <div>
                     <a class="item-title link-quiet" th:href="@{/admin/tenants/{id}(id=${t.id})}" th:text="${t.fullName}"></a>
-                    <div class="item-meta" th:text="${t.phone}"></div>
+                    <div class="item-meta num" th:text="${t.phone}"></div>
                 </div>
                 <a class="btn btn-ghost btn-icon btn-sm item-end" th:href="@{/admin/tenants/{id}(id=${t.id})}"
                    th:attr="aria-label=#{tenants.editN(${t.fullName})}"><i data-lucide="chevron-right"></i></a>

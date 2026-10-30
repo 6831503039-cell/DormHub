@@ -41,8 +41,11 @@
     --s-danger: #d92d20;   --s-danger-fg: #b42318;   --s-danger-bg: #fdecea;    /* ค้างชำระ, สลิปน่าสงสัย */
     --s-neutral: #a3a8a2;  --s-neutral-fg: #4a524e;  --s-neutral-bg: #efeee8;   /* ไม่อนุมัติ, อื่นๆ */
 
-    /* ---- typography: one family, 6-step scale ---- */
-    --font: 'IBM Plex Sans Thai', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    /* ---- typography: Instrument Sans + Anuphan for text, JetBrains Mono for numbers; 6-step scale ---- */
+    /* Latin letters come from Instrument Sans; Thai letters fall through to Anuphan, so English words look the same in both languages */
+    --font: 'Instrument Sans', 'Anuphan', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    /* every number (room numbers, money, dates, meter units, phones) */
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
     --fs-xs: .75rem;    /* 12px  badges, captions */
     --fs-sm: .875rem;   /* 14px  tables, labels, helper text */
     --fs-base: 1rem;    /* 16px  body, inputs */
@@ -54,6 +57,7 @@
     --fw-regular: 400;
     --fw-medium: 500;
     --fw-semibold: 600;
+    --fw-bold: 700;
 
     /* ---- spacing: 4 / 8px scale ---- */
     --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px;  --sp-4: 16px;
@@ -150,7 +154,10 @@
 
 /* =========================== base =========================== */
 body { background: var(--c-bg); color: var(--c-text); font-family: var(--font); line-height: var(--lh); }
-h1, h2, h3, h4, h5, h6 { font-weight: var(--fw-semibold); line-height: var(--lh-tight); letter-spacing: -.005em; color: var(--c-text); }
+h1, h2, h3, h4, h5, h6 { font-weight: var(--fw-semibold); line-height: var(--lh-tight); letter-spacing: -.01em; color: var(--c-text); }
+/* Thai: never tighten the letters, and give stacked vowels and tone marks room above and below */
+:lang(th) h1, :lang(th) h2, :lang(th) h3, :lang(th) h4, :lang(th) h5, :lang(th) h6,
+:lang(th) .page-title, :lang(th) .section-title { letter-spacing: 0; line-height: 1.45; }
 h1, .h1 { font-size: var(--fs-xl); }
 h2, .h2 { font-size: var(--fs-lg); }
 h3, .h3, h4, .h4, h5, .h5 { font-size: var(--fs-base); }
@@ -158,7 +165,8 @@ h3, .h3, h4, .h4, h5, .h5 { font-size: var(--fs-base); }
 small, .small { font-size: var(--fs-sm); }
 .text-muted, .text-secondary { color: var(--c-muted) !important; }
 .fw-medium { font-weight: var(--fw-medium) !important; }
-.num, .tabular { font-variant-numeric: tabular-nums; }
+/* numbers: room numbers, money, dates, meter units, phones; mono so columns of figures line up */
+.num, .tabular { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: var(--fw-medium); font-size: .94em; letter-spacing: 0; }
 a { text-underline-offset: 2px; }
 /* secondary link inside data (phone, email): reads as text, shows it is a link on hover/focus */
 .link-quiet { color: inherit; text-decoration: none; }
@@ -233,7 +241,7 @@ a { text-underline-offset: 2px; }
 }
 
 /* =========================== Input / Select =========================== */
-.form-label { font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--c-text-2); margin-bottom: var(--sp-1); }
+.form-label { font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--c-muted); margin-bottom: var(--sp-1); }
 .form-text { font-size: var(--fs-sm); color: var(--c-muted); margin-top: var(--sp-1); }
 .form-control, .form-select {
     font-size: var(--fs-base);              /* 16px also stops iOS zoom-on-focus */
@@ -369,7 +377,7 @@ a.card-link:hover { text-decoration: underline; }
     background: var(--c-surface-2); letter-spacing: .01em;
 }
 .table td { vertical-align: middle; }
-.table .num, .table .text-end { font-variant-numeric: tabular-nums; }
+.table .text-end { font-variant-numeric: tabular-nums; }
 .table .td-actions { text-align: right; white-space: nowrap; }
 /* two lines in one cell: main value on top, meta below */
 .cell-stack { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 2px; }
@@ -841,3 +849,5 @@ a.news-item:hover { border-color: var(--c-border-strong); }
 .group-card[open] > .group-head { border-bottom: 1px solid var(--c-border); }
 .group-card[open] .group-chevron { transform: rotate(180deg); }
 @media (prefers-reduced-motion: reduce) { .group-chevron { transition: none; } }
+/* key figures (dashboard row, balance, KPI) use the number font */
+.kpi-value, .amount, .stat-value, .figure-value { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }

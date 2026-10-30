@@ -427,9 +427,9 @@
             g.fillStyle = '#2fa84f'; g.fillRect(40, 40, 432, 240);
             g.fillStyle = '#ffffff';
             g.textAlign = 'center'; g.textBaseline = 'middle';
-            g.font = 'bold 150px "IBM Plex Sans Thai", sans-serif';
+            g.font = 'bold 150px "Instrument Sans", "Anuphan", sans-serif';
             g.fillText(top, 256, 135);
-            g.font = '600 64px "IBM Plex Sans Thai", sans-serif';
+            g.font = '600 64px "Instrument Sans", "Anuphan", sans-serif';
             g.fillText(bottom, 256, 240);
             return new THREE.CanvasTexture(c);
         }

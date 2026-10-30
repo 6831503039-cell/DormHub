@@ -55,7 +55,7 @@
                         <div class="item-meta">
                             <span th:text="${f.author.fullName}"></span>
                             <span th:if="${f.room != null}" th:text="'· ' + #{common.roomN(${f.room.roomNumber})}"></span>
-                            <span th:text="'· ' + ${#temporals.format(f.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
+                            <span class="num" th:text="'· ' + ${#temporals.format(f.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
                         </div>
                     </div>
                     <a class="btn btn-sm item-end" th:classappend="${f.readByOwner} ? 'btn-ghost' : 'btn-soft'"

@@ -31,11 +31,11 @@
                    th:text="#{bills.dueOn(${#temporals.format(v.bill.dueDate, 'dd/MM/yyyy')})}"></p>
 
                 <dl class="breakdown mb-4">
-                    <dt th:text="#{bills.rent}">ค่าเช่า</dt><dd th:text="${#numbers.formatDecimal(v.bill.rent, 1, 'COMMA', 2, 'POINT')}"></dd>
-                    <dt th:text="#{bills.electricUnits(${v.bill.electricUnits})}"></dt><dd th:text="${#numbers.formatDecimal(v.bill.electricCost, 1, 'COMMA', 2, 'POINT')}"></dd>
-                    <dt th:text="#{bills.waterUnits(${v.bill.waterUnits})}"></dt><dd th:text="${#numbers.formatDecimal(v.bill.waterCost, 1, 'COMMA', 2, 'POINT')}"></dd>
-                    <dt class="text-body fw-medium" th:text="#{bills.roomTotal}">รวมทั้งห้อง</dt><dd class="fw-medium" th:text="'฿' + ${#numbers.formatDecimal(v.bill.total, 1, 'COMMA', 2, 'POINT')}"></dd>
-                    <dt th:text="#{bills.paidApproved}">ชำระแล้ว (อนุมัติ)</dt><dd th:text="'฿' + ${#numbers.formatDecimal(v.bill.total - v.outstanding, 1, 'COMMA', 2, 'POINT')}"></dd>
+                    <dt th:text="#{bills.rent}">ค่าเช่า</dt><dd class="num" th:text="${#numbers.formatDecimal(v.bill.rent, 1, 'COMMA', 2, 'POINT')}"></dd>
+                    <dt th:text="#{bills.electricUnits(${v.bill.electricUnits})}"></dt><dd class="num" th:text="${#numbers.formatDecimal(v.bill.electricCost, 1, 'COMMA', 2, 'POINT')}"></dd>
+                    <dt th:text="#{bills.waterUnits(${v.bill.waterUnits})}"></dt><dd class="num" th:text="${#numbers.formatDecimal(v.bill.waterCost, 1, 'COMMA', 2, 'POINT')}"></dd>
+                    <dt class="text-body fw-medium" th:text="#{bills.roomTotal}">รวมทั้งห้อง</dt><dd class="num fw-medium" th:text="'฿' + ${#numbers.formatDecimal(v.bill.total, 1, 'COMMA', 2, 'POINT')}"></dd>
+                    <dt th:text="#{bills.paidApproved}">ชำระแล้ว (อนุมัติ)</dt><dd class="num" th:text="'฿' + ${#numbers.formatDecimal(v.bill.total - v.outstanding, 1, 'COMMA', 2, 'POINT')}"></dd>
                 </dl>
 
                 <th:block th:if="${v.outstanding > 0}">
