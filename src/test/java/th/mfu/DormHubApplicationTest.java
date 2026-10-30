@@ -497,6 +497,36 @@ public class DormHubApplicationTest {
     }
 
     @Test
+    public void tenantConfirmsOwnParcelPickup() throws Exception {
+        Room a101 = roomRepository.findByRoomNumber("A101").get(); // seeded: 2 waiting parcels
+        var parcel = parcelRepository.findByRoomOrderByArrivedAtDesc(a101).stream().filter(p -> p.isWaiting()).findFirst().get();
+        mvc.perform(get("/app/parcels").with(tenant()))
+                .andExpect(content().string(containsString("/app/parcels/" + parcel.getId() + "/picked-up")));
+        // a tenant of another room cannot confirm it
+        mvc.perform(post("/app/parcels/" + parcel.getId() + "/picked-up").with(user("suda@example.com").roles("TENANT")).with(csrf()))
+                .andExpect(status().isNotFound());
+        assertTrue(parcelRepository.findById(parcel.getId()).get().isWaiting());
+
+        mvc.perform(post("/app/parcels/" + parcel.getId() + "/picked-up").with(tenant()).with(csrf()))
+                .andExpect(redirectedUrl("/app/parcels"));
+        var saved = parcelRepository.findById(parcel.getId()).get();
+        assertFalse(saved.isWaiting());
+        assertEquals("สมชาย ใจดี", saved.getPickedUpBy());
+        mvc.perform(get("/admin/parcels").with(admin())).andExpect(content().string(containsString("สมชาย ใจดี")));
+    }
+
+    @Test
+    public void roomAndTenantListsAreGroupedByBuilding() throws Exception {
+        mvc.perform(get("/admin/rooms").with(admin()))
+                .andExpect(content().string(containsString("data-group")))
+                .andExpect(content().string(containsString("ตึก A")))
+                .andExpect(content().string(containsString("ตึก C")));
+        mvc.perform(get("/admin/tenants").with(admin()))
+                .andExpect(content().string(containsString("data-group")))
+                .andExpect(content().string(containsString("ตึก B")));
+    }
+
+    @Test
     public void latestElectricityCardOpensUsageNotBills() throws Exception {
         mvc.perform(get("/app").with(tenant())).andExpect(content().string(containsString("href=\"/app/usage\"")));
         mvc.perform(get("/app/usage").with(tenant()))

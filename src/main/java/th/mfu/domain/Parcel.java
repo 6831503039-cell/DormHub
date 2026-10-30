@@ -40,6 +40,15 @@ public class Parcel {
     private LocalDateTime arrivedAt;
     // null = still waiting at the office
     private LocalDateTime pickedUpAt;
+    // name of the tenant who confirmed the pickup in the app; null when the admin marked it
+    private String pickedUpBy;
+
+    public String getPickedUpBy() {
+        return pickedUpBy;
+    }
+    public void setPickedUpBy(String pickedUpBy) {
+        this.pickedUpBy = pickedUpBy;
+    }
 
     public boolean hasPhoto() {
         return photoContentType != null;

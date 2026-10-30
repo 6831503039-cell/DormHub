@@ -1,5 +1,6 @@
 package th.mfu.admin;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +46,15 @@ public class RoomController {
 
     @GetMapping("/rooms")
     public String listRooms(Model model) {
-        model.addAttribute("rooms", repository.findAllByOrderByRoomNumberAsc());
+        List<Room> rooms = repository.findAllByOrderByRoomNumberAsc();
+        model.addAttribute("rooms", rooms);
+        // building -> rooms, shown as one collapsible card per building
+        Map<String, List<Room>> groups = new TreeMap<>();
+        for (Room room : rooms) {
+            String building = room.getBuilding() == null || room.getBuilding().isBlank() ? "-" : room.getBuilding();
+            groups.computeIfAbsent(building, b -> new ArrayList<>()).add(room);
+        }
+        model.addAttribute("roomGroups", groups);
         model.addAttribute("occupants", occupantsByRoom());
         return "admin/rooms/list";
     }
