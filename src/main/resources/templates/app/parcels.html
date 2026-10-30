@@ -31,6 +31,12 @@
                     <div class="item-meta" th:text="#{parcels.arrived(${#temporals.format(p.arrivedAt, 'dd/MM/yyyy HH:mm')})} + (${p.carrier != null} ? ' · ' + ${p.carrier} : '')"></div>
                     <div class="small text-muted" th:if="${p.note != null}" th:text="${p.note}"></div>
                     <span class="badge status-warning mt-1" th:text="#{parcels.status.waiting}">รอรับ</span>
+                    <form class="mt-2" th:action="@{/app/parcels/{id}/picked-up(id=${p.id})}" method="post">
+                        <button class="btn btn-soft btn-sm" type="submit" data-confirm-tone="primary"
+                                th:attr="data-confirm=#{parcels.confirm.question},data-confirm-title=#{parcels.confirm.title},data-confirm-ok=#{parcels.confirm.ok}">
+                            <i data-lucide="package-check"></i> <span th:text="#{parcels.confirm.button}">ยืนยันรับของแล้ว</span>
+                        </button>
+                    </form>
                 </div>
             </article>
         </div>
@@ -41,7 +47,7 @@
                 <li th:each="p : ${pickedUp}">
                     <div class="min-w-0">
                         <div class="item-title" th:text="${p.recipientName != null} ? #{parcels.to(${p.recipientName})} : #{parcels.forRoom(${tenant.room.roomNumber})}"></div>
-                        <div class="item-meta" th:text="#{parcels.pickedUpAt(${#temporals.format(p.pickedUpAt, 'dd/MM/yyyy HH:mm')})}"></div>
+                        <div class="item-meta" th:text="#{parcels.pickedUpAt(${#temporals.format(p.pickedUpAt, 'dd/MM/yyyy HH:mm')})} + (${p.pickedUpBy != null} ? ' · ' + #{parcels.by(${p.pickedUpBy})} : '')"></div>
                     </div>
                     <span class="badge status-success item-end" th:text="#{parcels.status.picked}">รับแล้ว</span>
                 </li>

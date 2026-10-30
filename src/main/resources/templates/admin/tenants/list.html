@@ -51,68 +51,77 @@
             <span th:text="#{tenants.appHint}">ผู้เช่าที่สมัครแอปด้วยอีเมลเดียวกับในรายการนี้ จะเห็นห้อง บิล และเพื่อนร่วมห้องของตัวเองอัตโนมัติ</span>
         </p>
 
-        <div class="card">
-            <div class="table-wrap">
-                <table class="table table-hover table-cards" id="tenantTable">
-                    <thead>
-                    <tr>
-                        <th scope="col" th:text="#{tenants.col.tenant}">ผู้เช่า</th>
-                        <th scope="col" th:text="#{common.room}">ห้อง</th>
-                        <th scope="col" th:text="#{common.phone}">โทรศัพท์</th>
-                        <th scope="col" th:text="#{tenants.col.checkIn}">เข้าพัก</th>
-                        <th scope="col" th:text="#{tenants.col.contractEnd}">สัญญาถึง</th>
-                        <th scope="col" th:text="#{tenants.appAccount}">บัญชีแอป</th>
-                        <th scope="col"><span class="visually-hidden" th:text="#{common.actions}">จัดการ</span></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="t : ${tenants}" data-row
-                        th:with="hasApp=${t.email != null and accountEmails.contains(t.email.toLowerCase())},
-                                 daysLeft=${t.contractEndDate != null} ? ${DAYS.between(today, t.contractEndDate)} : null,
-                                 contract=${daysLeft == null} ? 'none' : (${daysLeft < 0} ? 'expired' : (${daysLeft <= soonDays} ? 'soon' : 'ok'))"
-                        th:attr="data-building=(${t.room != null} ? ${t.room.building} : 'none'),data-app=(${hasApp} ? 'yes' : 'no'),data-contract=${contract}">
-                        <td class="td-title">
-                            <span class="d-block fw-semibold" th:text="${t.fullName}"></span>
-                            <span class="item-meta" th:text="${t.email != null} ? ${t.email} : #{common.noEmail}"></span>
-                        </td>
-                        <td>
-                            <span th:if="${t.room != null}" class="cell">
-                                <span class="fw-medium" th:text="${t.room.roomNumber}"></span>
-                                <span class="item-meta" th:text="#{common.buildingN(${t.room.building})}"></span>
-                            </span>
-                            <span th:if="${t.room == null}" class="text-muted" th:text="#{common.noRoom}">ไม่มีห้อง</span>
-                        </td>
-                        <td>
-                            <a th:if="${t.phone != null and !#strings.isEmpty(t.phone)}" class="link-quiet num text-nowrap" th:href="'tel:' + ${#strings.replace(t.phone, '-', '')}" th:text="${t.phone}"></a>
-                            <span th:unless="${t.phone != null and !#strings.isEmpty(t.phone)}" class="text-muted">-</span>
-                        </td>
-                        <td class="num text-nowrap" th:text="${t.checkInDate != null} ? ${#temporals.format(t.checkInDate, 'dd/MM/yyyy')} : '-'"></td>
-                        <td>
-                            <span class="cell text-nowrap" th:if="${t.contractEndDate != null}">
-                                <span class="num" th:text="${#temporals.format(t.contractEndDate, 'dd/MM/yyyy')}"></span>
-                                <span th:if="${contract == 'soon'}" class="badge status-soon" th:text="#{tenants.daysLeft(${daysLeft})}"></span>
-                                <span th:if="${contract == 'expired'}" class="badge status-danger" th:text="#{tenants.contract.expired}">หมดแล้ว</span>
-                            </span>
-                            <span th:if="${t.contractEndDate == null}" class="text-muted">-</span>
-                        </td>
-                        <td>
-                            <span th:if="${hasApp}" class="badge status-success" th:text="#{tenants.app.yes}">ใช้แอปแล้ว</span>
-                            <span th:unless="${hasApp}" class="badge status-neutral" th:text="#{tenants.app.no}">ยังไม่สมัคร</span>
-                        </td>
-                        <td class="td-actions">
-                            <a class="btn btn-soft btn-icon btn-sm" th:href="@{/admin/tenants/{id}(id=${t.id})}"
-                               th:attr="aria-label=#{tenants.editN(${t.fullName})}" th:title="#{common.edit}"><i data-lucide="pencil"></i></a>
-                            <a class="btn btn-ghost-danger btn-icon btn-sm" th:href="@{/admin/tenants/{id}/delete(id=${t.id})}"
-                               th:attr="aria-label=#{tenants.deleteN(${t.fullName})},data-confirm=#{tenants.delete.confirm},data-confirm-title=#{tenants.deleteTitle(${t.fullName})}"
-                               th:title="#{common.delete}"><i data-lucide="trash-2"></i></a>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div data-filter-empty="#tenantTable" hidden>
-                <div th:replace="~{fragments/ui :: emptyState('search-x', #{tenants.noMatch}, #{common.noMatch.text}, null, null)}"></div>
-            </div>
+        <!-- one card per building, closed until clicked (or opened by a search); tenants without a room come last -->
+        <div id="tenantTable" class="group-list">
+            <details class="card group-card" data-group th:each="g : ${tenantGroups}">
+                <summary class="group-head">
+                    <span class="group-badge" th:text="${g.key == 'none'} ? '-' : ${g.key}">A</span>
+                    <span class="group-title" th:text="${g.key == 'none'} ? #{common.noRoom} : #{common.buildingN(${g.key})}">ตึก A</span>
+                    <span class="group-meta" th:text="#{tenants.groupMeta(${#lists.size(g.value)})}">60 คน</span>
+                    <i data-lucide="chevron-down" class="group-chevron"></i>
+                </summary>
+                <div class="table-wrap">
+                    <table class="table table-hover table-cards mb-0">
+                        <thead>
+                        <tr>
+                            <th scope="col" th:text="#{tenants.col.tenant}">ผู้เช่า</th>
+                            <th scope="col" th:text="#{common.room}">ห้อง</th>
+                            <th scope="col" th:text="#{common.phone}">โทรศัพท์</th>
+                            <th scope="col" th:text="#{tenants.col.checkIn}">เข้าพัก</th>
+                            <th scope="col" th:text="#{tenants.col.contractEnd}">สัญญาถึง</th>
+                            <th scope="col" th:text="#{tenants.appAccount}">บัญชีแอป</th>
+                            <th scope="col"><span class="visually-hidden" th:text="#{common.actions}">จัดการ</span></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="t : ${g.value}" data-row
+                            th:with="hasApp=${t.email != null and accountEmails.contains(t.email.toLowerCase())},
+                                     daysLeft=${t.contractEndDate != null} ? ${DAYS.between(today, t.contractEndDate)} : null,
+                                     contract=${daysLeft == null} ? 'none' : (${daysLeft < 0} ? 'expired' : (${daysLeft <= soonDays} ? 'soon' : 'ok'))"
+                            th:attr="data-building=(${t.room != null} ? ${t.room.building} : 'none'),data-app=(${hasApp} ? 'yes' : 'no'),data-contract=${contract}">
+                            <td class="td-title">
+                                <span class="d-block fw-semibold" th:text="${t.fullName}"></span>
+                                <span class="item-meta" th:text="${t.email != null} ? ${t.email} : #{common.noEmail}"></span>
+                            </td>
+                            <td>
+                                <span th:if="${t.room != null}" class="cell">
+                                    <span class="fw-medium" th:text="${t.room.roomNumber}"></span>
+                                    <span class="item-meta" th:text="#{common.buildingN(${t.room.building})}"></span>
+                                </span>
+                                <span th:if="${t.room == null}" class="text-muted" th:text="#{common.noRoom}">ไม่มีห้อง</span>
+                            </td>
+                            <td>
+                                <a th:if="${t.phone != null and !#strings.isEmpty(t.phone)}" class="link-quiet num text-nowrap" th:href="'tel:' + ${#strings.replace(t.phone, '-', '')}" th:text="${t.phone}"></a>
+                                <span th:unless="${t.phone != null and !#strings.isEmpty(t.phone)}" class="text-muted">-</span>
+                            </td>
+                            <td class="num text-nowrap" th:text="${t.checkInDate != null} ? ${#temporals.format(t.checkInDate, 'dd/MM/yyyy')} : '-'"></td>
+                            <td>
+                                <span class="cell text-nowrap" th:if="${t.contractEndDate != null}">
+                                    <span class="num" th:text="${#temporals.format(t.contractEndDate, 'dd/MM/yyyy')}"></span>
+                                    <span th:if="${contract == 'soon'}" class="badge status-soon" th:text="#{tenants.daysLeft(${daysLeft})}"></span>
+                                    <span th:if="${contract == 'expired'}" class="badge status-danger" th:text="#{tenants.contract.expired}">หมดแล้ว</span>
+                                </span>
+                                <span th:if="${t.contractEndDate == null}" class="text-muted">-</span>
+                            </td>
+                            <td>
+                                <span th:if="${hasApp}" class="badge status-success" th:text="#{tenants.app.yes}">ใช้แอปแล้ว</span>
+                                <span th:unless="${hasApp}" class="badge status-neutral" th:text="#{tenants.app.no}">ยังไม่สมัคร</span>
+                            </td>
+                            <td class="td-actions">
+                                <a class="btn btn-soft btn-icon btn-sm" th:href="@{/admin/tenants/{id}(id=${t.id})}"
+                                   th:attr="aria-label=#{tenants.editN(${t.fullName})}" th:title="#{common.edit}"><i data-lucide="pencil"></i></a>
+                                <a class="btn btn-ghost-danger btn-icon btn-sm" th:href="@{/admin/tenants/{id}/delete(id=${t.id})}"
+                                   th:attr="aria-label=#{tenants.deleteN(${t.fullName})},data-confirm=#{tenants.delete.confirm},data-confirm-title=#{tenants.deleteTitle(${t.fullName})}"
+                                   th:title="#{common.delete}"><i data-lucide="trash-2"></i></a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+        </div>
+        <div class="card" data-filter-empty="#tenantTable" hidden>
+            <div th:replace="~{fragments/ui :: emptyState('search-x', #{tenants.noMatch}, #{common.noMatch.text}, null, null)}"></div>
         </div>
     </th:block>
 </main>
