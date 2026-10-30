@@ -70,7 +70,9 @@ public class ExploreController {
         }
         booking.setApplicant(null);
         bookingService.submit(booking);
-        redirect.addFlashAttribute("success", messages.get("flash.book.sent", room.getRoomNumber(), booking.getPhone()));
+        // shown as a dialog in the middle of the screen (fragments/ui :: bookingSent)
+        redirect.addFlashAttribute("bookingSent", room.getRoomNumber());
+        redirect.addFlashAttribute("bookingPhone", booking.getPhone());
         return back;
     }
 }

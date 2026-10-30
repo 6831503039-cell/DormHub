@@ -33,6 +33,7 @@
     <span th:text="${error}"></span>
     <button type="button" class="btn-close" data-bs-dismiss="alert" th:aria-label="#{common.close}"></button>
 </div>
+<th:block th:replace="~{fragments/ui :: bookingSent}"></th:block>
 
 <main id="dormMap" class="explore-map" th:aria-label="#{map.aria}"></main>
 

@@ -36,6 +36,31 @@
     </a>
 </div>
 
+<!-- Dialog in the middle of the screen after a booking request was sent (flash attribute "bookingSent" = room number).
+     "bookingPhone" is set for the public page, where the staff call back; the app shows how the account gets the room. -->
+<th:block th:fragment="bookingSent">
+    <div th:if="${bookingSent}" class="modal fade" id="bookingSentModal" tabindex="-1" aria-labelledby="bookingSentTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content booking-sent">
+                <div class="modal-body text-center">
+                    <div class="booking-sent-icon" aria-hidden="true"><i data-lucide="hourglass"></i></div>
+                    <h2 class="h5 mb-1" id="bookingSentTitle" th:text="#{bookingSent.title}">ส่งคำขอจองแล้ว</h2>
+                    <div class="room-no num mb-3" th:text="#{bookingSent.room(${bookingSent})}">ห้อง A103</div>
+                    <p class="booking-sent-wait" th:text="#{bookingSent.wait}">รอเจ้าหน้าที่ของหอกดยืนยัน</p>
+                    <p class="text-muted small mb-4" th:text="${bookingPhone != null} ? #{bookingSent.public(${bookingPhone})} : #{bookingSent.app}"></p>
+                    <button type="button" class="btn btn-primary w-100" data-bs-dismiss="modal" th:text="#{bookingSent.ok}">ตกลง</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script th:if="${bookingSent}">
+        document.addEventListener('DOMContentLoaded', function () {
+            var el = document.getElementById('bookingSentModal');
+            if (el && window.bootstrap) bootstrap.Modal.getOrCreateInstance(el).show();
+        });
+    </script>
+</th:block>
+
 <!-- Flash messages after a redirect (success / error). -->
 <th:block th:fragment="flash">
     <div th:if="${success}" class="alert alert-success alert-dismissible fade show d-flex align-items-start gap-2" role="status">

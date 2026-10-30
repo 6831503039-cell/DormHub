@@ -1,12 +1,15 @@
 package th.mfu.domain;
 
+import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 
 /** A login account. Tenants are linked to their Tenant record by email. */
 @Entity
@@ -25,6 +28,15 @@ public class AppUser {
     private String password;
 
     private String fullName;
+
+    // set by the user on the profile page (/app/profile)
+    private String phone;
+
+    // profile photo (image bytes + content type), null when the user has none
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
+    private byte[] photo;
+    private String photoType;
 
     @Enumerated(EnumType.STRING)
     private Role role = Role.TENANT;
@@ -76,5 +88,30 @@ public class AppUser {
     }
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public byte[] getPhoto() {
+        return photo;
+    }
+    public void setPhoto(byte[] photo) {
+        this.photo = photo;
+    }
+
+    public String getPhotoType() {
+        return photoType;
+    }
+    public void setPhotoType(String photoType) {
+        this.photoType = photoType;
+    }
+
+    public boolean isHasPhoto() {
+        return photoType != null;
     }
 }

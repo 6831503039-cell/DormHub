@@ -79,7 +79,7 @@ public class TenantBillController {
     }
 
     @PostMapping("/app/bills/{id}/pay")
-    public String pay(@PathVariable Long id, @RequestParam double amount, @RequestParam("slip") MultipartFile slip,
+    public String pay(@PathVariable Long id, @RequestParam("slip") MultipartFile slip,
             Principal principal, RedirectAttributes redirect) throws IOException {
         Tenant tenant = currentUser.tenant(currentUser.user(principal))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
@@ -87,6 +87,8 @@ public class TenantBillController {
                 .filter(b -> tenant.getRoom() != null && b.getRoom().getId().equals(tenant.getRoom().getId()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
+        // the amount is fixed by the system: the tenant's share, or what is left of the bill if that is less
+        double amount = amountToPay(bill);
         if (slip.isEmpty() || amount <= 0) {
             redirect.addFlashAttribute("error", messages.get("flash.slip.missing"));
             return "redirect:/app/bills";
@@ -100,6 +102,11 @@ public class TenantBillController {
             redirect.addFlashAttribute("success", messages.get("flash.slip.pending"));
         }
         return "redirect:/app/bills";
+    }
+
+    /** What one tenant pays for a bill: their share of the room, never more than what is still owed. */
+    private double amountToPay(Bill bill) {
+        return Math.min(billingService.shareOf(bill), billingService.outstanding(bill));
     }
 
     private TenantBillView view(Bill bill) {

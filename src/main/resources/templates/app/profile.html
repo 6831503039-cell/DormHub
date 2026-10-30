@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/app :: layout(#{profile.title}, 'profile', ~{::main})}">
+<body>
+<main>
+    <h1 class="app-title" th:text="#{profile.title}">โปรไฟล์ของฉัน</h1>
+    <p class="app-sub" th:text="#{profile.sub}">ชื่อ เบอร์โทร และรูปโปรไฟล์ที่เจ้าของหอเห็น</p>
+
+    <!-- name, phone and photo -->
+    <form class="card card-body mb-3" th:action="@{/app/profile}" method="post" enctype="multipart/form-data">
+        <div class="profile-photo-row mb-3">
+            <span class="avatar avatar-lg">
+                <img th:if="${currentUser.hasPhoto}" th:src="@{/app/profile/photo}" alt="" id="photoPreview">
+                <img th:unless="${currentUser.hasPhoto}" alt="" id="photoPreview" hidden>
+                <i th:unless="${currentUser.hasPhoto}" data-lucide="user" id="photoPlaceholder"></i>
+            </span>
+            <div class="min-w-0">
+                <span class="form-label d-block" th:text="#{profile.photo}">รูปโปรไฟล์</span>
+                <label class="btn btn-secondary btn-sm" for="photo"><i data-lucide="image-up"></i> <span th:text="#{profile.photo.change}">เปลี่ยนรูป</span></label>
+                <input class="visually-hidden" type="file" id="photo" name="photo" accept="image/*">
+                <div class="form-check mt-2" th:if="${currentUser.hasPhoto}">
+                    <input class="form-check-input" type="checkbox" id="removePhoto" name="removePhoto" value="true">
+                    <label class="form-check-label small" for="removePhoto" th:text="#{profile.photo.remove}">ลบรูป</label>
+                </div>
+                <div class="form-text" th:text="#{profile.photo.help}">ไฟล์รูป ไม่เกิน 2 MB</div>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="fullName" th:text="#{profile.fullName}">ชื่อ-นามสกุล</label>
+            <input class="form-control" id="fullName" name="fullName" th:value="${currentUser.fullName}" maxlength="100" autocomplete="name" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="phone" th:text="#{profile.phone}">เบอร์โทรศัพท์</label>
+            <input class="form-control num" id="phone" name="phone" type="tel" th:value="${phone}" maxlength="20" autocomplete="tel" placeholder="08x-xxx-xxxx">
+        </div>
+        <div class="mb-4">
+            <label class="form-label" for="email" th:text="#{profile.email}">อีเมล</label>
+            <input class="form-control" id="email" type="email" th:value="${currentUser.email}" disabled>
+        </div>
+        <button class="btn btn-primary w-100" type="submit"><i data-lucide="check"></i> <span th:text="#{common.save}">บันทึก</span></button>
+    </form>
+
+    <!-- password -->
+    <form class="card card-body mb-3" th:action="@{/app/profile/password}" method="post">
+        <h2 class="section-title mt-0 mb-3" th:text="#{profile.password.title}">เปลี่ยนรหัสผ่าน</h2>
+        <div class="mb-3" th:each="f : ${ {'currentPassword', 'newPassword', 'confirmPassword'} }">
+            <label class="form-label" th:for="${f}"
+                   th:text="${f == 'currentPassword'} ? #{profile.password.current} : (${f == 'newPassword'} ? #{profile.password.new} : #{profile.password.confirm})"></label>
+            <div class="password-field">
+                <input class="form-control" type="password" th:id="${f}" th:name="${f}" required
+                       th:attr="minlength=${f == 'currentPassword'} ? null : 6,autocomplete=${f == 'currentPassword'} ? 'current-password' : 'new-password'">
+                <button class="password-eye" type="button" th:attr="data-toggle-password=${f}" th:aria-label="#{common.showPassword}" aria-pressed="false">
+                    <span class="when-hidden"><i data-lucide="eye"></i></span><span class="when-shown" hidden><i data-lucide="eye-off"></i></span>
+                </button>
+            </div>
+        </div>
+        <button class="btn btn-secondary w-100" type="submit" th:text="#{profile.password.save}">เปลี่ยนรหัสผ่าน</button>
+    </form>
+
+    <script th:src="@{/js/password-toggle.js}"></script>
+    <script>
+        // preview the chosen photo before saving
+        document.getElementById('photo').addEventListener('change', function () {
+            var file = this.files && this.files[0];
+            if (!file) return;
+            var img = document.getElementById('photoPreview');
+            img.src = URL.createObjectURL(file);
+            img.hidden = false;
+            var ph = document.getElementById('photoPlaceholder') || document.querySelector('.avatar-lg svg');
+            if (ph) ph.hidden = true;
+        });
+    </script>
+</main>
+</body>
+</html>

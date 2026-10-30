@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
@@ -260,15 +261,28 @@ public class DormHubApplicationTest {
         Bill bill = unpaidBill(room);
         MockMultipartFile slip = new MockMultipartFile("slip", "slip.jpg", "image/jpeg", new byte[] { 1, 2, 3 });
 
+        double share = Math.round(bill.getTotal() / 2 * 100) / 100.0; // A101 is shared by 2
+
+        // the amount is fixed by the system: a different amount sent by the browser is ignored
         mvc.perform(multipart("/app/bills/" + bill.getId() + "/pay").file(slip)
                 .param("amount", String.valueOf(bill.getTotal())).with(tenant()).with(csrf()))
                 .andExpect(redirectedUrl("/app/bills"));
 
         var payment = paymentRepository.findByBillOrderBySubmittedAtDesc(bill).get(0);
         assertEquals(PaymentStatus.PENDING, payment.getStatus());
+        assertEquals(share, payment.getAmount(), 0.001);
         assertFalse(billRepository.findById(bill.getId()).get().isPaid());
 
         mvc.perform(post("/admin/payments/" + payment.getId() + "/approve").with(admin()).with(csrf()))
+                .andExpect(redirectedUrl("/admin/payments"));
+        assertFalse(billRepository.findById(bill.getId()).get().isPaid()); // only one share paid so far
+
+        // the second share closes the bill
+        mvc.perform(multipart("/app/bills/" + bill.getId() + "/pay").file(slip).with(tenant()).with(csrf()))
+                .andExpect(redirectedUrl("/app/bills"));
+        var second = paymentRepository.findByBillOrderBySubmittedAtDesc(bill).get(0);
+        assertEquals(bill.getTotal() - share, second.getAmount(), 0.01);
+        mvc.perform(post("/admin/payments/" + second.getId() + "/approve").with(admin()).with(csrf()))
                 .andExpect(redirectedUrl("/admin/payments"));
         assertTrue(billRepository.findById(bill.getId()).get().isPaid());
     }
@@ -341,7 +355,8 @@ public class DormHubApplicationTest {
         mvc.perform(post("/explore/book").with(csrf())
                 .param("room", room.getId().toString()).param("fullName", "ผู้สนใจ ทดสอบ").param("phone", "089-000-0000")
                 .param("moveInDate", java.time.LocalDate.now().plusDays(3).toString()).param("status", "CONFIRMED"))
-                .andExpect(redirectedUrl("/explore?room=A103"));
+                .andExpect(redirectedUrl("/explore?room=A103"))
+                .andExpect(flash().attribute("bookingSent", "A103"));
         assertEquals(before + 1, bookingRepository.count());
         // the visitor cannot choose the status of the request
         assertEquals(BookingStatus.PENDING, bookingRepository.findAllByOrderByCreatedAtDesc().get(0).getStatus());
@@ -364,6 +379,45 @@ public class DormHubApplicationTest {
         mvc.perform(post("/admin/bookings/" + booking.getId() + "/status").param("status", "CONFIRMED").with(admin()).with(csrf()))
                 .andExpect(redirectedUrl("/admin/bookings"));
         assertEquals(BookingStatus.CONFIRMED, bookingRepository.findById(booking.getId()).get().getStatus());
+    }
+
+    // ---------- profile ----------
+
+    @Test
+    public void tenantEditsProfileAndPhoto() throws Exception {
+        RequestPostProcessor me = newAccount("profile@example.com"); // no room yet: the profile still opens
+        mvc.perform(get("/app/profile").with(me)).andExpect(status().isOk())
+                .andExpect(content().string(containsString("profile@example.com")));
+
+        MockMultipartFile photo = new MockMultipartFile("photo", "me.png", "image/png", new byte[] { 1, 2, 3 });
+        mvc.perform(multipart("/app/profile").file(photo).param("fullName", "ชื่อ ใหม่").param("phone", "089-999-0000")
+                .with(me).with(csrf()))
+                .andExpect(redirectedUrl("/app/profile"));
+        var user = userRepository.findByEmailIgnoreCase("profile@example.com").get();
+        assertEquals("ชื่อ ใหม่", user.getFullName());
+        assertEquals("089-999-0000", user.getPhone());
+        mvc.perform(get("/app/profile/photo").with(me)).andExpect(status().isOk())
+                .andExpect(content().contentType("image/png"));
+
+        // a file that is not a picture is refused
+        MockMultipartFile text = new MockMultipartFile("photo", "x.txt", "text/plain", new byte[] { 1 });
+        mvc.perform(multipart("/app/profile").file(text).param("fullName", "ชื่อ อื่น").with(me).with(csrf()));
+        assertEquals("ชื่อ ใหม่", userRepository.findByEmailIgnoreCase("profile@example.com").get().getFullName());
+    }
+
+    @Test
+    public void tenantChangesPassword() throws Exception {
+        RequestPostProcessor me = newAccount("pass@example.com");
+        mvc.perform(post("/app/profile/password").param("currentPassword", "wrong").param("newPassword", "newpass1")
+                .param("confirmPassword", "newpass1").with(me).with(csrf()));
+        mvc.perform(formLogin("/login").userParameter("email").user("pass@example.com").password("secret1"))
+                .andExpect(redirectedUrl("/"));
+
+        mvc.perform(post("/app/profile/password").param("currentPassword", "secret1").param("newPassword", "newpass1")
+                .param("confirmPassword", "newpass1").with(me).with(csrf()))
+                .andExpect(redirectedUrl("/app/profile"));
+        mvc.perform(formLogin("/login").userParameter("email").user("pass@example.com").password("newpass1"))
+                .andExpect(redirectedUrl("/"));
     }
 
     // ---------- accounts without a room ----------
@@ -397,7 +451,9 @@ public class DormHubApplicationTest {
         mvc.perform(post("/app/rent/book").with(me).with(csrf())
                 .param("room", room.getId().toString()).param("fullName", "ผู้สนใจ เช่าห้อง").param("phone", "089-111-2222")
                 .param("email", "someone-else@example.com").param("moveInDate", java.time.LocalDate.now().plusDays(3).toString()))
-                .andExpect(redirectedUrl("/app/rent"));
+                .andExpect(redirectedUrl("/app/rent"))
+                // "waiting for the dorm staff to confirm" dialog in the middle of the screen
+                .andExpect(flash().attribute("bookingSent", "A103"));
         var booking = bookingRepository.findAllByOrderByCreatedAtDesc().get(0);
         assertEquals("renter@example.com", booking.getApplicant().getEmail());
         assertEquals("renter@example.com", booking.getEmail());

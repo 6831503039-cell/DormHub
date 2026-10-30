@@ -43,7 +43,7 @@ public class WebConfig implements WebMvcConfigurer {
         interceptor.setParamName("lang");
         interceptor.setIgnoreInvalidLocale(true);
         registry.addInterceptor(interceptor);
-        // accounts without a room: only the home page and renting a room
-        registry.addInterceptor(hasRoomInterceptor).addPathPatterns("/app/**").excludePathPatterns("/app", "/app/rent", "/app/rent/**");
+        // accounts without a room: only the home page, renting a room and their own profile
+        registry.addInterceptor(hasRoomInterceptor).addPathPatterns("/app/**").excludePathPatterns("/app", "/app/rent", "/app/rent/**", "/app/profile", "/app/profile/**");
     }
 }

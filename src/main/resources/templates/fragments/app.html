@@ -28,10 +28,14 @@
             </div>
         </div>
         <div class="dropdown">
-            <button class="btn btn-ghost btn-icon" data-bs-toggle="dropdown" type="button" th:aria-label="#{nav.account}" aria-expanded="false"><i data-lucide="user"></i></button>
+            <button class="btn btn-ghost btn-icon avatar-btn" data-bs-toggle="dropdown" type="button" th:aria-label="#{nav.account}" aria-expanded="false">
+                <span class="avatar" th:if="${currentUser?.hasPhoto}"><img th:src="@{/app/profile/photo}" alt=""></span>
+                <i th:unless="${currentUser?.hasPhoto}" data-lucide="user"></i>
+            </button>
             <div class="dropdown-menu dropdown-menu-end">
                 <span class="dropdown-item-text small text-muted" th:text="${currentUser?.email}"></span>
                 <div class="dropdown-divider"></div>
+                <a class="dropdown-item" th:href="@{/app/profile}"><i data-lucide="user-pen"></i> <span th:text="#{nav.profile}">แก้ไขโปรไฟล์</span></a>
                 <button th:replace="~{fragments/ui :: settingsMenuItem}"></button>
                 <form th:action="@{/logout}" method="post">
                     <button class="dropdown-item" type="submit"><i data-lucide="log-out"></i> <span th:text="#{common.logout}">ออกจากระบบ</span></button>
@@ -41,6 +45,7 @@
     </header>
 
     <th:block th:replace="~{fragments/ui :: flash}"></th:block>
+    <th:block th:replace="~{fragments/ui :: bookingSent}"></th:block>
 
     <th:block th:replace="${content}"></th:block>
 </div>

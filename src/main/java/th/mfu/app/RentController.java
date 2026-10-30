@@ -83,7 +83,8 @@ public class RentController {
             return "redirect:/app/rent?room=" + room.getRoomNumber();
         }
         bookingService.submit(booking);
-        redirect.addFlashAttribute("success", messages.get("flash.rent.sent", room.getRoomNumber()));
+        // shown as a dialog in the middle of the screen (fragments/ui :: bookingSent)
+        redirect.addFlashAttribute("bookingSent", room.getRoomNumber());
         return "redirect:/app/rent";
     }
 }
