@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/app :: layout(#{profile.title}, 'profile', ~{::main})}">
+<body>
+<main>
+    <h1 class="app-title" th:text="#{profile.title}">โปรไฟล์ของฉัน</h1>
+    <p class="app-sub" th:text="#{profile.sub}">แก้ชื่อ รูปโปรไฟล์ เบอร์โทร และรหัสผ่าน</p>
+
+    <!-- name, phone and profile picture -->
+    <form class="card card-body mb-3" th:action="@{/app/profile}" method="post" enctype="multipart/form-data">
+        <div class="profile-head mb-3">
+            <img class="profile-photo" th:if="${currentUser.hasAvatar()}" id="avatarPreview"
+                 th:src="@{/app/profile/avatar(v=${currentUser.avatarVersion})}" th:alt="#{profile.photo}">
+            <div class="profile-photo profile-photo-empty" th:unless="${currentUser.hasAvatar()}" id="avatarPreview" aria-hidden="true">
+                <i data-lucide="user"></i>
+            </div>
+            <div class="min-w-0">
+                <label class="btn btn-secondary btn-sm mb-1" for="avatar">
+                    <i data-lucide="camera"></i> <span th:text="#{profile.choosePhoto}">เลือกรูปโปรไฟล์</span>
+                </label>
+                <input class="visually-hidden" type="file" id="avatar" name="avatar" accept="image/*">
+                <div class="form-text mt-0" th:text="#{profile.photoHelp}">ไฟล์รูปภาพ ไม่เกิน 2 MB</div>
+                <div class="form-check mt-1" th:if="${currentUser.hasAvatar()}">
+                    <input class="form-check-input" type="checkbox" id="removeAvatar" name="removeAvatar" value="true">
+                    <label class="form-check-label small" for="removeAvatar" th:text="#{profile.removePhoto}">ลบรูปโปรไฟล์</label>
+                </div>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="fullName" th:text="#{common.fullName}">ชื่อ-นามสกุล</label>
+            <input class="form-control" id="fullName" name="fullName" th:value="${currentUser.fullName}" maxlength="100" autocomplete="name" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="email" th:text="#{common.email}">อีเมล</label>
+            <input class="form-control" id="email" th:value="${currentUser.email}" readonly aria-describedby="emailHelp">
+            <div class="form-text" id="emailHelp" th:text="#{profile.emailHelp}">ใช้เข้าสู่ระบบและผูกกับห้องพัก เปลี่ยนไม่ได้</div>
+        </div>
+        <div class="mb-3" th:if="${tenant != null}">
+            <label class="form-label" for="phone" th:text="#{profile.phone}">เบอร์โทรศัพท์</label>
+            <input class="form-control num" type="tel" id="phone" name="phone" th:value="${tenant.phone}" maxlength="20" autocomplete="tel">
+        </div>
+        <button class="btn btn-primary w-100" type="submit"><i data-lucide="check"></i> <span th:text="#{common.save}">บันทึก</span></button>
+    </form>
+
+    <!-- password -->
+    <form class="card card-body mb-4" th:action="@{/app/profile/password}" method="post">
+        <h2 class="section-title mt-0 mb-3" th:text="#{profile.password}">เปลี่ยนรหัสผ่าน</h2>
+        <div class="mb-3">
+            <label class="form-label" for="currentPassword" th:text="#{profile.currentPassword}">รหัสผ่านปัจจุบัน</label>
+            <div class="password-field">
+                <input class="form-control" type="password" id="currentPassword" name="currentPassword" autocomplete="current-password" required>
+                <button class="password-eye" type="button" data-toggle-password="currentPassword" th:aria-label="#{common.showPassword}" aria-pressed="false">
+                    <span class="when-hidden"><i data-lucide="eye"></i></span><span class="when-shown" hidden><i data-lucide="eye-off"></i></span>
+                </button>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="newPassword" th:text="#{profile.newPassword}">รหัสผ่านใหม่ (อย่างน้อย 6 ตัวอักษร)</label>
+            <div class="password-field">
+                <input class="form-control" type="password" id="newPassword" name="newPassword" minlength="6" autocomplete="new-password" required>
+                <button class="password-eye" type="button" data-toggle-password="newPassword" th:aria-label="#{common.showPassword}" aria-pressed="false">
+                    <span class="when-hidden"><i data-lucide="eye"></i></span><span class="when-shown" hidden><i data-lucide="eye-off"></i></span>
+                </button>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="confirmPassword" th:text="#{profile.confirmPassword}">ยืนยันรหัสผ่านใหม่</label>
+            <div class="password-field">
+                <input class="form-control" type="password" id="confirmPassword" name="confirmPassword" minlength="6" autocomplete="new-password" required>
+                <button class="password-eye" type="button" data-toggle-password="confirmPassword" th:aria-label="#{common.showPassword}" aria-pressed="false">
+                    <span class="when-hidden"><i data-lucide="eye"></i></span><span class="when-shown" hidden><i data-lucide="eye-off"></i></span>
+                </button>
+            </div>
+        </div>
+        <button class="btn btn-secondary w-100" type="submit"><i data-lucide="key-round"></i> <span th:text="#{profile.changePassword}">เปลี่ยนรหัสผ่าน</span></button>
+    </form>
+
+    <script th:src="@{/js/password-toggle.js}" defer></script>
+    <script>
+        // show the chosen picture right away, before saving
+        document.getElementById('avatar').addEventListener('change', function () {
+            var file = this.files[0];
+            if (!file) return;
+            var old = document.getElementById('avatarPreview');
+            var img = document.createElement('img');
+            img.className = 'profile-photo';
+            img.id = 'avatarPreview';
+            img.alt = '';
+            img.src = URL.createObjectURL(file);
+            old.replaceWith(img);
+        });
+    </script>
+</main>
+</body>
+</html>

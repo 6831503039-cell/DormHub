@@ -28,10 +28,15 @@
             </div>
         </div>
         <div class="dropdown">
-            <button class="btn btn-ghost btn-icon" data-bs-toggle="dropdown" type="button" th:aria-label="#{nav.account}" aria-expanded="false"><i data-lucide="user"></i></button>
+            <button class="btn btn-ghost btn-icon account-btn" data-bs-toggle="dropdown" type="button" th:aria-label="#{nav.account}" aria-expanded="false">
+                <img class="header-avatar" th:if="${currentUser != null and currentUser.hasAvatar()}"
+                     th:src="@{/app/profile/avatar(v=${currentUser.avatarVersion})}" alt="">
+                <i data-lucide="user" th:unless="${currentUser != null and currentUser.hasAvatar()}"></i>
+            </button>
             <div class="dropdown-menu dropdown-menu-end">
                 <span class="dropdown-item-text small text-muted" th:text="${currentUser?.email}"></span>
                 <div class="dropdown-divider"></div>
+                <a class="dropdown-item" th:href="@{/app/profile}" th:classappend="${active == 'profile'} ? 'active'"><i data-lucide="user-round-pen"></i> <span th:text="#{profile.edit}">แก้ไขโปรไฟล์</span></a>
                 <button th:replace="~{fragments/ui :: settingsMenuItem}"></button>
                 <form th:action="@{/logout}" method="post">
                     <button class="dropdown-item" type="submit"><i data-lucide="log-out"></i> <span th:text="#{common.logout}">ออกจากระบบ</span></button>

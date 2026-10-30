@@ -55,6 +55,8 @@ public class DormHubApplicationTest {
     @Autowired
     private PaymentRepository paymentRepository;
     @Autowired
+    private th.mfu.service.BillingService billingService;
+    @Autowired
     private BookingRequestRepository bookingRepository;
     @Autowired
     private TenantRepository tenantRepository;
@@ -255,22 +257,32 @@ public class DormHubApplicationTest {
     // ---------- payments ----------
 
     @Test
-    public void slipWithoutAiWaitsForAdminThenClosesBill() throws Exception {
-        Room room = roomRepository.findByRoomNumber("A101").get();
+    public void slipWithoutAiWaitsForAdminThenCountsTheTenantsShare() throws Exception {
+        Room room = roomRepository.findByRoomNumber("A101").get(); // shared by 2
         Bill bill = unpaidBill(room);
         MockMultipartFile slip = new MockMultipartFile("slip", "slip.jpg", "image/jpeg", new byte[] { 1, 2, 3 });
 
+        // the amount is fixed by the system: whatever the browser sends, the payment is the tenant's share
         mvc.perform(multipart("/app/bills/" + bill.getId() + "/pay").file(slip)
-                .param("amount", String.valueOf(bill.getTotal())).with(tenant()).with(csrf()))
+                .param("amount", "1").with(tenant()).with(csrf()))
                 .andExpect(redirectedUrl("/app/bills"));
 
         var payment = paymentRepository.findByBillOrderBySubmittedAtDesc(bill).get(0);
+        assertEquals(billingService.shareOf(bill), payment.getAmount());
         assertEquals(PaymentStatus.PENDING, payment.getStatus());
         assertFalse(billRepository.findById(bill.getId()).get().isPaid());
 
         mvc.perform(post("/admin/payments/" + payment.getId() + "/approve").with(admin()).with(csrf()))
                 .andExpect(redirectedUrl("/admin/payments"));
-        assertTrue(billRepository.findById(bill.getId()).get().isPaid());
+        Bill after = billRepository.findById(bill.getId()).get();
+        assertEquals(Math.round((bill.getTotal() - billingService.shareOf(bill)) * 100) / 100.0, billingService.outstanding(after));
+    }
+
+    @Test
+    public void billPageShowsTheAmountInsteadOfAnInput() throws Exception {
+        mvc.perform(get("/app/bills").with(tenant()))
+                .andExpect(content().string(containsString("pay-amount-value")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("name=\"amount\""))));
     }
 
     @Test
@@ -397,7 +409,8 @@ public class DormHubApplicationTest {
         mvc.perform(post("/app/rent/book").with(me).with(csrf())
                 .param("room", room.getId().toString()).param("fullName", "ผู้สนใจ เช่าห้อง").param("phone", "089-111-2222")
                 .param("email", "someone-else@example.com").param("moveInDate", java.time.LocalDate.now().plusDays(3).toString()))
-                .andExpect(redirectedUrl("/app/rent"));
+                .andExpect(redirectedUrl("/app/rent"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash().attribute("bookingSent", "A103"));
         var booking = bookingRepository.findAllByOrderByCreatedAtDesc().get(0);
         assertEquals("renter@example.com", booking.getApplicant().getEmail());
         assertEquals("renter@example.com", booking.getEmail());
@@ -537,6 +550,52 @@ public class DormHubApplicationTest {
     @Test
     public void tenantSeesTheDormName() throws Exception {
         mvc.perform(get("/app").with(tenant())).andExpect(content().string(containsString("SJD Mansion")));
+    }
+
+    // ---------- profile ----------
+
+    @Test
+    public void tenantEditsNamePhoneAndPicture() throws Exception {
+        MockMultipartFile photo = new MockMultipartFile("avatar", "me.png", "image/png", new byte[] { 1, 2, 3, 4 });
+        mvc.perform(multipart("/app/profile").file(photo).param("fullName", "สมชาย ใจดีมาก").param("phone", "081-999-0000")
+                .with(tenant()).with(csrf()))
+                .andExpect(redirectedUrl("/app/profile"));
+        var user = userRepository.findByEmailIgnoreCase(TENANT_EMAIL).get();
+        assertEquals("สมชาย ใจดีมาก", user.getFullName());
+        assertTrue(user.hasAvatar());
+        assertEquals("081-999-0000", tenantRepository.findFirstByEmailIgnoreCase(TENANT_EMAIL).get().getPhone());
+
+        mvc.perform(get("/app/profile/avatar").with(tenant())).andExpect(status().isOk())
+                .andExpect(content().contentType("image/png"));
+        mvc.perform(get("/app").with(tenant())).andExpect(content().string(containsString("/app/profile/avatar")));
+        mvc.perform(get("/app/profile").with(tenant())).andExpect(status().isOk());
+    }
+
+    @Test
+    public void profileRejectsFilesThatAreNotPictures() throws Exception {
+        MockMultipartFile notImage = new MockMultipartFile("avatar", "a.pdf", "application/pdf", new byte[] { 1 });
+        mvc.perform(multipart("/app/profile").file(notImage).param("fullName", "สมชาย ใจดี").with(tenant()).with(csrf()))
+                .andExpect(redirectedUrl("/app/profile"));
+        assertFalse(userRepository.findByEmailIgnoreCase(TENANT_EMAIL).get().hasAvatar());
+    }
+
+    @Test
+    public void passwordChangeNeedsTheCurrentPassword() throws Exception {
+        mvc.perform(post("/app/profile/password").with(tenant()).with(csrf())
+                .param("currentPassword", "wrong").param("newPassword", "newpass1").param("confirmPassword", "newpass1"));
+        mvc.perform(formLogin("/login").userParameter("email").user(TENANT_EMAIL).password("tenant123"))
+                .andExpect(redirectedUrl("/"));
+
+        mvc.perform(post("/app/profile/password").with(tenant()).with(csrf())
+                .param("currentPassword", "tenant123").param("newPassword", "newpass1").param("confirmPassword", "newpass1"))
+                .andExpect(redirectedUrl("/app/profile"));
+        mvc.perform(formLogin("/login").userParameter("email").user(TENANT_EMAIL).password("newpass1"))
+                .andExpect(redirectedUrl("/"));
+    }
+
+    @Test
+    public void accountWithoutRoomCanOpenItsProfile() throws Exception {
+        mvc.perform(get("/app/profile").with(newAccount("noroom2@example.com"))).andExpect(status().isOk());
     }
 
     private Bill unpaidBill(Room room) {
