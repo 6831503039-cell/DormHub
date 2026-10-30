@@ -841,3 +841,22 @@ a.news-item:hover { border-color: var(--c-border-strong); }
 .group-card[open] > .group-head { border-bottom: 1px solid var(--c-border); }
 .group-card[open] .group-chevron { transform: rotate(180deg); }
 @media (prefers-reduced-motion: reduce) { .group-chevron { transition: none; } }
+
+/* fixed transfer amount on the bill page */
+.pay-amount { padding: var(--sp-3) var(--sp-4); border: 1px solid var(--c-border); border-radius: var(--r-sm); background: var(--c-surface-2); }
+.pay-amount-value { font-size: var(--fs-2xl); font-weight: var(--fw-semibold); line-height: var(--lh-tight); color: var(--c-text); }
+
+/* popup after sending a rental request */
+.sent-icon {
+    width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--c-primary-soft); color: var(--c-primary-text);
+}
+.sent-icon .lucide { width: 1.6rem; height: 1.6rem; }
+
+/* profile picture: header button and profile page */
+.account-btn { padding: 0; width: var(--tap); height: var(--tap); display: grid; place-items: center; }
+.header-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1px solid var(--c-border); }
+.profile-head { display: flex; align-items: center; gap: var(--sp-4); }
+.profile-photo { width: 84px; height: 84px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1px solid var(--c-border); }
+.profile-photo-empty { display: grid; place-items: center; background: var(--c-primary-soft); color: var(--c-primary-text); }
+.profile-photo-empty .lucide { width: 2rem; height: 2rem; }

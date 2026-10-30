@@ -32,6 +32,26 @@
         </ul>
     </section>
 
+    <!-- shown once, right after a request is sent -->
+    <div class="modal fade" id="bookingSentModal" tabindex="-1" aria-labelledby="bookingSentTitle" aria-hidden="true" th:if="${bookingSent}">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 400px">
+            <div class="modal-content text-center">
+                <div class="modal-body p-4">
+                    <div class="sent-icon mx-auto mb-3"><i data-lucide="hourglass"></i></div>
+                    <h2 class="modal-title mb-2" id="bookingSentTitle" th:text="#{rent.sent.title}">ส่งคำขอจองแล้ว</h2>
+                    <p class="mb-1" th:text="#{rent.sent.room(${bookingSent})}">ห้อง A103</p>
+                    <p class="text-muted mb-4" th:text="#{rent.sent.text}">รอเจ้าหน้าที่ของหอกดยืนยัน</p>
+                    <button type="button" class="btn btn-primary w-100" data-bs-dismiss="modal" th:text="#{rent.sent.ok}">เข้าใจแล้ว</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script th:if="${bookingSent}">
+        window.addEventListener('load', function () {
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('bookingSentModal')).show();
+        });
+    </script>
+
     <th:block th:unless="${linked}">
         <template th:replace="~{fragments/ui :: bookTemplate(@{/app/rent/book}, ${currentUser.fullName}, ${currentUser.email}, true)}"></template>
 
