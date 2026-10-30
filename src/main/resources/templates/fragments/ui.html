@@ -26,8 +26,8 @@
 </div>
 
 <!-- Empty state: small SJD drawing, title, text; action link optional (pass null to hide it).
-     Usage: <div th:replace="~{fragments/ui :: emptyState('door-closed', #{rooms.empty.title}, #{rooms.empty.text}, @{/admin/rooms/new}, #{rooms.add})}"></div> -->
-     The icon argument is no longer drawn; it stays so existing callers do not change.
+     Usage: <div th:replace="~{fragments/ui :: emptyState('door-closed', #{rooms.empty.title}, #{rooms.empty.text}, @{/admin/rooms/new}, #{rooms.add})}"></div>
+     The icon argument is no longer drawn; it stays so existing callers do not change. -->
 <div th:fragment="emptyState(icon, title, text, actionHref, actionLabel)" class="empty-state">
     <svg th:replace="~{fragments/ui :: sjdDrawing('empty-drawing', null)}"></svg>
     <p class="empty-title" th:text="${title}"></p>
