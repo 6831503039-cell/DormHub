@@ -9,6 +9,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import th.mfu.AppUserRepository;
 import th.mfu.config.DormProperties;
@@ -53,7 +54,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public String register(@ModelAttribute("form") RegisterForm form, Model model) {
+    public String register(@ModelAttribute("form") RegisterForm form, Model model, RedirectAttributes redirect) {
         String email = form.getEmail() == null ? "" : form.getEmail().trim().toLowerCase();
         String error = validate(form, email);
         if (error != null) {
@@ -62,6 +63,8 @@ public class AuthController {
         }
         // self-registration always creates a tenant; the admin account is created by DataSeeder only
         users.save(new AppUser(email, passwordEncoder.encode(form.getPassword()), form.getFullName().trim(), Role.TENANT));
+        // the login page fills in this email; a flash attribute keeps it out of the URL
+        redirect.addFlashAttribute("registeredEmail", email);
         return "redirect:/login?registered";
     }
 
