@@ -542,6 +542,12 @@ public class DormHubApplicationTest {
     }
 
     @Test
+    public void startingAMachineAsksForConfirmation() throws Exception {
+        mvc.perform(get("/app/laundry").with(tenant()))
+                .andExpect(content().string(containsString("data-confirm=\"เริ่มใช้ เครื่องซักผ้า 1 ใช่ไหม?")));
+    }
+
+    @Test
     public void tenantHeaderShowsOnlyTheAppName() throws Exception {
         mvc.perform(get("/app").with(tenant()))
                 .andExpect(content().string(org.hamcrest.Matchers.not(containsString("DormHub · SJD Mansion"))));

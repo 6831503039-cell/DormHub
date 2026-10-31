@@ -25,7 +25,9 @@
                     </div>
                 </div>
                 <form th:if="${m.isAvailableAt(now)}" th:action="@{/app/laundry/{id}/start(id=${m.id})}" method="post">
-                    <button class="btn btn-soft" type="submit" th:attr="aria-label=#{laundry.startMachine(${m.name})}" th:text="#{laundry.start}">เริ่มใช้งาน</button>
+                    <!-- asks once more before starting, in case the wrong machine was tapped -->
+                    <button class="btn btn-soft" type="submit" data-confirm-tone="primary" th:text="#{laundry.start}"
+                            th:attr="aria-label=#{laundry.startMachine(${m.name})},data-confirm=#{laundry.confirm.text(${m.name}, ${m.type.minutes})},data-confirm-title=#{laundry.confirm.title},data-confirm-ok=#{laundry.start}">เริ่มใช้งาน</button>
                 </form>
             </div>
         </div>
