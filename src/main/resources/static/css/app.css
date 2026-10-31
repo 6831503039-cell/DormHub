@@ -842,7 +842,7 @@ a.news-item:hover { border-color: var(--c-border-strong); }
 .group-meta { color: var(--c-muted); font-size: var(--fs-xs); margin-left: auto; }
 .group-chevron { width: 1.1rem; height: 1.1rem; color: var(--c-muted); transition: transform .15s; }
 .group-card[open] > .group-head { border-bottom: 1px solid var(--c-border); }
-.group-card[open] .group-chevron { transform: rotate(180deg); }
+.group-card[open] > .group-head .group-chevron, .floor-group[open] > .floor-head .group-chevron { transform: rotate(180deg); }
 @media (prefers-reduced-motion: reduce) { .group-chevron { transition: none; } }
 
 /* fixed transfer amount on the bill page */
@@ -863,3 +863,16 @@ a.news-item:hover { border-color: var(--c-border-strong); }
 .profile-photo { width: 84px; height: 84px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1px solid var(--c-border); }
 .profile-photo-empty { display: grid; place-items: center; background: var(--c-primary-soft); color: var(--c-primary-text); }
 .profile-photo-empty .lucide { width: 2rem; height: 2rem; }
+/* floors inside a building card (rooms / tenants lists) */
+.floor-group + .floor-group { border-top: 1px solid var(--c-border); }
+.floor-head {
+    display: flex; align-items: center; gap: var(--sp-3); min-height: var(--tap); cursor: pointer; list-style: none; user-select: none;
+    padding: var(--sp-2) var(--sp-4) var(--sp-2) calc(var(--sp-4) + 36px + var(--sp-3));
+    background: var(--c-surface-2);
+}
+.floor-head::-webkit-details-marker { display: none; }
+.floor-head:hover { background: var(--c-hover); }
+.floor-head:focus-visible { outline: 3px solid var(--c-focus); outline-offset: -3px; }
+.floor-title { font-size: var(--fs-sm); font-weight: var(--fw-medium); }
+.floor-group[open] > .floor-head { border-bottom: 1px solid var(--c-border); }
+@media (max-width: 575.98px) { .floor-head { padding-left: var(--sp-4); } }

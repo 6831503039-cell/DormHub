@@ -44,54 +44,64 @@
         <!-- one card per building, closed until clicked (or opened by a search) -->
         <div id="roomTable" class="group-list">
             <details class="card group-card" data-group th:each="g : ${roomGroups}"
-                     th:with="list=${g.value}, free=${#lists.size(g.value.?[status.name() == 'AVAILABLE'])}">
+                     th:with="total=${#aggregates.sum(g.value.values().![size()])},
+                              free=${#aggregates.sum(g.value.values().![#this.?[status.name() == 'AVAILABLE'].size()])}">
                 <summary class="group-head">
                     <span class="group-badge" th:text="${g.key}">A</span>
                     <span class="group-title" th:text="#{common.buildingN(${g.key})}">ตึก A</span>
-                    <span class="group-meta" th:text="#{rooms.groupMeta(${#lists.size(list)}, ${free})}">80 ห้อง · ว่าง 25</span>
+                    <span class="group-meta" th:text="#{rooms.groupMeta(${total}, ${free})}">80 ห้อง · ว่าง 25</span>
                     <i data-lucide="chevron-down" class="group-chevron"></i>
                 </summary>
-                <div class="table-wrap">
-                    <table class="table table-hover table-cards mb-0">
-                        <thead>
-                        <tr>
-                            <th scope="col" th:text="#{common.room}">ห้อง</th>
-                            <th scope="col" th:text="#{common.floor}">ชั้น</th>
-                            <th scope="col" th:text="#{nav.tenants}">ผู้เช่า</th>
-                            <th scope="col" class="text-end" th:text="#{rooms.col.rent}">ค่าเช่า/เดือน</th>
-                            <th scope="col" th:text="#{common.status}">สถานะ</th>
-                            <th scope="col"><span class="visually-hidden" th:text="#{common.actions}">จัดการ</span></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr th:each="r : ${list}" data-row
-                            th:with="occ=${occupants.getOrDefault(r.id, 0L)}"
-                            th:attr="data-building=${r.building},data-status=${r.status.name()}">
-                            <td class="td-title">
-                                <span class="d-block fw-semibold" th:text="${r.roomNumber}"></span>
-                                <span class="item-meta" th:text="${r.roomType}"></span>
-                            </td>
-                            <td th:text="${r.floor != null} ? #{common.floorN(${r.floor})} : '-'"></td>
-                            <td>
-                                <span class="cell">
-                                    <span class="num" th:text="${occ} + ' / ' + ${r.capacity}"></span>
-                                    <span class="badge status-neutral" th:if="${r.capacity != null and occ >= r.capacity}" th:text="#{rooms.full}">เต็ม</span>
-                                </span>
-                            </td>
-                            <td class="text-end num" th:text="${r.monthlyRent != null} ? ${#numbers.formatDecimal(r.monthlyRent, 1, 'COMMA', 0, 'POINT')} : '-'"></td>
-                            <td><span th:class="'badge soft-' + ${r.status.badge}" th:text="#{${r.status.key}}"></span></td>
-                            <td class="td-actions">
-                                <a class="btn btn-soft btn-icon btn-sm" th:href="@{/admin/rooms/{id}(id=${r.id})}"
-                                   th:attr="aria-label=#{rooms.editN(${r.roomNumber})}" th:title="#{common.edit}"><i data-lucide="pencil"></i></a>
-                                <a th:if="${occ == 0}" class="btn btn-ghost-danger btn-icon btn-sm" th:href="@{/admin/rooms/{id}/delete(id=${r.id})}"
-                                   th:attr="aria-label=#{rooms.deleteN(${r.roomNumber})},data-confirm=#{rooms.delete.confirm(${r.roomNumber})},data-confirm-title=#{rooms.deleteN(${r.roomNumber})}"
-                                   th:title="#{common.delete}"><i data-lucide="trash-2"></i></a>
-                                <span th:unless="${occ == 0}" class="btn btn-ghost btn-icon btn-sm disabled" aria-disabled="true"
-                                      th:title="#{rooms.cannotDelete}"><i data-lucide="trash-2"></i></span>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
+                <!-- inside a building: one collapsible part per floor -->
+                <div class="floor-list">
+                    <details class="floor-group" data-group th:each="fl : ${g.value}"
+                             th:with="floorFree=${#lists.size(fl.value.?[status.name() == 'AVAILABLE'])}">
+                        <summary class="floor-head">
+                            <span class="floor-title" th:text="${fl.key > 0} ? #{common.floorN(${fl.key})} : '-'">ชั้น 1</span>
+                            <span class="group-meta" th:text="#{rooms.groupMeta(${#lists.size(fl.value)}, ${floorFree})}">20 ห้อง · ว่าง 5</span>
+                            <i data-lucide="chevron-down" class="group-chevron"></i>
+                        </summary>
+                        <div class="table-wrap">
+                            <table class="table table-hover table-cards mb-0">
+                                <thead>
+                                <tr>
+                                    <th scope="col" th:text="#{common.room}">ห้อง</th>
+                                    <th scope="col" th:text="#{nav.tenants}">ผู้เช่า</th>
+                                    <th scope="col" class="text-end" th:text="#{rooms.col.rent}">ค่าเช่า/เดือน</th>
+                                    <th scope="col" th:text="#{common.status}">สถานะ</th>
+                                    <th scope="col"><span class="visually-hidden" th:text="#{common.actions}">จัดการ</span></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="r : ${fl.value}" data-row
+                                    th:with="occ=${occupants.getOrDefault(r.id, 0L)}"
+                                    th:attr="data-building=${r.building},data-status=${r.status.name()}">
+                                    <td class="td-title">
+                                        <span class="d-block fw-semibold" th:text="${r.roomNumber}"></span>
+                                        <span class="item-meta" th:text="${r.roomType}"></span>
+                                    </td>
+                                    <td>
+                                        <span class="cell">
+                                            <span class="num" th:text="${occ} + ' / ' + ${r.capacity}"></span>
+                                            <span class="badge status-neutral" th:if="${r.capacity != null and occ >= r.capacity}" th:text="#{rooms.full}">เต็ม</span>
+                                        </span>
+                                    </td>
+                                    <td class="text-end num" th:text="${r.monthlyRent != null} ? ${#numbers.formatDecimal(r.monthlyRent, 1, 'COMMA', 0, 'POINT')} : '-'"></td>
+                                    <td><span th:class="'badge soft-' + ${r.status.badge}" th:text="#{${r.status.key}}"></span></td>
+                                    <td class="td-actions">
+                                        <a class="btn btn-soft btn-icon btn-sm" th:href="@{/admin/rooms/{id}(id=${r.id})}"
+                                           th:attr="aria-label=#{rooms.editN(${r.roomNumber})}" th:title="#{common.edit}"><i data-lucide="pencil"></i></a>
+                                        <a th:if="${occ == 0}" class="btn btn-ghost-danger btn-icon btn-sm" th:href="@{/admin/rooms/{id}/delete(id=${r.id})}"
+                                           th:attr="aria-label=#{rooms.deleteN(${r.roomNumber})},data-confirm=#{rooms.delete.confirm(${r.roomNumber})},data-confirm-title=#{rooms.deleteN(${r.roomNumber})}"
+                                           th:title="#{common.delete}"><i data-lucide="trash-2"></i></a>
+                                        <span th:unless="${occ == 0}" class="btn btn-ghost btn-icon btn-sm disabled" aria-disabled="true"
+                                              th:title="#{rooms.cannotDelete}"><i data-lucide="trash-2"></i></span>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
                 </div>
             </details>
         </div>

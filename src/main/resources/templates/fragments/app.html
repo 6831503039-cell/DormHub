@@ -21,7 +21,7 @@
         <div class="d-flex align-items-center gap-2">
             <img class="brand-logo" th:src="@{/img/logo-icon.png}" alt="">
             <div>
-                <div class="text-muted small" th:text="${dormName} + ' · ' + ${residenceName}">DormHub · SJD Mansion</div>
+                <div class="text-muted small" th:text="${dormName}">DormHub</div>
                 <div class="fw-semibold" th:text="#{app.hello(${currentUser?.fullName})}">สวัสดี</div>
             </div>
         </div>
