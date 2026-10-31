@@ -55,6 +55,7 @@
     --fw-regular: 400;
     --fw-medium: 500;
     --fw-semibold: 600;
+    --fw-bold: 700;
 
     /* ---- spacing: 4 / 8px scale ---- */
     --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px;  --sp-4: 16px;
@@ -151,7 +152,10 @@
 
 /* =========================== base =========================== */
 body { background: var(--c-bg); color: var(--c-text); font-family: var(--font); line-height: var(--lh); }
-h1, h2, h3, h4, h5, h6 { font-weight: var(--fw-semibold); line-height: var(--lh-tight); letter-spacing: -.005em; color: var(--c-text); }
+h1, h2, h3, h4, h5, h6 { font-weight: var(--fw-semibold); line-height: var(--lh-tight); letter-spacing: -.01em; color: var(--c-text); }
+/* Thai: never tighten the letters, and give stacked vowels and tone marks room above and below */
+:lang(th) h1, :lang(th) h2, :lang(th) h3, :lang(th) h4, :lang(th) h5, :lang(th) h6,
+:lang(th) .page-title, :lang(th) .section-title { letter-spacing: 0; line-height: 1.45; }
 h1, .h1 { font-size: var(--fs-xl); }
 h2, .h2 { font-size: var(--fs-lg); }
 h3, .h3, h4, .h4, h5, .h5 { font-size: var(--fs-base); }
@@ -159,7 +163,8 @@ h3, .h3, h4, .h4, h5, .h5 { font-size: var(--fs-base); }
 small, .small { font-size: var(--fs-sm); }
 .text-muted, .text-secondary { color: var(--c-muted) !important; }
 .fw-medium { font-weight: var(--fw-medium) !important; }
-.num, .tabular { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+/* numbers: room numbers, money, dates, meter units, phones; mono so columns of figures line up */
+.num, .tabular { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: var(--fw-medium); font-size: .94em; letter-spacing: 0; }
 a { text-underline-offset: 2px; }
 /* secondary link inside data (phone, email): reads as text, shows it is a link on hover/focus */
 .link-quiet { color: inherit; text-decoration: none; }
@@ -234,7 +239,7 @@ a { text-underline-offset: 2px; }
 }
 
 /* =========================== Input / Select =========================== */
-.form-label { font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--c-text-2); margin-bottom: var(--sp-1); }
+.form-label { font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--c-muted); margin-bottom: var(--sp-1); }
 .form-text { font-size: var(--fs-sm); color: var(--c-muted); margin-top: var(--sp-1); }
 .form-control, .form-select {
     font-size: var(--fs-base);              /* 16px also stops iOS zoom-on-focus */
@@ -876,3 +881,5 @@ a.news-item:hover { border-color: var(--c-border-strong); }
 .floor-title { font-size: var(--fs-sm); font-weight: var(--fw-medium); }
 .floor-group[open] > .floor-head { border-bottom: 1px solid var(--c-border); }
 @media (max-width: 575.98px) { .floor-head { padding-left: var(--sp-4); } }
+/* key figures (dashboard row, balance, KPI) use the number font */
+.kpi-value, .amount, .stat-value, .figure-value { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }

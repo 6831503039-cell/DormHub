@@ -15,7 +15,7 @@
                 <div class="card kpi tone-warning">
                     <span class="kpi-head"><span th:text="#{home.lastElectric}">ไฟเดือนล่าสุด</span> <i data-lucide="zap"></i></span>
                     <span class="kpi-value"><span th:text="${bills[0].electricUnits}">0</span> <small th:text="#{common.units}">หน่วย</small></span>
-                    <span class="kpi-meta" th:text="${bills[0].billMonth} + ' · ฿' + ${#numbers.formatDecimal(bills[0].electricCost, 1, 'COMMA', 2, 'POINT')}"></span>
+                    <span class="kpi-meta num" th:text="${bills[0].billMonth} + ' · ฿' + ${#numbers.formatDecimal(bills[0].electricCost, 1, 'COMMA', 2, 'POINT')}"></span>
                 </div>
             </div>
             <div class="col-6">
