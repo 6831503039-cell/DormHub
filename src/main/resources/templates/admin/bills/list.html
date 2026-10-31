@@ -65,7 +65,7 @@
                                  overdue=${!b.paid and b.dueDate != null and b.dueDate.isBefore(today)}"
                         th:attr="data-month=${b.billMonth},data-status=(${b.paid} ? 'paid' : (${overdue} ? 'unpaid overdue' : 'unpaid'))">
                         <td class="td-title">
-                            <span class="d-block fw-semibold" th:text="${b.room.roomNumber}"></span>
+                            <span class="room-plate" th:text="${b.room.roomNumber}"></span>
                             <span class="item-meta" th:text="#{billList.splitN(${people})}"></span>
                         </td>
                         <td class="num nowrap" th:text="${b.billMonth}"></td>

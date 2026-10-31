@@ -55,7 +55,7 @@
                             </a>
                             <span class="text-muted" th:unless="${p.hasPhoto()}">-</span>
                         </td>
-                        <td class="fw-medium nowrap" th:text="${p.room.roomNumber}"></td>
+                        <td><span class="room-plate" th:text="${p.room.roomNumber}"></span></td>
                         <td class="td-wide">
                             <span class="cell-stack">
                                 <span th:text="${p.recipientName != null} ? ${p.recipientName} : '-'"></span>

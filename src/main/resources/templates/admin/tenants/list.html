@@ -94,7 +94,7 @@
                                     </td>
                                     <td>
                                         <span th:if="${t.room != null}" class="cell">
-                                            <span class="fw-medium" th:text="${t.room.roomNumber}"></span>
+                                            <span class="room-plate" th:text="${t.room.roomNumber}"></span>
                                             <span class="item-meta" th:text="#{common.buildingN(${t.room.building})}"></span>
                                         </span>
                                         <span th:if="${t.room == null}" class="text-muted" th:text="#{common.noRoom}">ไม่มีห้อง</span>

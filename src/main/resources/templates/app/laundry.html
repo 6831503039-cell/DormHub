@@ -13,8 +13,8 @@
     <section th:each="g : ${groups}" th:unless="${#lists.isEmpty(machines.?[type.name() == #vars.g])}"
              th:with="list=${machines.?[type.name() == #vars.g]}" class="mb-4" th:attr="aria-label=#{${list[0].type.key}}">
         <h2 class="section-title mt-0" th:text="#{${list[0].type.key}} + ' · ' + #{laundry.cycle(${list[0].type.minutes})}"></h2>
-        <div class="d-grid gap-2">
-            <div class="card machine" th:each="m : ${list}" th:classappend="${m.isAvailableAt(now)} ? '' : 'busy'">
+        <div class="machine-list">
+            <div class="machine" th:each="m : ${list}" th:classappend="${m.isAvailableAt(now)} ? '' : 'busy'">
                 <span class="ring"><i th:data-lucide="${m.type.name() == 'WASHER'} ? 'washing-machine' : 'wind'"></i></span>
                 <div class="flex-grow-1 min-w-0">
                     <div class="fw-medium" th:text="${m.name}"></div>

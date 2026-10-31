@@ -18,8 +18,8 @@
     </th:block>
 
     <!-- my requests and their status -->
-    <section class="card mb-4" th:unless="${#lists.isEmpty(myBookings)}" aria-labelledby="myBookingsTitle">
-        <div class="card-header"><h2 class="h2 mb-0" id="myBookingsTitle" th:text="#{rent.myRequests}">คำขอเช่าของฉัน</h2></div>
+    <section class="plain-section mb-4" th:unless="${#lists.isEmpty(myBookings)}" aria-labelledby="myBookingsTitle">
+        <div class="section-head"><h2 id="myBookingsTitle" th:text="#{rent.myRequests}">คำขอเช่าของฉัน</h2></div>
         <ul class="list-plain">
             <li th:each="b : ${myBookings}" class="align-items-start">
                 <div class="min-w-0">

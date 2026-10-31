@@ -90,8 +90,8 @@
             </div>
         </th:block>
 
-        <section class="card mb-4" aria-labelledby="historyTitle">
-            <div class="card-header"><h2 class="h2 mb-0" id="historyTitle" th:text="#{bills.history}">ประวัติการชำระ</h2></div>
+        <section class="plain-section mb-4" aria-labelledby="historyTitle">
+            <div class="section-head"><h2 id="historyTitle" th:text="#{bills.history}">ประวัติการชำระ</h2></div>
             <ul class="list-plain" th:unless="${#lists.isEmpty(history)}">
                 <li th:each="v : ${history}">
                     <div>
@@ -104,7 +104,7 @@
                     </div>
                 </li>
             </ul>
-            <p class="text-muted small px-4 py-3 mb-0" th:if="${#lists.isEmpty(history)}" th:text="#{bills.noHistory}">ยังไม่มีประวัติ</p>
+            <p class="text-muted small py-3 mb-0" th:if="${#lists.isEmpty(history)}" th:text="#{bills.noHistory}">ยังไม่มีประวัติ</p>
         </section>
     </th:block>
 </main>
