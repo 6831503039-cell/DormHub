@@ -52,14 +52,20 @@ public class TenantController {
     public String listTenants(Model model) {
         List<Tenant> tenants = repository.findAllByOrderByFirstNameAsc();
         model.addAttribute("tenants", tenants);
-        // building -> tenants ordered by room, one collapsible card per building; "none" = no room yet (last)
-        Map<String, List<Tenant>> groups = new TreeMap<>(Comparator.comparing((String b) -> b.equals("none")).thenComparing(b -> b));
+        // building -> floor -> tenants ordered by room: a collapsible card per building with a part per floor;
+        // "none" = no room yet (last, floor 0)
+        Map<String, Map<Integer, List<Tenant>>> groups = new TreeMap<>(Comparator.comparing((String b) -> b.equals("none")).thenComparing(b -> b));
         tenants.stream()
                 .sorted(Comparator.comparing((Tenant t) -> t.getRoom() == null ? "~" : t.getRoom().getRoomNumber())
                         .thenComparing(Tenant::getFullName))
-                .forEach(t -> groups.computeIfAbsent(t.getRoom() == null ? "none"
-                        : (t.getRoom().getBuilding() == null || t.getRoom().getBuilding().isBlank() ? "-" : t.getRoom().getBuilding()),
-                        b -> new ArrayList<>()).add(t));
+                .forEach(t -> {
+                    Room room = t.getRoom();
+                    String building = room == null ? "none"
+                            : (room.getBuilding() == null || room.getBuilding().isBlank() ? "-" : room.getBuilding());
+                    int floor = room == null || room.getFloor() == null ? 0 : room.getFloor();
+                    groups.computeIfAbsent(building, b -> new TreeMap<>())
+                            .computeIfAbsent(floor, f -> new ArrayList<>()).add(t);
+                });
         model.addAttribute("tenantGroups", groups);
         // emails that already have a login, so the list can show which tenants use the app
         Set<String> accountEmails = new HashSet<>();
