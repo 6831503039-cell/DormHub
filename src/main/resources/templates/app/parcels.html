@@ -45,7 +45,11 @@
             <div class="card-header"><h2 class="h2 mb-0" id="pickedTitle" th:text="#{parcels.history}">รับไปแล้ว</h2></div>
             <ul class="list-plain">
                 <li th:each="p : ${pickedUp}">
-                    <div class="min-w-0">
+                    <!-- the photo stays viewable after pickup; tap to open it full size -->
+                    <a th:if="${p.hasPhoto()}" class="flex-shrink-0" th:href="@{/parcels/{id}/photo(id=${p.id})}" target="_blank" rel="noopener">
+                        <img class="parcel-thumb" th:src="@{/parcels/{id}/photo(id=${p.id})}" th:alt="#{parcels.photoOf(${tenant.room.roomNumber})}" loading="lazy">
+                    </a>
+                    <div class="min-w-0 flex-grow-1">
                         <div class="item-title" th:text="${p.recipientName != null} ? #{parcels.to(${p.recipientName})} : #{parcels.forRoom(${tenant.room.roomNumber})}"></div>
                         <div class="item-meta" th:text="#{parcels.pickedUpAt(${#temporals.format(p.pickedUpAt, 'dd/MM/yyyy HH:mm')})} + (${p.pickedUpBy != null} ? ' · ' + #{parcels.by(${p.pickedUpBy})} : '')"></div>
                     </div>
