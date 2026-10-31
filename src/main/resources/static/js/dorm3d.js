@@ -1009,7 +1009,7 @@
             if (r.floor === 1) statusLine += '<br><span class="small text-muted">' + dhT('ห้องชั้น 1 มีประตูเข้าห้องจากด้านนอกตึก', 'Floor 1 rooms have their door on the outside of the building.') + '</span>';
 
             var html = '<div class="d-flex align-items-center gap-2 flex-wrap"><span class="d3-pill" style="background:' + statusCss(r.status) + '">' + esc(r.statusLabel) + '</span>' +
-                (r.pendingBookings ? '<span class="badge soft-warning">' + dhT('มีคำขอจอง ' + r.pendingBookings + ' รายการ', r.pendingBookings + ' booking request' + (r.pendingBookings === 1 ? '' : 's')) + '</span>' : '') + '</div>' +
+                (r.pendingBookings ? '<span class="status status-warning"><span class="status-dot" aria-hidden="true"></span>' + dhT('มีคำขอจอง ' + r.pendingBookings + ' รายการ', r.pendingBookings + ' booking request' + (r.pendingBookings === 1 ? '' : 's')) + '</span>' : '') + '</div>' +
                 '<button type="button" class="d3-preview" data-act="room3d"><span class="d3-preview-ic"><i data-lucide="box"></i></span><span><b>' + dhT('ดูห้องแบบ 3D', 'View room in 3D') + '</b><br><span class="small text-muted">' + dhT('หมุนดูการจัดห้อง ', 'Rotate to see the layout ') + esc(r.type || '') + '</span></span><i data-lucide="chevron-right"></i></button>' +
                 '<div class="d3-price"><b>฿' + baht(r.rent) + '</b><span>' + dhT('/ เดือน', '/ month') + '</span></div>' +
                 '<div class="d3-status">' + statusLine + '</div>' +

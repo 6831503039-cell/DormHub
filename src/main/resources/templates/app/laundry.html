@@ -5,7 +5,7 @@
                groups=${ {'WASHER', 'DRYER'} }">
     <div class="d-flex justify-content-between align-items-center">
         <h1 class="app-title" th:text="#{laundry.title}">ห้องซักผ้า</h1>
-        <span class="badge status-neutral" th:text="#{common.simulated}">จำลอง</span>
+        <span class="tag" th:text="#{common.simulated}">จำลอง</span>
     </div>
     <p class="app-sub" th:text="#{laundry.sub(${free}, ${#lists.size(machines)})}"></p>
 
@@ -18,9 +18,9 @@
                 <span class="ring"><i th:data-lucide="${m.type.name() == 'WASHER'} ? 'washing-machine' : 'wind'"></i></span>
                 <div class="flex-grow-1 min-w-0">
                     <div class="fw-medium" th:text="${m.name}"></div>
-                    <div class="small" th:if="${m.isAvailableAt(now)}"><span class="badge status-success" th:text="#{common.free}">ว่าง</span></div>
+                    <div class="small" th:if="${m.isAvailableAt(now)}"><span th:replace="~{fragments/ui :: status('success', #{common.free})}"></span></div>
                     <div class="small text-muted" th:unless="${m.isAvailableAt(now)}">
-                        <span class="badge status-warning" th:text="#{common.minutesLeft(${m.minutesLeftAt(now)})}"></span>
+                        <span th:replace="~{fragments/ui :: status('warning', #{common.minutesLeft(${m.minutesLeftAt(now)})})}"></span>
                         <span th:if="${m.usedBy != null}" th:text="${m.usedBy}"></span>
                     </div>
                 </div>

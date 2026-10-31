@@ -86,6 +86,12 @@
     <i data-lucide="settings"></i> <span th:text="#{settings.title}">ตั้งค่า</span>
 </button>
 
+<!-- Status: 8px dot + text, e.g. "● ชำระแล้ว". tone: success | info | warning | soon | danger | neutral
+     (enum badge names primary / secondary work too). Only danger gets a coloured background.
+     Use: <span th:replace="~{fragments/ui :: status('success', #{common.paid})}"></span>
+     th:replace runs before th:if, so put a condition on a <th:block> around it. -->
+<span th:fragment="status(tone, text)" class="status" th:classappend="'status-' + ${tone}"><span class="status-dot" aria-hidden="true"></span><span th:text="${text}">สถานะ</span></span>
+
 <!-- Booking form for the 3D room map; dorm3d.js copies it into the room panel and fills room, date and title.
      action: where it posts; fullName / email: pre-filled values (null on the public page); emailLocked: the
      account's email is used, so the field is read-only -->

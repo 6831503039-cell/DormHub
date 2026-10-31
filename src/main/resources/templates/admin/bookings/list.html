@@ -54,7 +54,7 @@
                     <tr th:each="b : ${bookings}" data-row th:attr="data-status=${#strings.toLowerCase(b.status.name())}">
                         <td class="td-title">
                             <span class="d-block fw-semibold" th:text="${b.fullName}"></span>
-                            <span class="badge status-info mb-1" th:if="${b.applicant != null}" th:title="#{bookings.fromApp.help}"
+                            <span class="tag d-flex mb-1" th:if="${b.applicant != null}" th:title="#{bookings.fromApp.help}"
                                   th:text="#{bookings.fromApp}">ส่งจากแอป</span>
                             <span class="item-meta" th:text="#{bookings.sentAt(${#temporals.format(b.createdAt, 'dd/MM/yyyy HH:mm')})}"></span>
                         </td>
@@ -67,7 +67,7 @@
                         </td>
                         <td class="num nowrap" th:text="${b.moveInDate != null} ? ${#temporals.format(b.moveInDate, 'dd/MM/yyyy')} : '-'"></td>
                         <td class="td-wide"><span class="item-meta clamp-2" th:text="${b.note != null and !#strings.isEmpty(b.note)} ? ${b.note} : '-'"></span></td>
-                        <td><span th:class="'badge soft-' + ${b.status.badge}" th:text="#{${b.status.key}}"></span></td>
+                        <td><span th:replace="~{fragments/ui :: status(${b.status.badge}, #{${b.status.key}})}"></span></td>
                         <td class="td-actions">
                             <form class="d-inline" th:action="@{/admin/bookings/{id}/status(id=${b.id})}" method="post" th:if="${b.status.name() != 'CONFIRMED'}">
                                 <input type="hidden" name="status" value="CONFIRMED">

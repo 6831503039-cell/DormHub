@@ -71,7 +71,7 @@
                                       th:text="${waited == 0} ? #{repairs.today} : #{repairs.waited(${waited})}"></span>
                             </span>
                         </td>
-                        <td><span th:class="'badge status-' + ${tone[r.status.name()]}" th:text="#{${r.status.key}}"></span></td>
+                        <td><span th:replace="~{fragments/ui :: status(${tone[r.status.name()]}, #{${r.status.key}})}"></span></td>
                         <td class="td-actions">
                             <a class="btn btn-soft btn-sm" th:href="@{/admin/repairs/{id}(id=${r.id})}"
                                th:attr="aria-label=#{repairs.updateN(${r.title}, ${r.room.roomNumber})}">

@@ -38,7 +38,7 @@
                        th:attr="aria-label=#{layout.tileAria(${r.roomNumber}, #{${r.status.key}}, ${occ}, ${r.capacity})}">
                         <div class="d-flex justify-content-between align-items-start gap-2">
                             <span class="num" th:text="${r.roomNumber}"></span>
-                            <span th:class="'badge soft-' + ${r.status.badge}" th:text="#{${r.status.key}}"></span>
+                            <span th:replace="~{fragments/ui :: status(${r.status.badge}, #{${r.status.key}})}"></span>
                         </div>
                         <div class="item-meta" th:text="${r.roomType}"></div>
                         <div class="d-flex justify-content-between item-meta mt-1">
