@@ -529,6 +529,38 @@ public class DormHubApplicationTest {
     }
 
     @Test
+    public void loginPageFillsInTheEmailAfterSignUp() throws Exception {
+        var result = mvc.perform(post("/register").with(csrf())
+                .param("fullName", "นักศึกษา ใหม่").param("email", "Fresh2@Example.com")
+                .param("password", "secret1").param("confirmPassword", "secret1"))
+                .andExpect(redirectedUrl("/login?registered"))
+                .andReturn();
+        // the email travels as a flash attribute, not in the URL
+        assertEquals("fresh2@example.com", result.getFlashMap().get("registeredEmail"));
+        mvc.perform(get("/login").param("registered", "").flashAttr("registeredEmail", "fresh2@example.com"))
+                .andExpect(content().string(containsString("value=\"fresh2@example.com\"")));
+    }
+
+    @Test
+    public void tenantHeaderShowsOnlyTheAppName() throws Exception {
+        mvc.perform(get("/app").with(tenant()))
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("DormHub · SJD Mansion"))));
+    }
+
+    @Test
+    public void pickedUpParcelPhotoCanStillBeOpened() throws Exception {
+        Room a102 = roomRepository.findByRoomNumber("A102").get();
+        MockMultipartFile photo = new MockMultipartFile("photo", "p.jpg", "image/jpeg", new byte[] { 7, 7 });
+        mvc.perform(multipart("/admin/parcels").file(photo).with(admin()).with(csrf()).param("room", a102.getId().toString()));
+        var parcel = parcelRepository.findByRoomOrderByArrivedAtDesc(a102).get(0);
+        RequestPostProcessor suda = user("suda@example.com").roles("TENANT");
+        mvc.perform(post("/app/parcels/" + parcel.getId() + "/picked-up").with(suda).with(csrf()));
+        assertFalse(parcelRepository.findById(parcel.getId()).get().isWaiting());
+        mvc.perform(get("/app/parcels").with(suda)).andExpect(content().string(containsString("/parcels/" + parcel.getId() + "/photo")));
+        mvc.perform(get("/parcels/" + parcel.getId() + "/photo").with(suda)).andExpect(status().isOk());
+    }
+
+    @Test
     public void roomAndTenantListsAreGroupedByBuilding() throws Exception {
         mvc.perform(get("/admin/rooms").with(admin()))
                 .andExpect(content().string(containsString("data-group")))
@@ -537,6 +569,9 @@ public class DormHubApplicationTest {
         mvc.perform(get("/admin/tenants").with(admin()))
                 .andExpect(content().string(containsString("data-group")))
                 .andExpect(content().string(containsString("ตึก B")));
+        // each building opens into floors
+        mvc.perform(get("/admin/rooms").with(admin())).andExpect(content().string(containsString("floor-group")));
+        mvc.perform(get("/admin/tenants").with(admin())).andExpect(content().string(containsString("floor-group")));
     }
 
     @Test

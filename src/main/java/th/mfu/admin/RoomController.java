@@ -48,11 +48,13 @@ public class RoomController {
     public String listRooms(Model model) {
         List<Room> rooms = repository.findAllByOrderByRoomNumberAsc();
         model.addAttribute("rooms", rooms);
-        // building -> rooms, shown as one collapsible card per building
-        Map<String, List<Room>> groups = new TreeMap<>();
+        // building -> floor -> rooms: a collapsible card per building with a collapsible part per floor
+        Map<String, Map<Integer, List<Room>>> groups = new TreeMap<>();
         for (Room room : rooms) {
             String building = room.getBuilding() == null || room.getBuilding().isBlank() ? "-" : room.getBuilding();
-            groups.computeIfAbsent(building, b -> new ArrayList<>()).add(room);
+            int floor = room.getFloor() == null ? 0 : room.getFloor();
+            groups.computeIfAbsent(building, b -> new TreeMap<>())
+                    .computeIfAbsent(floor, f -> new ArrayList<>()).add(room);
         }
         model.addAttribute("roomGroups", groups);
         model.addAttribute("occupants", occupantsByRoom());
