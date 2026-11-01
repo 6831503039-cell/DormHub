@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- Shared UI components (design system). Behaviour lives in static/js/ui.js. -->
-<html lang="th" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org">
 <body>
 
 <!-- Confirm dialog used by every element with data-confirm="..."; included once per layout.
@@ -11,28 +11,28 @@
             <div class="modal-header">
                 <div>
                     <div class="modal-icon"><i data-lucide="trash-2"></i></div>
-                    <h2 class="modal-title" id="confirmModalTitle" data-confirm-title>ยืนยันการลบ</h2>
+                    <h2 class="modal-title" id="confirmModalTitle" data-confirm-title th:text="#{confirm.title}">ยืนยันการลบ</h2>
                 </div>
             </div>
             <div class="modal-body">
                 <p class="mb-0 text-muted" data-confirm-message></p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                <button type="button" class="btn btn-danger" data-confirm-ok>ลบ</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" th:text="#{common.cancel}">ยกเลิก</button>
+                <button type="button" class="btn btn-danger" data-confirm-ok th:text="#{common.delete}">ลบ</button>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Empty state: icon (Lucide name), title, text; action link optional (pass null to hide it).
-     Usage: <div th:replace="~{fragments/ui :: emptyState('door-closed', 'ยังไม่มีห้อง', 'เพิ่มห้องแรกเพื่อเริ่มใช้งาน', @{/admin/rooms/new}, 'เพิ่มห้อง')}"></div> -->
+     Usage: <div th:replace="~{fragments/ui :: emptyState('door-closed', #{rooms.empty.title}, #{rooms.empty.text}, @{/admin/rooms/new}, #{rooms.add})}"></div> -->
 <div th:fragment="emptyState(icon, title, text, actionHref, actionLabel)" class="empty-state">
     <div class="empty-icon"><i th:data-lucide="${icon}"></i></div>
-    <p class="empty-title" th:text="${title}">ยังไม่มีข้อมูล</p>
+    <p class="empty-title" th:text="${title}"></p>
     <p class="empty-text" th:if="${text != null}" th:text="${text}"></p>
     <a th:if="${actionHref != null}" class="btn btn-primary" th:href="${actionHref}">
-        <i data-lucide="plus"></i> <span th:text="${actionLabel}">เพิ่ม</span>
+        <i data-lucide="plus"></i> <span th:text="${actionLabel}"></span>
     </a>
 </div>
 
@@ -40,13 +40,83 @@
 <th:block th:fragment="flash">
     <div th:if="${success}" class="alert alert-success alert-dismissible fade show d-flex align-items-start gap-2" role="status">
         <i data-lucide="circle-check"></i><span th:text="${success}"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="ปิด"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" th:aria-label="#{common.close}"></button>
     </div>
     <div th:if="${error}" class="alert alert-danger alert-dismissible fade show d-flex align-items-start gap-2" role="alert">
         <i data-lucide="circle-alert"></i><span th:text="${error}"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="ปิด"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" th:aria-label="#{common.close}"></button>
     </div>
 </th:block>
+
+<!-- Settings dialog: language (reloads the page with ?lang=) and colour theme (prefs.js, applied at once).
+     Included once per page; open it with data-bs-toggle="modal" data-bs-target="#settingsModal". -->
+<div th:fragment="settingsModal" class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 400px">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="settingsModalTitle" th:text="#{settings.title}">ตั้งค่า</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" th:aria-label="#{common.close}"></button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-group" role="group" aria-labelledby="settingsLangLabel">
+                    <div class="form-label" id="settingsLangLabel"><i data-lucide="languages"></i> <span th:text="#{settings.language}">ภาษา</span></div>
+                    <div class="choice-group">
+                        <a class="choice" href="?lang=th" data-set-lang="th" lang="th" th:classappend="${#locale.language != 'en'} ? 'active'"
+                           th:attr="aria-current=${#locale.language != 'en'} ? 'true' : null">ไทย</a>
+                        <a class="choice" href="?lang=en" data-set-lang="en" lang="en" th:classappend="${#locale.language == 'en'} ? 'active'"
+                           th:attr="aria-current=${#locale.language == 'en'} ? 'true' : null">English</a>
+                    </div>
+                </div>
+                <div class="settings-group" role="radiogroup" aria-labelledby="settingsThemeLabel">
+                    <div class="form-label" id="settingsThemeLabel"><i data-lucide="palette"></i> <span th:text="#{settings.theme}">ธีม</span></div>
+                    <div class="choice-group">
+                        <label class="choice"><input type="radio" name="theme" value="light"><i data-lucide="sun"></i> <span th:text="#{settings.theme.light}">สว่าง</span></label>
+                        <label class="choice"><input type="radio" name="theme" value="dark"><i data-lucide="moon"></i> <span th:text="#{settings.theme.dark}">มืด</span></label>
+                        <label class="choice"><input type="radio" name="theme" value="system"><i data-lucide="monitor"></i> <span th:text="#{settings.theme.system}">ตามระบบ</span></label>
+                    </div>
+                    <div class="form-text" th:text="#{settings.theme.help}">ตามระบบ = ใช้โหมดมืดเมื่อเครื่องของคุณใช้โหมดมืด</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Menu item that opens the Settings dialog; used inside the account dropdowns. -->
+<button th:fragment="settingsMenuItem" class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#settingsModal">
+    <i data-lucide="settings"></i> <span th:text="#{settings.title}">ตั้งค่า</span>
+</button>
+
+<!-- Booking form for the 3D room map; dorm3d.js copies it into the room panel and fills room, date and title.
+     action: where it posts; fullName / email: pre-filled values (null on the public page); emailLocked: the
+     account's email is used, so the field is read-only -->
+<template th:fragment="bookTemplate(action, fullName, email, emailLocked)" id="bookTpl">
+    <form class="d3-book" th:action="${action}" method="post">
+        <div class="fw-semibold" data-field="title" th:text="#{book.title}">จองห้อง</div>
+        <input type="hidden" name="room" data-field="room">
+        <div>
+            <label class="form-label" for="bkName" th:text="#{common.fullName}">ชื่อ-นามสกุล</label>
+            <input class="form-control" id="bkName" name="fullName" maxlength="100" autocomplete="name" th:value="${fullName}" required>
+        </div>
+        <div>
+            <label class="form-label" for="bkPhone" th:text="#{book.phone}">เบอร์โทรศัพท์</label>
+            <input class="form-control" id="bkPhone" name="phone" type="tel" maxlength="20" placeholder="08x-xxx-xxxx" autocomplete="tel" required>
+        </div>
+        <div>
+            <label class="form-label" for="bkEmail" th:text="${emailLocked} ? #{common.email} : #{common.email} + ' ' + #{common.optional}">อีเมล (ไม่บังคับ)</label>
+            <input class="form-control" id="bkEmail" name="email" type="email" maxlength="100" autocomplete="email" th:value="${email}" th:readonly="${emailLocked}">
+        </div>
+        <div>
+            <label class="form-label" for="bkDate" th:text="#{book.moveIn}">วันที่ต้องการเข้าอยู่</label>
+            <input class="form-control" id="bkDate" name="moveInDate" type="date" data-field="date" required>
+        </div>
+        <div>
+            <label class="form-label" for="bkNote" th:text="#{book.note} + ' ' + #{common.optional}">ข้อความถึงหอ (ไม่บังคับ)</label>
+            <textarea class="form-control" id="bkNote" name="note" rows="2" maxlength="500"></textarea>
+        </div>
+        <button class="btn btn-primary w-100" type="submit"><i data-lucide="send"></i> <span th:text="#{book.send}">ส่งคำขอจอง</span></button>
+        <div class="small text-muted" th:text="${emailLocked} ? #{rent.afterConfirm} : #{book.noPayment}">ยังไม่ต้องโอนเงิน เจ้าหน้าที่หอจะติดต่อกลับเพื่อยืนยันการจอง</div>
+    </form>
+</template>
 
 </body>
 </html>

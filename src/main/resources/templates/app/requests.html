@@ -1,19 +1,19 @@
 <!DOCTYPE html>
-<html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/app :: layout('คำร้อง', 'requests', ~{::main})}">
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/app :: layout(#{tab.requests}, 'requests', ~{::main})}">
 <body>
 <main th:with="linked=${tenant != null and tenant.room != null},
                repairTone=${ {'PENDING': 'warning', 'IN_PROGRESS': 'info', 'DONE': 'success'} }">
-    <h1 class="app-title">คำร้อง</h1>
-    <p class="app-sub">แจ้งซ่อม หรือส่งความคิดเห็นถึงเจ้าของหอ</p>
+    <h1 class="app-title" th:text="#{tab.requests}">คำร้อง</h1>
+    <p class="app-sub" th:text="#{requests.sub}">แจ้งซ่อม หรือส่งความคิดเห็นถึงเจ้าของหอ</p>
 
     <ul class="nav segmented mb-3" role="tablist">
         <li class="nav-item flex-fill" role="presentation">
             <button class="nav-link active w-100" id="repairTab" data-bs-toggle="tab" data-bs-target="#tabRepair" type="button" role="tab"
-                    aria-controls="tabRepair" aria-selected="true">แจ้งซ่อม</button>
+                    aria-controls="tabRepair" aria-selected="true" th:text="#{nav.repairs}">แจ้งซ่อม</button>
         </li>
         <li class="nav-item flex-fill" role="presentation">
             <button class="nav-link w-100" id="feedbackTab" data-bs-toggle="tab" data-bs-target="#tabFeedback" type="button" role="tab"
-                    aria-controls="tabFeedback" aria-selected="false">ความคิดเห็น</button>
+                    aria-controls="tabFeedback" aria-selected="false" th:text="#{requests.feedback}">ความคิดเห็น</button>
         </li>
     </ul>
 
@@ -22,36 +22,39 @@
         <div class="tab-pane fade show active" id="tabRepair" role="tabpanel" aria-labelledby="repairTab">
             <th:block th:unless="${linked}">
                 <div class="card mb-3">
-                    <div th:replace="~{fragments/ui :: emptyState('link', 'ยังแจ้งซ่อมไม่ได้', 'บัญชียังไม่ผูกกับห้องพัก แจ้งเจ้าของหอให้บันทึกอีเมลของคุณ', null, null)}"></div>
+                    <div th:replace="~{fragments/ui :: emptyState('link', #{requests.cannotRepair}, #{requests.notLinked}, null, null)}"></div>
                 </div>
             </th:block>
 
             <form class="card card-body mb-3" th:if="${linked}" th:action="@{/app/repairs}" method="post">
-                <p class="small text-muted mb-3" th:text="'แจ้งซ่อมสำหรับห้อง ' + ${tenant.room.roomNumber}"></p>
+                <p class="small text-muted mb-3" th:text="#{requests.forRoom(${tenant.room.roomNumber})}"></p>
                 <div class="mb-3">
-                    <label class="form-label" for="title">เรื่อง</label>
-                    <input class="form-control" id="title" name="title" placeholder="เช่น แอร์ไม่เย็น, ก๊อกน้ำรั่ว" required>
+                    <label class="form-label" for="title" th:text="#{repair.subject}">เรื่อง</label>
+                    <input class="form-control" id="title" name="title" th:placeholder="#{repair.subject.placeholder}" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" for="description">รายละเอียด <span class="optional">(ไม่บังคับ)</span></label>
-                    <textarea class="form-control" id="description" name="description" rows="3" placeholder="อาการ จุดที่เสีย หรือเวลาที่สะดวกให้ช่างเข้า"></textarea>
+                    <label class="form-label" for="description"><span th:text="#{repair.details}">รายละเอียด</span> <span class="optional" th:text="#{common.optional}">(ไม่บังคับ)</span></label>
+                    <textarea class="form-control" id="description" name="description" rows="3" th:placeholder="#{requests.details.placeholder}"></textarea>
                 </div>
-                <button class="btn btn-primary w-100" type="submit"><i data-lucide="send"></i> ส่งเรื่อง</button>
+                <button class="btn btn-primary w-100" type="submit"><i data-lucide="send"></i> <span th:text="#{requests.sendRepair}">ส่งเรื่อง</span></button>
             </form>
 
             <section class="card" th:if="${repairs != null}" aria-labelledby="myRepairsTitle">
-                <div class="card-header"><h2 class="h2 mb-0" id="myRepairsTitle">รายการแจ้งซ่อมของห้อง</h2></div>
+                <div class="card-header"><h2 class="h2 mb-0" id="myRepairsTitle" th:text="#{requests.roomRepairs}">รายการแจ้งซ่อมของห้อง</h2></div>
                 <ul class="list-plain" th:unless="${#lists.isEmpty(repairs)}">
                     <li th:each="r : ${repairs}" class="align-items-start">
                         <div class="min-w-0">
                             <div class="item-title" th:text="${r.title}"></div>
                             <div class="item-meta clamp-2"
                                  th:text="${#temporals.format(r.reportedDate, 'dd/MM/yyyy')} + (${r.description != null and !#strings.isEmpty(r.description)} ? ' · ' + ${r.description} : '')"></div>
+                            <div class="admin-reply mt-1" th:if="${r.adminNote != null and !#strings.isEmpty(r.adminNote)}">
+                                <i data-lucide="message-square-reply"></i> <span><b th:text="#{repair.adminNote.fromDorm}">จากหอพัก:</b> <span th:text="${r.adminNote}"></span></span>
+                            </div>
                         </div>
-                        <span class="item-end" th:classappend="'badge status-' + ${repairTone[r.status.name()]}" th:text="${r.status.label}"></span>
+                        <span class="item-end" th:classappend="'badge status-' + ${repairTone[r.status.name()]}" th:text="#{${r.status.key}}"></span>
                     </li>
                 </ul>
-                <p class="text-muted small px-4 py-3 mb-0" th:if="${#lists.isEmpty(repairs)}">ยังไม่มีรายการ</p>
+                <p class="text-muted small px-4 py-3 mb-0" th:if="${#lists.isEmpty(repairs)}" th:text="#{requests.noRepairs}">ยังไม่มีรายการ</p>
             </section>
         </div>
 
@@ -60,44 +63,44 @@
             <form class="card card-body mb-3" th:action="@{/app/feedback}" method="post">
                 <div class="row g-3 mb-3">
                     <div class="col-7">
-                        <label class="form-label" for="category">หมวด</label>
+                        <label class="form-label" for="category" th:text="#{feedback.categoryLabel}">หมวด</label>
                         <select class="form-select" id="category" name="category">
-                            <option th:each="c : ${categories}" th:value="${c}" th:text="${c}"></option>
+                            <option th:each="c, st : ${categories}" th:value="${c}" th:text="#{${'feedback.category.' + st.index}}"></option>
                         </select>
                     </div>
                     <div class="col-5">
-                        <label class="form-label" for="rating">ความพึงพอใจ</label>
+                        <label class="form-label" for="rating" th:text="#{requests.rating}">ความพึงพอใจ</label>
                         <select class="form-select" id="rating" name="rating">
-                            <option value="5">5 ดีมาก</option>
-                            <option value="4">4 ดี</option>
-                            <option value="3">3 พอใช้</option>
-                            <option value="2">2 ควรปรับปรุง</option>
-                            <option value="1">1 ไม่พอใจ</option>
+                            <option value="5" th:text="'5 ' + #{requests.rating.5}">5 ดีมาก</option>
+                            <option value="4" th:text="'4 ' + #{requests.rating.4}">4 ดี</option>
+                            <option value="3" th:text="'3 ' + #{requests.rating.3}">3 พอใช้</option>
+                            <option value="2" th:text="'2 ' + #{requests.rating.2}">2 ควรปรับปรุง</option>
+                            <option value="1" th:text="'1 ' + #{requests.rating.1}">1 ไม่พอใจ</option>
                         </select>
                     </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" for="message">ความคิดเห็น / ข้อเสนอแนะ</label>
+                    <label class="form-label" for="message" th:text="#{requests.message}">ความคิดเห็น / ข้อเสนอแนะ</label>
                     <textarea class="form-control" id="message" name="message" rows="3" required></textarea>
                 </div>
-                <button class="btn btn-primary w-100" type="submit"><i data-lucide="send"></i> ส่งถึงเจ้าของหอ</button>
+                <button class="btn btn-primary w-100" type="submit"><i data-lucide="send"></i> <span th:text="#{requests.sendFeedback}">ส่งถึงเจ้าของหอ</span></button>
             </form>
 
             <section class="card" aria-labelledby="myFeedbackTitle">
-                <div class="card-header"><h2 class="h2 mb-0" id="myFeedbackTitle">ความคิดเห็นที่เคยส่ง</h2></div>
+                <div class="card-header"><h2 class="h2 mb-0" id="myFeedbackTitle" th:text="#{requests.myFeedback}">ความคิดเห็นที่เคยส่ง</h2></div>
                 <ul class="list-plain" th:unless="${#lists.isEmpty(feedbacks)}">
                     <li th:each="f : ${feedbacks}" class="align-items-start">
                         <div class="min-w-0">
                             <div class="mb-1">
-                                <span class="badge status-neutral" th:text="${f.category}"></span>
+                                <span class="badge status-neutral" th:text="${f.categoryKey != null} ? #{${f.categoryKey}} : ${f.category}"></span>
                                 <span class="item-meta num ms-1" th:text="${#temporals.format(f.createdAt, 'dd/MM/yyyy')}"></span>
                             </div>
                             <div th:text="${f.message}"></div>
                         </div>
-                        <span class="badge status-success item-end" th:if="${f.readByOwner}">อ่านแล้ว</span>
+                        <span class="badge status-success item-end" th:if="${f.readByOwner}" th:text="#{common.read}">อ่านแล้ว</span>
                     </li>
                 </ul>
-                <p class="text-muted small px-4 py-3 mb-0" th:if="${#lists.isEmpty(feedbacks)}">ยังไม่เคยส่ง</p>
+                <p class="text-muted small px-4 py-3 mb-0" th:if="${#lists.isEmpty(feedbacks)}" th:text="#{requests.noFeedback}">ยังไม่เคยส่ง</p>
             </section>
         </div>
     </div>

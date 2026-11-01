@@ -1,66 +1,66 @@
 <!DOCTYPE html>
-<html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout('ข้อมูลผู้เช่า', 'tenants', ~{::main})}">
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout(#{tenant.form.title}, 'tenants', ~{::main})}">
 <body>
 <main class="form-page">
-    <a class="back-link" th:href="@{/admin/tenants}"><i data-lucide="chevron-left"></i> ผู้เช่า</a>
+    <a class="back-link" th:href="@{/admin/tenants}"><i data-lucide="chevron-left"></i> <span th:text="#{nav.tenants}">ผู้เช่า</span></a>
     <div class="page-header">
-        <h1 class="page-title" th:text="${tenant.id == null} ? 'เพิ่มผู้เช่า' : ${tenant.fullName}">เพิ่มผู้เช่า</h1>
+        <h1 class="page-title" th:text="${tenant.id == null} ? #{tenants.add} : ${tenant.fullName}">เพิ่มผู้เช่า</h1>
     </div>
 
     <form class="card card-body" th:action="@{/admin/tenants}" th:object="${tenant}" method="post">
         <input type="hidden" th:field="*{id}">
 
         <div class="form-section">
-            <h2 class="form-section-title">ข้อมูลผู้เช่า</h2>
+            <h2 class="form-section-title" th:text="#{tenant.form.title}">ข้อมูลผู้เช่า</h2>
             <div class="row g-3">
                 <div class="col-sm-6">
-                    <label class="form-label" for="firstName">ชื่อ</label>
+                    <label class="form-label" for="firstName" th:text="#{tenant.firstName}">ชื่อ</label>
                     <input class="form-control" th:field="*{firstName}" required autocomplete="given-name">
                 </div>
                 <div class="col-sm-6">
-                    <label class="form-label" for="lastName">นามสกุล</label>
+                    <label class="form-label" for="lastName" th:text="#{tenant.lastName}">นามสกุล</label>
                     <input class="form-control" th:field="*{lastName}" required autocomplete="family-name">
                 </div>
                 <div class="col-sm-6">
-                    <label class="form-label" for="phone">โทรศัพท์ <span class="optional">(ไม่บังคับ)</span></label>
+                    <label class="form-label" for="phone"><span th:text="#{common.phone}">โทรศัพท์</span> <span class="optional" th:text="#{common.optional}">(ไม่บังคับ)</span></label>
                     <input class="form-control" type="tel" inputmode="tel" th:field="*{phone}" placeholder="08x-xxx-xxxx" autocomplete="tel">
                 </div>
                 <div class="col-sm-6">
-                    <label class="form-label" for="email">อีเมล <span class="optional">(ไม่บังคับ)</span></label>
+                    <label class="form-label" for="email"><span th:text="#{common.email}">อีเมล</span> <span class="optional" th:text="#{common.optional}">(ไม่บังคับ)</span></label>
                     <input class="form-control" type="email" th:field="*{email}" autocomplete="email">
-                    <div class="form-text">ถ้าผู้เช่าสมัครแอปด้วยอีเมลนี้ จะเห็นห้องและบิลของตัวเอง</div>
+                    <div class="form-text" th:text="#{tenant.email.help}">ถ้าผู้เช่าสมัครแอปด้วยอีเมลนี้ จะเห็นห้องและบิลของตัวเอง</div>
                 </div>
             </div>
         </div>
 
         <div class="form-section">
-            <h2 class="form-section-title">ห้องและสัญญา</h2>
+            <h2 class="form-section-title" th:text="#{tenant.roomContract}">ห้องและสัญญา</h2>
             <div class="row g-3">
                 <div class="col-12">
-                    <label class="form-label" for="room">ห้อง <span class="optional">(ไม่บังคับ)</span></label>
-                    <select class="form-select" id="room" name="room">
-                        <option value="">ยังไม่ระบุห้อง</option>
-                        <option th:each="r : ${rooms}" th:value="${r.id}"
-                                th:text="${r.roomNumber} + ' · ' + ${r.status.label} + ' · รับได้ ' + ${r.capacity} + ' คน'"
+                    <label class="form-label" for="room"><span th:text="#{common.room}">ห้อง</span> <span class="optional" th:text="#{common.optional}">(ไม่บังคับ)</span></label>
+                    <select class="form-select" id="room" name="room" data-room-picker>
+                        <option value="" th:text="#{tenant.noRoom}">ยังไม่ระบุห้อง</option>
+                        <option th:each="r : ${rooms}" th:value="${r.id}" th:attr="data-building=${r.building},data-floor=${r.floor}"
+                                th:text="${r.roomNumber} + ' · ' + #{${r.status.key}} + ' · ' + #{tenant.roomCapacity(${r.capacity})}"
                                 th:selected="${tenant.room != null and tenant.room.id == r.id}"></option>
                     </select>
-                    <div class="form-text">ถ้าห้องเต็มแล้ว ระบบจะไม่ให้บันทึก</div>
+                    <div class="form-text" th:text="#{tenant.room.help}">ถ้าห้องเต็มแล้ว ระบบจะไม่ให้บันทึก</div>
                 </div>
                 <div class="col-sm-6">
-                    <label class="form-label" for="checkInDate">วันที่เข้าพัก <span class="optional">(ไม่บังคับ)</span></label>
+                    <label class="form-label" for="checkInDate"><span th:text="#{tenant.checkIn}">วันที่เข้าพัก</span> <span class="optional" th:text="#{common.optional}">(ไม่บังคับ)</span></label>
                     <input class="form-control" type="date" th:field="*{checkInDate}">
                 </div>
                 <div class="col-sm-6">
-                    <label class="form-label" for="contractEndDate">วันหมดสัญญา <span class="optional">(ไม่บังคับ)</span></label>
+                    <label class="form-label" for="contractEndDate"><span th:text="#{tenant.contractEnd}">วันหมดสัญญา</span> <span class="optional" th:text="#{common.optional}">(ไม่บังคับ)</span></label>
                     <input class="form-control" type="date" th:field="*{contractEndDate}">
-                    <div class="form-text">เหลือไม่เกิน 60 วัน ห้องจะขึ้นเป็น "ใกล้หมดสัญญา" และเปิดให้จองล่วงหน้าบนแผนผัง 3D</div>
+                    <div class="form-text" th:text="#{tenant.contractEnd.help}">เหลือไม่เกิน 60 วัน ห้องจะขึ้นเป็น "ใกล้หมดสัญญา" และเปิดให้จองล่วงหน้าบนแผนผัง 3D</div>
                 </div>
             </div>
         </div>
 
         <div class="form-actions">
-            <button class="btn btn-primary" type="submit"><i data-lucide="check"></i> บันทึก</button>
-            <a class="btn btn-secondary" th:href="@{/admin/tenants}">ยกเลิก</a>
+            <button class="btn btn-primary" type="submit"><i data-lucide="check"></i> <span th:text="#{common.save}">บันทึก</span></button>
+            <a class="btn btn-secondary" th:href="@{/admin/tenants}" th:text="#{common.cancel}">ยกเลิก</a>
         </div>
     </form>
 </main>

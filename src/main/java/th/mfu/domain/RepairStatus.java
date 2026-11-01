@@ -1,21 +1,20 @@
 package th.mfu.domain;
 
 public enum RepairStatus {
-    PENDING("รอดำเนินการ", "danger"),
-    IN_PROGRESS("กำลังซ่อม", "warning"),
-    DONE("เสร็จแล้ว", "success");
+    PENDING("danger"),
+    IN_PROGRESS("warning"),
+    DONE("success");
 
-    private final String label;
     // Bootstrap color used for the status badge
     private final String badge;
 
-    RepairStatus(String label, String badge) {
-        this.label = label;
+    RepairStatus(String badge) {
         this.badge = badge;
     }
 
-    public String getLabel() {
-        return label;
+    /** Message key of the status name shown in the UI (messages*.properties). */
+    public String getKey() {
+        return "repairStatus." + name();
     }
 
     public String getBadge() {

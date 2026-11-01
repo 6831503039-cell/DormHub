@@ -1,39 +1,39 @@
 <!DOCTYPE html>
-<html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout('ฟีดแบ็ก', 'feedback', ~{::main})}">
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout(#{nav.feedback}, 'feedback', ~{::main})}">
 <body>
 <main th:with="unread=${#lists.size(feedbacks.?[!readByOwner])},
                categories=${T(th.mfu.domain.Feedback).CATEGORIES}">
     <div class="page-header">
         <div>
-            <h1 class="page-title">ฟีดแบ็กจากผู้เช่า</h1>
+            <h1 class="page-title" th:text="#{feedback.title}">ฟีดแบ็กจากผู้เช่า</h1>
             <p class="page-sub" th:unless="${#lists.isEmpty(feedbacks)}"
-               th:text="'คะแนนเฉลี่ย ' + ${#numbers.formatDecimal(#aggregates.avg(feedbacks.![rating]), 1, 1)} + ' จาก 5 · ยังไม่อ่าน ' + ${unread} + ' รายการ'"></p>
+               th:text="#{feedback.sub(${#numbers.formatDecimal(#aggregates.avg(feedbacks.![rating]), 1, 1)}, ${unread})}"></p>
         </div>
     </div>
 
     <th:block th:if="${#lists.isEmpty(feedbacks)}">
         <div class="card">
-            <div th:replace="~{fragments/ui :: emptyState('message-square', 'ยังไม่มีฟีดแบ็ก', 'ความคิดเห็นที่ผู้เช่าส่งจากแอปจะแสดงที่นี่', null, null)}"></div>
+            <div th:replace="~{fragments/ui :: emptyState('message-square', #{feedback.empty.title}, #{feedback.empty.text}, null, null)}"></div>
         </div>
     </th:block>
 
     <th:block th:unless="${#lists.isEmpty(feedbacks)}">
         <div class="list-toolbar" role="search">
             <label class="search-input">
-                <span class="visually-hidden">ค้นหาฟีดแบ็ก</span>
+                <span class="visually-hidden" th:text="#{feedback.search}">ค้นหาฟีดแบ็ก</span>
                 <i data-lucide="search"></i>
-                <input class="form-control" type="search" placeholder="ค้นหาข้อความ ชื่อ หรือห้อง" data-filter-target="#feedbackList" autocomplete="off">
+                <input class="form-control" type="search" th:placeholder="#{feedback.search.placeholder}" data-filter-target="#feedbackList" autocomplete="off">
             </label>
-            <label class="visually-hidden" for="filterCategory">หมวด</label>
+            <label class="visually-hidden" for="filterCategory" th:text="#{feedback.categoryLabel}">หมวด</label>
             <select class="form-select" id="filterCategory" data-filter-target="#feedbackList" data-filter-key="category">
-                <option value="">ทุกหมวด</option>
-                <option th:each="c, st : ${categories}" th:value="'c' + ${st.index}" th:text="${c}"></option>
+                <option value="" th:text="#{feedback.allCategories}">ทุกหมวด</option>
+                <option th:each="c, st : ${categories}" th:value="'c' + ${st.index}" th:text="#{${'feedback.category.' + st.index}}"></option>
             </select>
-            <label class="visually-hidden" for="filterRead">การอ่าน</label>
+            <label class="visually-hidden" for="filterRead" th:text="#{feedback.readFilter}">การอ่าน</label>
             <select class="form-select" id="filterRead" data-filter-target="#feedbackList" data-filter-key="read">
-                <option value="unread" th:selected="${unread > 0}">ยังไม่อ่าน</option>
-                <option value="" th:selected="${unread == 0}">ทั้งหมด</option>
-                <option value="read">อ่านแล้ว</option>
+                <option value="unread" th:selected="${unread > 0}" th:text="#{common.unread}">ยังไม่อ่าน</option>
+                <option value="" th:selected="${unread == 0}" th:text="#{common.all}">ทั้งหมด</option>
+                <option value="read" th:text="#{common.read}">อ่านแล้ว</option>
             </select>
             <span class="list-count" data-filter-count="#feedbackList" aria-live="polite"></span>
         </div>
@@ -45,29 +45,29 @@
                     th:attr="data-category='c' + ${catIndex},data-read=${f.readByOwner} ? 'read' : 'unread'">
                     <div class="min-w-0 flex-grow-1">
                         <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                            <span class="rating text-nowrap" role="img" th:attr="aria-label=${f.rating} + ' จาก 5 ดาว'">
+                            <span class="rating text-nowrap" role="img" th:attr="aria-label=#{common.starsOf5(${f.rating})}">
                                 <i th:each="s : ${#numbers.sequence(1, 5)}" data-lucide="star" th:class="${s <= f.rating} ? 'star-on' : 'star-off'"></i>
                             </span>
-                            <span class="badge status-neutral" th:text="${f.category}"></span>
-                            <span class="badge status-info" th:unless="${f.readByOwner}">ใหม่</span>
+                            <span class="badge status-neutral" th:text="${f.categoryKey != null} ? #{${f.categoryKey}} : ${f.category}"></span>
+                            <span class="badge status-info" th:unless="${f.readByOwner}" th:text="#{feedback.new}">ใหม่</span>
                         </div>
                         <p class="mb-1" th:text="${f.message}"></p>
                         <div class="item-meta">
                             <span th:text="${f.author.fullName}"></span>
-                            <span th:if="${f.room != null}" th:text="'· ห้อง ' + ${f.room.roomNumber}"></span>
+                            <span th:if="${f.room != null}" th:text="'· ' + #{common.roomN(${f.room.roomNumber})}"></span>
                             <span th:text="'· ' + ${#temporals.format(f.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
                         </div>
                     </div>
                     <a class="btn btn-sm item-end" th:classappend="${f.readByOwner} ? 'btn-ghost' : 'btn-soft'"
                        th:href="@{/admin/feedback/{id}/read(id=${f.id})}"
-                       th:attr="aria-label=(${f.readByOwner} ? 'ทำเครื่องหมายว่ายังไม่อ่าน: ' : 'ทำเครื่องหมายว่าอ่านแล้ว: ') + ${f.author.fullName}">
+                       th:attr="aria-label=(${f.readByOwner} ? #{feedback.markUnreadN(${f.author.fullName})} : #{feedback.markReadN(${f.author.fullName})})">
                         <i th:data-lucide="${f.readByOwner} ? 'mail' : 'check'"></i>
-                        <span th:text="${f.readByOwner} ? 'ยังไม่อ่าน' : 'อ่านแล้ว'"></span>
+                        <span th:text="${f.readByOwner} ? #{feedback.markUnread} : #{feedback.markRead}"></span>
                     </a>
                 </li>
             </ul>
             <div data-filter-empty="#feedbackList" hidden>
-                <div th:replace="~{fragments/ui :: emptyState('circle-check', 'ไม่มีฟีดแบ็กในกลุ่มนี้', 'ถ้าเลือก &quot;ยังไม่อ่าน&quot; แปลว่าอ่านครบแล้ว', null, null)}"></div>
+                <div th:replace="~{fragments/ui :: emptyState('circle-check', #{feedback.noMatch.title}, #{feedback.noMatch.text}, null, null)}"></div>
             </div>
         </div>
     </th:block>

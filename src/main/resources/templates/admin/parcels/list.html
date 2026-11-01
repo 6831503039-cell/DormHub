@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/admin :: layout(#{nav.parcels}, 'parcels', ~{::main})}">
+<body>
+<main>
+    <div class="page-header">
+        <div>
+            <h1 class="page-title" th:text="#{nav.parcels}">พัสดุ</h1>
+            <p class="page-sub" th:text="${waitingCount > 0} ? #{parcels.admin.waitingN(${waitingCount})} : #{parcels.admin.noneWaiting}"></p>
+        </div>
+        <a class="btn btn-primary" th:href="@{/admin/parcels/new}"><i data-lucide="plus"></i> <span th:text="#{parcels.add}">แจ้งพัสดุมาถึง</span></a>
+    </div>
+    <p class="form-text d-flex gap-2 mb-3">
+        <i data-lucide="info"></i>
+        <span th:text="#{parcels.admin.hint}">บันทึกได้เฉพาะพัสดุที่ระบุเลขห้อง ผู้เช่าห้องนั้นจะเห็นในแอป พัสดุที่ไม่มีเลขห้องให้เก็บไว้ที่สำนักงาน</span>
+    </p>
+
+    <div class="card" th:if="${#lists.isEmpty(parcels)}">
+        <div th:replace="~{fragments/ui :: emptyState('package', #{parcels.admin.empty.title}, #{parcels.admin.empty.text}, @{/admin/parcels/new}, #{parcels.add})}"></div>
+    </div>
+
+    <th:block th:unless="${#lists.isEmpty(parcels)}">
+        <div class="list-toolbar" role="search">
+            <label class="search-input">
+                <span class="visually-hidden" th:text="#{parcels.search}">ค้นหาพัสดุ</span>
+                <i data-lucide="search"></i>
+                <input class="form-control" type="search" th:placeholder="#{parcels.search.placeholder}" data-filter-target="#parcelTable" autocomplete="off">
+            </label>
+            <label class="visually-hidden" for="filterParcel" th:text="#{common.status}">สถานะ</label>
+            <select class="form-select" id="filterParcel" data-filter-target="#parcelTable" data-filter-key="status">
+                <option value="waiting" th:text="#{parcels.status.waiting}" selected>รอรับ</option>
+                <option value="picked" th:text="#{parcels.status.picked}">รับแล้ว</option>
+                <option value="" th:text="#{common.allStatuses}">ทุกสถานะ</option>
+            </select>
+            <span class="list-count" data-filter-count="#parcelTable" aria-live="polite"></span>
+        </div>
+
+        <div class="card">
+            <div class="table-wrap">
+                <table class="table table-hover table-cards" id="parcelTable">
+                    <thead>
+                    <tr>
+                        <th scope="col" th:text="#{parcels.col.photo}">รูป</th>
+                        <th scope="col" th:text="#{common.room}">ห้อง</th>
+                        <th scope="col" th:text="#{parcels.col.recipient}">ผู้รับ / ขนส่ง</th>
+                        <th scope="col" th:text="#{parcels.col.arrived}">มาถึง</th>
+                        <th scope="col" th:text="#{common.status}">สถานะ</th>
+                        <th scope="col"><span class="visually-hidden" th:text="#{common.actions}">จัดการ</span></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="p : ${parcels}" data-row th:attr="data-status=${p.waiting} ? 'waiting' : 'picked'">
+                        <td>
+                            <a th:if="${p.hasPhoto()}" th:href="@{/parcels/{id}/photo(id=${p.id})}" target="_blank" rel="noopener">
+                                <img class="parcel-thumb" th:src="@{/parcels/{id}/photo(id=${p.id})}" th:alt="#{parcels.photoOf(${p.room.roomNumber})}" loading="lazy">
+                            </a>
+                            <span class="text-muted" th:unless="${p.hasPhoto()}">-</span>
+                        </td>
+                        <td class="fw-medium nowrap" th:text="${p.room.roomNumber}"></td>
+                        <td class="td-wide">
+                            <span class="cell-stack">
+                                <span th:text="${p.recipientName != null} ? ${p.recipientName} : '-'"></span>
+                                <span class="item-meta" th:if="${p.carrier != null or p.note != null}"
+                                      th:text="${p.carrier != null ? p.carrier : ''} + (${p.carrier != null and p.note != null} ? ' · ' : '') + ${p.note != null ? p.note : ''}"></span>
+                            </span>
+                        </td>
+                        <td class="num nowrap" th:text="${#temporals.format(p.arrivedAt, 'dd/MM/yyyy HH:mm')}"></td>
+                        <td>
+                            <span class="badge status-warning" th:if="${p.waiting}" th:text="#{parcels.status.waiting}">รอรับ</span>
+                            <span class="cell-stack" th:unless="${p.waiting}">
+                                <span class="badge status-success" th:title="${#temporals.format(p.pickedUpAt, 'dd/MM/yyyy HH:mm')}" th:text="#{parcels.status.picked}">รับแล้ว</span>
+                                <span class="item-meta" th:if="${p.pickedUpBy != null}" th:text="#{parcels.byTenant(${p.pickedUpBy})}"></span>
+                            </span>
+                        </td>
+                        <td class="td-actions">
+                            <form class="d-inline" th:if="${p.waiting}" th:action="@{/admin/parcels/{id}/picked-up(id=${p.id})}" method="post">
+                                <button class="btn btn-soft btn-sm" type="submit" th:attr="aria-label=#{parcels.markPickedN(${p.room.roomNumber})}">
+                                    <i data-lucide="check"></i> <span th:text="#{parcels.markPicked}">รับแล้ว</span></button>
+                            </form>
+                            <form class="d-inline" th:action="@{/admin/parcels/{id}/delete(id=${p.id})}" method="post">
+                                <button class="btn btn-ghost-danger btn-icon btn-sm" type="submit" th:title="#{common.delete}"
+                                        th:attr="aria-label=#{parcels.deleteN(${p.room.roomNumber})},data-confirm=#{parcels.delete.confirm(${p.room.roomNumber})}"><i data-lucide="trash-2"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div data-filter-empty="#parcelTable" hidden>
+                <div th:replace="~{fragments/ui :: emptyState('circle-check', #{parcels.noMatch}, #{common.noMatch.text}, null, null)}"></div>
+            </div>
+        </div>
+    </th:block>
+</main>
+</body>
+</html>

@@ -1,7 +1,12 @@
 package th.mfu.admin;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -18,6 +23,7 @@ import th.mfu.AppUserRepository;
 import th.mfu.PaymentRepository;
 import th.mfu.RoomRepository;
 import th.mfu.TenantRepository;
+import th.mfu.config.Messages;
 import th.mfu.domain.Payment;
 import th.mfu.domain.Room;
 import th.mfu.domain.RoomStatus;
@@ -31,18 +37,36 @@ public class TenantController {
     private final RoomRepository roomRepository;
     private final PaymentRepository paymentRepository;
     private final AppUserRepository userRepository;
+    private final Messages messages;
 
     public TenantController(TenantRepository repository, RoomRepository roomRepository,
-            PaymentRepository paymentRepository, AppUserRepository userRepository) {
+            PaymentRepository paymentRepository, AppUserRepository userRepository, Messages messages) {
         this.repository = repository;
         this.roomRepository = roomRepository;
         this.paymentRepository = paymentRepository;
         this.userRepository = userRepository;
+        this.messages = messages;
     }
 
     @GetMapping("/tenants")
     public String listTenants(Model model) {
-        model.addAttribute("tenants", repository.findAllByOrderByFirstNameAsc());
+        List<Tenant> tenants = repository.findAllByOrderByFirstNameAsc();
+        model.addAttribute("tenants", tenants);
+        // building -> floor -> tenants ordered by room: a collapsible card per building with a part per floor;
+        // "none" = no room yet (last, floor 0)
+        Map<String, Map<Integer, List<Tenant>>> groups = new TreeMap<>(Comparator.comparing((String b) -> b.equals("none")).thenComparing(b -> b));
+        tenants.stream()
+                .sorted(Comparator.comparing((Tenant t) -> t.getRoom() == null ? "~" : t.getRoom().getRoomNumber())
+                        .thenComparing(Tenant::getFullName))
+                .forEach(t -> {
+                    Room room = t.getRoom();
+                    String building = room == null ? "none"
+                            : (room.getBuilding() == null || room.getBuilding().isBlank() ? "-" : room.getBuilding());
+                    int floor = room == null || room.getFloor() == null ? 0 : room.getFloor();
+                    groups.computeIfAbsent(building, b -> new TreeMap<>())
+                            .computeIfAbsent(floor, f -> new ArrayList<>()).add(t);
+                });
+        model.addAttribute("tenantGroups", groups);
         // emails that already have a login, so the list can show which tenants use the app
         Set<String> accountEmails = new HashSet<>();
         userRepository.findAll().forEach(u -> accountEmails.add(u.getEmail().toLowerCase()));
@@ -67,8 +91,8 @@ public class TenantController {
         Room newRoom = tenant.getRoom();
 
         if (newRoom != null && isFull(newRoom, oldRoom)) {
-            redirect.addFlashAttribute("error", "ห้อง " + newRoom.getRoomNumber() + " เต็มแล้ว (รับได้ "
-                    + newRoom.getCapacity() + " คน)");
+            redirect.addFlashAttribute("error", messages.get("flash.tenant.roomFull",
+                    newRoom.getRoomNumber(), newRoom.getCapacity()));
             return tenant.getId() == null ? "redirect:/admin/tenants/new" : "redirect:/admin/tenants/" + tenant.getId();
         }
 
@@ -78,7 +102,7 @@ public class TenantController {
             updateRoomStatus(oldRoom);
         }
 
-        redirect.addFlashAttribute("success", "บันทึกข้อมูล " + tenant.getFullName() + " แล้ว");
+        redirect.addFlashAttribute("success", messages.get("flash.tenant.saved", tenant.getFullName()));
         return "redirect:/admin/tenants";
     }
 
@@ -92,7 +116,7 @@ public class TenantController {
         }
         repository.delete(tenant);
         updateRoomStatus(tenant.getRoom());
-        redirect.addFlashAttribute("success", "ลบผู้เช่าแล้ว");
+        redirect.addFlashAttribute("success", messages.get("flash.tenant.deleted"));
         return "redirect:/admin/tenants";
     }
 

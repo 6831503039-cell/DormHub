@@ -1,5 +1,6 @@
 package th.mfu.admin;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import th.mfu.RoomRepository;
 import th.mfu.TenantRepository;
+import th.mfu.config.Messages;
 import th.mfu.domain.Bill;
 import th.mfu.domain.Room;
 import th.mfu.domain.Tenant;
@@ -33,16 +35,28 @@ public class RoomController {
     private final RoomRepository repository;
     private final TenantRepository tenantRepository;
     private final RoomMapService roomMapService;
+    private final Messages messages;
 
-    public RoomController(RoomRepository repository, TenantRepository tenantRepository, RoomMapService roomMapService) {
+    public RoomController(RoomRepository repository, TenantRepository tenantRepository, RoomMapService roomMapService, Messages messages) {
         this.repository = repository;
         this.tenantRepository = tenantRepository;
         this.roomMapService = roomMapService;
+        this.messages = messages;
     }
 
     @GetMapping("/rooms")
     public String listRooms(Model model) {
-        model.addAttribute("rooms", repository.findAllByOrderByRoomNumberAsc());
+        List<Room> rooms = repository.findAllByOrderByRoomNumberAsc();
+        model.addAttribute("rooms", rooms);
+        // building -> floor -> rooms: a collapsible card per building with a collapsible part per floor
+        Map<String, Map<Integer, List<Room>>> groups = new TreeMap<>();
+        for (Room room : rooms) {
+            String building = room.getBuilding() == null || room.getBuilding().isBlank() ? "-" : room.getBuilding();
+            int floor = room.getFloor() == null ? 0 : room.getFloor();
+            groups.computeIfAbsent(building, b -> new TreeMap<>())
+                    .computeIfAbsent(floor, f -> new ArrayList<>()).add(room);
+        }
+        model.addAttribute("roomGroups", groups);
         model.addAttribute("occupants", occupantsByRoom());
         return "admin/rooms/list";
     }
@@ -94,10 +108,10 @@ public class RoomController {
         try {
             repository.save(room);
         } catch (DataIntegrityViolationException e) {
-            redirect.addFlashAttribute("error", "เลขห้อง " + room.getRoomNumber() + " มีอยู่แล้ว");
+            redirect.addFlashAttribute("error", messages.get("flash.room.duplicate", room.getRoomNumber()));
             return room.getId() == null ? "redirect:/admin/rooms/new" : "redirect:/admin/rooms/" + room.getId();
         }
-        redirect.addFlashAttribute("success", "บันทึกห้อง " + room.getRoomNumber() + " แล้ว");
+        redirect.addFlashAttribute("success", messages.get("flash.room.saved", room.getRoomNumber()));
         return "redirect:/admin/rooms";
     }
 
@@ -105,9 +119,9 @@ public class RoomController {
     public String deleteRoom(@PathVariable Long id, RedirectAttributes redirect) {
         try {
             repository.deleteById(id);
-            redirect.addFlashAttribute("success", "ลบห้องแล้ว");
+            redirect.addFlashAttribute("success", messages.get("flash.room.deleted"));
         } catch (DataIntegrityViolationException e) {
-            redirect.addFlashAttribute("error", "ลบไม่ได้ เพราะห้องนี้ยังมีผู้เช่า บิล หรือรายการแจ้งซ่อมอยู่");
+            redirect.addFlashAttribute("error", messages.get("flash.room.inUse"));
         }
         return "redirect:/admin/rooms";
     }

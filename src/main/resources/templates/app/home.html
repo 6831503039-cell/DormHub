@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/app :: layout('หน้าแรก', 'home', ~{::main})}">
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/app :: layout(#{tab.home}, 'home', ~{::main})}">
 <body>
 <main th:with="linked=${tenant != null and tenant.room != null}">
     <!-- account not linked to a room yet -->
@@ -7,82 +7,113 @@
         <div class="card-body d-flex gap-3">
             <span class="stat-icon"><i data-lucide="link"></i></span>
             <div>
-                <p class="fw-semibold mb-1">บัญชียังไม่ผูกกับห้องพัก</p>
-                <p class="text-muted small mb-0">
-                    แจ้งเจ้าของหอให้บันทึกอีเมล <b th:text="${currentUser.email}"></b> ในข้อมูลผู้เช่า ระบบจะแสดงห้องและบิลของคุณให้อัตโนมัติ
-                    ระหว่างนี้ยังใช้ถาม AI ดูเครื่องซักผ้า และส่งความคิดเห็นได้
+                <p class="fw-semibold mb-1" th:text="#{home.notLinked.title}">บัญชียังไม่ผูกกับห้องพัก</p>
+                <p class="text-muted small mb-0" th:utext="#{home.notLinked.text(${'<b>' + #strings.escapeXml(currentUser.email) + '</b>'})}"></p>
+                <p class="small mb-0 mt-2" th:if="${latestBooking != null}">
+                    <span th:text="#{home.rentRequest(${latestBooking.room.roomNumber})}"></span>
+                    <span th:class="'badge soft-' + ${latestBooking.status.badge}" th:text="#{${latestBooking.status.key}}"></span>
                 </p>
+                <a class="btn btn-primary mt-3" th:href="@{/app/rent}"><i data-lucide="building-2"></i> <span th:text="#{home.rentRoom}">เช่าห้องพัก</span></a>
             </div>
         </div>
     </div>
 
     <!-- 1. what I owe -->
-    <section class="hero mb-3" th:if="${linked}" th:classappend="${myOutstanding <= 0} ? 'is-clear'" aria-label="ยอดที่ต้องชำระ">
+    <section class="hero mb-3" th:if="${linked}" th:classappend="${myOutstanding <= 0} ? 'is-clear'" th:aria-label="#{home.amountDue}">
         <div class="d-flex justify-content-between align-items-start">
             <div>
-                <div class="hero-label" th:text="'ห้อง ' + ${tenant.room.roomNumber} + (${tenant.room.roomType != null} ? ' · ' + ${tenant.room.roomType} : '')"></div>
-                <div class="hero-label mt-2" th:text="${myOutstanding > 0} ? 'ยอดที่ต้องชำระ (ส่วนของคุณ)' : 'ยอดที่ต้องชำระ'"></div>
+                <div class="hero-label hero-residence"><i data-lucide="building-2"></i> <span th:text="${residenceName}">SJD Mansion</span></div>
+                <div class="hero-label" th:text="#{common.roomN(${tenant.room.roomNumber})} + (${tenant.room.roomType != null} ? ' · ' + ${tenant.room.roomType} : '')"></div>
+                <div class="hero-label mt-2" th:text="${myOutstanding > 0} ? #{home.amountDueShare} : #{home.amountDue}"></div>
                 <div class="amount" th:text="'฿' + ${#numbers.formatDecimal(myOutstanding, 1, 'COMMA', 2, 'POINT')}">฿0</div>
             </div>
             <i class="hero-icon" th:data-lucide="${myOutstanding > 0} ? 'wallet' : 'badge-check'"></i>
         </div>
         <a class="btn mt-3" th:classappend="${myOutstanding > 0} ? 'btn-light' : 'btn-secondary'" th:href="@{/app/bills}">
             <i th:data-lucide="${myOutstanding > 0} ? 'scan-line' : 'receipt'"></i>
-            <span th:text="${myOutstanding > 0} ? 'ชำระเงิน / แนบสลิป' : 'ดูบิลและประวัติ'"></span>
+            <span th:text="${myOutstanding > 0} ? #{home.pay} : #{home.viewBills}"></span>
         </a>
     </section>
 
     <!-- 2. reminders -->
     <section th:if="${notices != null and !#lists.isEmpty(notices)}" aria-labelledby="noticeTitle">
-        <h2 class="section-title mt-0" id="noticeTitle">การแจ้งเตือน</h2>
+        <h2 class="section-title mt-0" id="noticeTitle" th:text="#{home.notices}">การแจ้งเตือน</h2>
         <div class="d-grid gap-2 mb-3">
             <div th:each="n : ${notices}" class="notice" th:classappend="${n.level}" role="status">
                 <span class="ic"><i th:data-lucide="${n.icon}"></i></span>
                 <div>
-                    <div class="fw-medium" th:text="${n.title}"></div>
-                    <div class="small text-muted" th:text="${n.message}"></div>
+                    <div class="fw-medium" th:text="#{${n.titleKey}}"></div>
+                    <div class="small text-muted" th:text="${#messages.msgWithParams(n.messageKey, n.args)}"></div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- 3. shortcuts -->
-    <nav class="quick-grid mb-3" aria-label="ทางลัด">
-        <a class="quick" th:href="@{/app/bills}"><i data-lucide="receipt"></i>บิล</a>
-        <a class="quick" th:href="@{/app/chat}"><i data-lucide="sparkles"></i>ถาม AI</a>
-        <a class="quick" th:href="@{/app/laundry}"><i data-lucide="washing-machine"></i>ซักผ้า</a>
-        <a class="quick" th:href="@{/app/requests}"><i data-lucide="wrench"></i>แจ้งซ่อม</a>
+    <!-- 3. shortcuts, announcements and status cards: only for accounts with a room (HasRoomInterceptor) -->
+    <th:block th:if="${linked}">
+    <nav class="quick-grid mb-3" th:aria-label="#{home.shortcuts}">
+        <a class="quick" th:href="@{/app/bills}"><i data-lucide="receipt"></i><span th:text="#{tab.bills}">บิล</span></a>
+        <a class="quick" th:href="@{/app/chat}"><i data-lucide="sparkles"></i><span th:text="#{tab.chat}">ถาม AI</span></a>
+        <a class="quick" th:href="@{/app/laundry}"><i data-lucide="washing-machine"></i><span th:text="#{tab.laundry}">ซักผ้า</span></a>
+        <a class="quick" th:href="@{/app/requests}"><i data-lucide="wrench"></i><span th:text="#{nav.repairs}">แจ้งซ่อม</span></a>
+        <a class="quick" th:href="@{/app/announcements}"><i data-lucide="megaphone"></i><span th:text="#{nav.announcements}">ประกาศ</span></a>
+        <a class="quick" th:href="@{/app/parcels}">
+            <i data-lucide="package"></i><span th:text="#{nav.parcels}">พัสดุ</span>
+            <span class="quick-badge" th:if="${parcelsWaiting != null and parcelsWaiting > 0}" th:text="${parcelsWaiting}"
+                  th:attr="aria-label=#{parcels.waitingN(${parcelsWaiting})}"></span>
+        </a>
     </nav>
+
+    <!-- announcements from the office -->
+    <section class="mb-3" th:unless="${#lists.isEmpty(announcements)}" aria-labelledby="newsTitle">
+        <div class="d-flex justify-content-between align-items-baseline">
+            <h2 class="section-title mt-0" id="newsTitle" th:text="#{nav.announcements}">ประกาศ</h2>
+            <a class="small" th:href="@{/app/announcements}" th:text="#{common.viewAll}">ดูทั้งหมด</a>
+        </div>
+        <div class="d-grid gap-2">
+            <a class="card news-item" th:each="a : ${announcements}" th:href="@{'/app/announcements#a' + ${a.id}}">
+                <img th:if="${a.hasImage()}" class="news-thumb" th:src="@{/announcements/{id}/image(id=${a.id})}" alt="" loading="lazy">
+                <span class="min-w-0">
+                    <span class="d-block fw-medium text-truncate">
+                        <i data-lucide="pin" class="pin" th:if="${a.pinned}"></i> <span th:text="${a.title}"></span>
+                    </span>
+                    <span class="d-block small text-muted clamp-2" th:if="${a.body != null}" th:text="${a.body}"></span>
+                    <span class="d-block item-meta" th:text="${#temporals.format(a.createdAt, 'dd/MM/yyyy')}"></span>
+                </span>
+            </a>
+        </div>
+    </section>
 
     <div class="row g-2 mb-3">
         <div class="col-6">
             <a class="card kpi tone-success" th:href="@{/app/laundry}">
-                <span class="kpi-head">เครื่องซักผ้าว่าง <i data-lucide="washing-machine"></i></span>
+                <span class="kpi-head"><span th:text="#{home.washersFree}">เครื่องซักผ้าว่าง</span> <i data-lucide="washing-machine"></i></span>
                 <span class="kpi-value"><span th:text="${laundryAvailable}">0</span> <small th:text="'/ ' + ${laundryTotal}"></small></span>
             </a>
         </div>
         <div class="col-6" th:if="${latestBill != null}">
-            <a class="card kpi tone-warning" th:href="@{/app/bills}">
-                <span class="kpi-head">ไฟเดือนล่าสุด <i data-lucide="zap"></i></span>
-                <span class="kpi-value"><span th:text="${latestBill.electricUnits}">0</span> <small>หน่วย</small></span>
+            <a class="card kpi tone-warning" th:href="@{/app/usage}">
+                <span class="kpi-head"><span th:text="#{home.lastElectric}">ไฟเดือนล่าสุด</span> <i data-lucide="zap"></i></span>
+                <span class="kpi-value"><span th:text="${latestBill.electricUnits}">0</span> <small th:text="#{common.units}">หน่วย</small></span>
                 <span class="kpi-meta" th:text="${latestBill.billMonth}"></span>
             </a>
         </div>
     </div>
+    </th:block>
 
     <!-- 4. roommates -->
     <section class="card mb-4" th:if="${roommates != null}" aria-labelledby="roommatesTitle">
         <div class="card-header">
-            <h2 class="h2 mb-0" id="roommatesTitle">เพื่อนร่วมห้อง</h2>
-            <span class="card-link text-muted fw-normal" th:text="${#lists.size(roommates)} + '/' + ${tenant.room.capacity} + ' คน'"></span>
+            <h2 class="h2 mb-0" id="roommatesTitle" th:text="#{home.roommates}">เพื่อนร่วมห้อง</h2>
+            <span class="card-link text-muted fw-normal" th:text="${#lists.size(roommates)} + '/' + #{common.peopleN(${tenant.room.capacity})}"></span>
         </div>
         <ul class="list-plain">
             <li th:each="m : ${roommates}">
                 <span th:text="${m.fullName}"></span>
-                <span class="badge status-info" th:if="${m.id == tenant.id}">คุณ</span>
+                <span class="badge status-info" th:if="${m.id == tenant.id}" th:text="#{home.you}">คุณ</span>
             </li>
         </ul>
-        <p class="form-text px-4 pb-3 mb-0">ค่าห้อง ค่าน้ำ และค่าไฟ หารเท่ากันทุกคนในห้อง</p>
+        <p class="form-text px-4 pb-3 mb-0" th:text="#{home.splitNote}">ค่าห้อง ค่าน้ำ และค่าไฟ หารเท่ากันทุกคนในห้อง</p>
     </section>
 </main>
 </body>

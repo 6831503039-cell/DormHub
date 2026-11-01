@@ -20,6 +20,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import th.mfu.BillRepository;
 import th.mfu.PaymentRepository;
 import th.mfu.config.DormProperties;
+import th.mfu.config.Messages;
 import th.mfu.domain.Bill;
 import th.mfu.domain.Payment;
 import th.mfu.domain.PaymentStatus;
@@ -37,16 +38,18 @@ public class TenantBillController {
     private final BillingService billingService;
     private final PaymentService paymentService;
     private final DormProperties props;
+    private final Messages messages;
 
     public TenantBillController(CurrentUserService currentUser, BillRepository billRepository,
             PaymentRepository paymentRepository, BillingService billingService, PaymentService paymentService,
-            DormProperties props) {
+            DormProperties props, Messages messages) {
         this.currentUser = currentUser;
         this.billRepository = billRepository;
         this.paymentRepository = paymentRepository;
         this.billingService = billingService;
         this.paymentService = paymentService;
         this.props = props;
+        this.messages = messages;
     }
 
     @GetMapping("/app/bills")
@@ -76,7 +79,7 @@ public class TenantBillController {
     }
 
     @PostMapping("/app/bills/{id}/pay")
-    public String pay(@PathVariable Long id, @RequestParam double amount, @RequestParam("slip") MultipartFile slip,
+    public String pay(@PathVariable Long id, @RequestParam("slip") MultipartFile slip,
             Principal principal, RedirectAttributes redirect) throws IOException {
         Tenant tenant = currentUser.tenant(currentUser.user(principal))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
@@ -84,19 +87,30 @@ public class TenantBillController {
                 .filter(b -> tenant.getRoom() != null && b.getRoom().getId().equals(tenant.getRoom().getId()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        if (slip.isEmpty() || amount <= 0) {
-            redirect.addFlashAttribute("error", "กรุณาแนบรูปสลิปและระบุยอดเงิน");
+        // the amount is fixed by the system: the tenant's share, or what is left if that is less
+        double amount = amountDue(bill);
+        if (amount <= 0) {
+            redirect.addFlashAttribute("error", messages.get("flash.slip.nothingDue"));
+            return "redirect:/app/bills";
+        }
+        if (slip.isEmpty()) {
+            redirect.addFlashAttribute("error", messages.get("flash.slip.missing"));
             return "redirect:/app/bills";
         }
         Payment payment = paymentService.submit(tenant, bill, amount, slip.getBytes(), slip.getContentType());
         if (payment.getStatus() == PaymentStatus.APPROVED) {
-            redirect.addFlashAttribute("success", "ชำระเงินสำเร็จ ระบบตัดยอดให้อัตโนมัติแล้ว");
+            redirect.addFlashAttribute("success", messages.get("flash.slip.approved"));
         } else if (payment.getStatus() == PaymentStatus.SUSPICIOUS) {
-            redirect.addFlashAttribute("error", "สลิปไม่ผ่านการตรวจสอบเบื้องต้น แอดมินจะตรวจสอบอีกครั้ง: " + payment.getAiNote());
+            redirect.addFlashAttribute("error", messages.get("flash.slip.suspicious", payment.getAiNote()));
         } else {
-            redirect.addFlashAttribute("success", "ส่งสลิปแล้ว รอแอดมินตรวจสอบ");
+            redirect.addFlashAttribute("success", messages.get("flash.slip.pending"));
         }
         return "redirect:/app/bills";
+    }
+
+    /** What one tenant transfers for a bill: their share of the room, but never more than is still unpaid. */
+    private double amountDue(Bill bill) {
+        return Math.min(billingService.shareOf(bill), billingService.outstanding(bill));
     }
 
     private TenantBillView view(Bill bill) {

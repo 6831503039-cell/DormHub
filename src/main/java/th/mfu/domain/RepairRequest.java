@@ -37,6 +37,17 @@ public class RepairRequest {
     // name of the tenant who reported it from the tenant app (blank when the admin adds it)
     private String reportedBy;
 
+    // the admin's work details for the tenant, e.g. "ช่างเข้าวันศุกร์ 10:00" or "เปลี่ยนก๊อกใหม่แล้ว"
+    @Column(length = 1000)
+    private String adminNote;
+
+    public String getAdminNote() {
+        return adminNote;
+    }
+    public void setAdminNote(String adminNote) {
+        this.adminNote = adminNote;
+    }
+
     public String getReportedBy() {
         return reportedBy;
     }

@@ -2,7 +2,7 @@
  * DormHub shared UI behaviour (design system). Loaded once by every layout.
  *
  *  data-confirm="ลบห้อง A101?"        on <a> or a submit <button>: asks in the confirm modal first
- *      data-confirm-title, data-confirm-ok (button label, default "ลบ"),
+ *      data-confirm-title, data-confirm-ok (button label, default "ลบ" / "Delete"),
  *      data-confirm-tone="primary" for a non-destructive confirmation (default "danger")
  *  POST forms                          the submit button shows a spinner and is disabled while sending
  *      add data-no-loading to a form to opt out
@@ -12,8 +12,15 @@
  *                                      (table rows or list items) that do not contain the text
  *  data-filter-key="status"            on a <select> with data-filter-target: keeps rows whose
  *                                      data-status contains the value as a token ("" = all)
- *  data-filter-count="#tableId"        element that shows "N รายการ"
+ *  <details data-group> inside the target: a collapsible group of rows (one per building); filtering
+ *                                      opens the groups with matches and hides the empty ones
+ *  data-filter-count="#tableId"        element that shows "N items"
  *  data-filter-empty="#tableId"        element shown when no row matches
+ *  <select data-room-picker>          room options with data-building / data-floor: shows building tabs
+ *                                      above the select and only that building's rooms, grouped by floor
+ *  #settingsModal                     Settings dialog (fragments/ui :: settingsModal): language links
+ *                                      keep the current page, theme radios apply at once (prefs.js)
+ * Texts in scripts use dhT('ไทย', 'English') from prefs.js.
  */
 (function () {
     'use strict';
@@ -42,10 +49,10 @@
             }
             return;
         }
-        modalEl.querySelector('[data-confirm-title]').textContent = trigger.getAttribute('data-confirm-title') || 'ยืนยันการลบ';
+        modalEl.querySelector('[data-confirm-title]').textContent = trigger.getAttribute('data-confirm-title') || dhT('ยืนยันการลบ', 'Confirm delete');
         modalEl.querySelector('[data-confirm-message]').textContent = message;
         var okButton = modalEl.querySelector('[data-confirm-ok]');
-        okButton.textContent = trigger.getAttribute('data-confirm-ok') || 'ลบ';
+        okButton.textContent = trigger.getAttribute('data-confirm-ok') || dhT('ลบ', 'Delete');
         // tone "danger" (default) = delete style with the trash icon; "primary" = normal confirmation
         var danger = (trigger.getAttribute('data-confirm-tone') || 'danger') === 'danger';
         okButton.classList.toggle('btn-danger', danger);
@@ -166,11 +173,120 @@
                 shown++;
             }
         });
+        // collapsible groups (<details data-group>, e.g. one per building): while searching or filtering, groups with
+        // matches open and the others hide; when every filter is cleared they close again
+        var filtering = controls.some(function (c) { return c.value.trim() !== ''; });
+        table.querySelectorAll('details[data-group]').forEach(function (g) {
+            var matches = g.querySelectorAll('[data-row]:not([hidden])').length;
+            g.hidden = matches === 0 && rows.length > 0;
+            if (filtering) {
+                g.open = matches > 0;
+            } else if (table.dataset.wasFiltering === 'yes') {
+                g.open = false;
+            }
+        });
+        table.dataset.wasFiltering = filtering ? 'yes' : 'no';
         document.querySelectorAll('[data-filter-count="' + target + '"]').forEach(function (el) {
-            el.textContent = shown + ' รายการ';
+            el.textContent = shown + dhT(' รายการ', shown === 1 ? ' item' : ' items');
         });
         document.querySelectorAll('[data-filter-empty="' + target + '"]').forEach(function (el) {
             el.hidden = shown !== 0 || rows.length === 0;
         });
+    }
+
+    /* ---------- room picker: building tabs above a room <select>, rooms grouped by floor ---------- */
+    document.querySelectorAll('select[data-room-picker]').forEach(function (select) {
+        var empty = select.querySelector('option[value=""]');
+        var rooms = Array.prototype.filter.call(select.options, function (o) { return o.value !== ''; });
+        var buildings = [];
+        rooms.forEach(function (o) {
+            if (o.dataset.building && buildings.indexOf(o.dataset.building) === -1) {
+                buildings.push(o.dataset.building);
+            }
+        });
+        if (buildings.length < 2) {
+            return;
+        }
+        buildings.sort();
+        var picked = rooms.filter(function (o) { return o.selected; })[0];
+        var current = picked ? picked.dataset.building : buildings[0];
+
+        var tabs = document.createElement('div');
+        tabs.className = 'room-picker-tabs';
+        tabs.setAttribute('role', 'group');
+        tabs.setAttribute('aria-label', dhT('เลือกตึก', 'Choose building'));
+        buildings.forEach(function (b) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'room-picker-tab';
+            btn.dataset.building = b;
+            btn.textContent = dhT('ตึก ', 'Building ') + b;
+            btn.addEventListener('click', function () {
+                current = b;
+                render(true);
+                select.focus();
+            });
+            tabs.appendChild(btn);
+        });
+        select.parentNode.insertBefore(tabs, select);
+
+        function render(notify) {
+            var keep = select.value;
+            select.innerHTML = '';
+            if (empty) {
+                select.appendChild(empty);
+            }
+            var floors = {};
+            rooms.forEach(function (o) {
+                if (o.dataset.building !== current) {
+                    return;
+                }
+                var f = o.dataset.floor || '';
+                if (!floors[f]) {
+                    floors[f] = document.createElement('optgroup');
+                    floors[f].label = f ? dhT('ชั้น ', 'Floor ') + f : '';
+                    select.appendChild(floors[f]);
+                }
+                floors[f].appendChild(o);
+            });
+            // a room of another building stays chosen only while its building is shown
+            select.value = rooms.some(function (o) { return o.value === keep && o.dataset.building === current; }) ? keep : '';
+            tabs.querySelectorAll('.room-picker-tab').forEach(function (t) {
+                var on = t.dataset.building === current;
+                t.classList.toggle('active', on);
+                t.setAttribute('aria-pressed', on);
+            });
+            if (notify) {
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }
+        render();
+    });
+
+    /* ---------- Settings dialog: language and theme ---------- */
+    var settings = document.getElementById('settingsModal');
+    if (settings) {
+        // the language links reload the current page with ?lang=..., keeping its other query parameters
+        settings.querySelectorAll('[data-set-lang]').forEach(function (link) {
+            var url = new URL(window.location.href);
+            url.searchParams.set('lang', link.getAttribute('data-set-lang'));
+            link.href = url.pathname + url.search + url.hash;
+        });
+        var current = window.dhTheme ? window.dhTheme.get() : 'light';
+        settings.querySelectorAll('input[name="theme"]').forEach(function (radio) {
+            radio.checked = radio.value === current;
+            radio.addEventListener('change', function () {
+                if (radio.checked && window.dhTheme) {
+                    window.dhTheme.set(radio.value);
+                }
+            });
+        });
+    }
+
+    // after switching language, drop ?lang= from the address so a reload or shared link stays clean
+    if (window.history.replaceState && /[?&]lang=/.test(window.location.search)) {
+        var clean = new URL(window.location.href);
+        clean.searchParams.delete('lang');
+        window.history.replaceState(window.history.state, '', clean.pathname + clean.search + clean.hash);
     }
 })();

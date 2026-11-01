@@ -9,11 +9,13 @@
  *     editUrl: '/admin/rooms/', // admin: link to the room form (+ id)
  *     bookingsUrl: '/admin/bookings',
  *     bookTemplate: element,    // public: <template> holding the booking form
+ *     bookBlockedText: '...',   // public without bookTemplate: shown on free rooms instead of the form
  *     initialRoom: 'A103'       // optional room number to open first
  *   });
  *
  * Views: site (all buildings) -> building (rooms coloured by status) -> floor (upper floors lift away)
  *        -> room sheet (details, booking) -> room 3D (furnished model built from the room type).
+ * Texts follow the page language through dhT('ไทย', 'English') from prefs.js.
  */
 (function () {
     'use strict';
@@ -48,11 +50,11 @@
             return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
         });
     }
-    function baht(n) { return Number(n || 0).toLocaleString('th-TH', { maximumFractionDigits: 0 }); }
+    function baht(n) { return Number(n || 0).toLocaleString(dhT('th-TH', 'en-US'), { maximumFractionDigits: 0 }); }
     function thDate(iso) {
         if (!iso) return '-';
         var p = iso.split('-');
-        return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
+        return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString(dhT('th-TH', 'en-GB'), { day: 'numeric', month: 'short', year: 'numeric' });
     }
     function damp(k, dt) { return 1 - Math.exp(-k * dt); }
     function smoother(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
@@ -66,7 +68,7 @@
         root.classList.add('d3-root');
 
         if (!window.THREE || !THREE.OrbitControls) {
-            root.innerHTML = '<div class="d3-msg">โหลดไลบรารี 3D ไม่สำเร็จ ตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่</div>';
+            root.innerHTML = '<div class="d3-msg">' + dhT('โหลดไลบรารี 3D ไม่สำเร็จ ตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่', 'Couldn\'t load the 3D library. Check your internet connection and try again.') + '</div>';
             return;
         }
 
@@ -75,19 +77,19 @@
         var labelsEl = el('div', 'd3-labels');
         var tip = el('div', 'd3-tip'); tip.hidden = true;
         var panel = el('aside', 'd3-panel');
-        var crumbs = el('nav', 'd3-crumbs'); crumbs.setAttribute('aria-label', 'ตำแหน่ง');
+        var crumbs = el('nav', 'd3-crumbs'); crumbs.setAttribute('aria-label', dhT('ตำแหน่ง', 'Location'));
         var pbody = el('div', 'd3-pbody');
         panel.appendChild(crumbs); panel.appendChild(pbody);
         var sheet = el('section', 'd3-sheet closed'); sheet.setAttribute('aria-live', 'polite');
         var shead = el('div', 'd3-shead');
-        var closeBtn = el('button', 'btn btn-light btn-icon d3-x', '&times;'); closeBtn.setAttribute('aria-label', 'ปิด');
+        var closeBtn = el('button', 'btn btn-light btn-icon d3-x', '&times;'); closeBtn.setAttribute('aria-label', dhT('ปิด', 'Close'));
         var sheadWrap = el('div', 'd3-shead-wrap'); sheadWrap.appendChild(shead); sheadWrap.appendChild(closeBtn);
         var sbody = el('div', 'd3-sbody');
         sheet.appendChild(sheadWrap); sheet.appendChild(sbody);
-        var backBtn = el('button', 'btn d3-back', '<span aria-hidden="true">&larr;</span> ย้อนกลับ');
+        var backBtn = el('button', 'btn d3-back', '<span aria-hidden="true">&larr;</span> ' + dhT('ย้อนกลับ', 'Back'));
         backBtn.type = 'button';
         backBtn.hidden = true;
-        var loading = el('div', 'd3-msg', '<div class="spinner-border text-primary mb-2" role="status"></div><div>กำลังโหลดแผนผังหอพัก…</div>');
+        var loading = el('div', 'd3-msg', '<div class="spinner-border text-primary mb-2" role="status"></div><div>' + dhT('กำลังโหลดแผนผังหอพัก…', 'Loading the dorm map…') + '</div>');
         var roomView = el('div', 'd3-room3d'); roomView.hidden = true;
         [host, labelsEl, tip, backBtn, panel, sheet, roomView, loading].forEach(function (n) { root.appendChild(n); });
 
@@ -96,7 +98,7 @@
         try {
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         } catch (e) {
-            loading.innerHTML = 'เบราว์เซอร์นี้แสดงภาพ 3 มิติไม่ได้ ลองเปิดด้วย Chrome หรือ Safari รุ่นใหม่';
+            loading.innerHTML = dhT('เบราว์เซอร์นี้แสดงภาพ 3 มิติไม่ได้ ลองเปิดด้วย Chrome หรือ Safari รุ่นใหม่', 'This browser can\'t show 3D. Try a recent version of Chrome or Safari.');
             return;
         }
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -143,7 +145,7 @@
             .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
             .then(function (data) { build(data); loading.remove(); start(); })
             .catch(function () {
-                loading.innerHTML = 'โหลดข้อมูลห้องไม่สำเร็จ <a href="">ลองใหม่</a>';
+                loading.innerHTML = dhT('โหลดข้อมูลห้องไม่สำเร็จ', 'Couldn\'t load the rooms.') + ' <a href="">' + dhT('ลองใหม่', 'Try again') + '</a>';
             });
 
         function statusColor(s) {
@@ -410,10 +412,10 @@
             hr.rotation.y = Math.PI / 4;
             scene.add(hr);
 
-            siteLabel('ลานส่วนกลาง', 0, 0.6, s.zFront + plazaLen / 2);
-            siteLabel('ลานจอดรถ', 0, 0.6, parkZ0 + parkLen / 2);
-            siteLabel('ทางเข้าหอ', (gateX0 + gateX1) / 2, 0.6, zRoad + 2);
-            siteLabel('ศาลพระภูมิ', shx, 3.6, shz);
+            siteLabel(dhT('ลานส่วนกลาง', 'Courtyard'), 0, 0.6, s.zFront + plazaLen / 2);
+            siteLabel(dhT('ลานจอดรถ', 'Car park'), 0, 0.6, parkZ0 + parkLen / 2);
+            siteLabel(dhT('ทางเข้าหอ', 'Entrance'), (gateX0 + gateX1) / 2, 0.6, zRoad + 2);
+            siteLabel(dhT('ศาลพระภูมิ', 'Spirit house'), shx, 3.6, shz);
         }
 
         function signTexture(top, bottom) {
@@ -425,9 +427,9 @@
             g.fillStyle = '#2fa84f'; g.fillRect(40, 40, 432, 240);
             g.fillStyle = '#ffffff';
             g.textAlign = 'center'; g.textBaseline = 'middle';
-            g.font = 'bold 150px "IBM Plex Sans Thai", sans-serif';
+            g.font = 'bold 150px "Geist", "Anuphan", sans-serif';
             g.fillText(top, 256, 135);
-            g.font = '600 64px "IBM Plex Sans Thai", sans-serif';
+            g.font = '600 64px "Geist", "Anuphan", sans-serif';
             g.fillText(bottom, 256, 240);
             return new THREE.CanvasTexture(c);
         }
@@ -594,7 +596,7 @@
                 b.group.add(g);
 
                 if (list.length) {
-                    var chip = el('button', 'd3-lbl d3-lbl-floor', 'ชั้น ' + f);
+                    var chip = el('button', 'd3-lbl d3-lbl-floor', dhT('ชั้น ', 'Floor ') + f);
                     chip.type = 'button';
                     chip.addEventListener('click', (function (ff) { return function () { goFloor(ff); }; })(f));
                     var cp = W(BL / 2 + 1.2, half + 0.5);
@@ -710,12 +712,12 @@
                     [-1, 1].forEach(function (e) { var pp = W(lu + e * (ROOM_W / 2 - 0.25), s * 2.2); B.add('lpost', geo(0.08, 1.6, 0.08), M.green, pp[0], 0.8, pp[1]); });
                 });
                 var lbl = W(bayU(5) + ROOM_W, half + 1);
-                siteLabel('สำนักงาน', o[0], 3.4, o[1], function () { return state.view === 'site' || state.b === 'C'; });
+                siteLabel(dhT('สำนักงาน', 'Office'), o[0], 3.4, o[1], function () { return state.view === 'site' || state.b === 'C'; });
                 var lp = W(lu, 0);
-                siteLabel('ที่ซักผ้า', lp[0], 2.6, lp[1], function () { return state.view === 'site' || state.b === 'C'; });
+                siteLabel(dhT('ที่ซักผ้า', 'Laundry'), lp[0], 2.6, lp[1], function () { return state.view === 'site' || state.b === 'C'; });
             }
             var pk = W(bayU(b.kind === 'C' ? 8 : 7) + 1, 0);
-            siteLabel('ที่จอดรถใต้ตึก', pk[0], 2.4, pk[1], function () { return state.b === b.id; });
+            siteLabel(dhT('ที่จอดรถใต้ตึก', 'Parking under the building'), pk[0], 2.4, pk[1], function () { return state.b === b.id; });
         }
 
         // roof: green parapet stepped up at both ends and at the stair; A has the SJD sign tower,
@@ -832,7 +834,7 @@
                 });
                 b.roofTargetY = active && state.f != null ? 6 + (b.floorCount + 1 - state.f) * 2.5 : 0;
                 b.roofTargetOp = active && state.f != null ? 0 : 1;
-                b.tag.innerHTML = 'ตึก ' + esc(b.id) + '<small>' + countText(roomsOf(b)) + '</small>';
+                b.tag.innerHTML = dhT('ตึก ', 'Building ') + esc(b.id) + '<small>' + countText(roomsOf(b)) + '</small>';
             });
             allRooms.forEach(function (r) {
                 // overview shows the real building; the selected building shows each room's status colour
@@ -854,7 +856,7 @@
         }
         function countText(list) {
             var c = counts(list);
-            return 'ว่าง ' + c.AVAILABLE + ' · ใกล้ว่าง ' + c.SOON;
+            return dhT('ว่าง ' + c.AVAILABLE + ' · ใกล้ว่าง ' + c.SOON, c.AVAILABLE + ' free · ' + c.SOON + ' soon');
         }
 
         // ---------- camera ----------
@@ -911,10 +913,10 @@
         function dot(color) { return '<i class="d3-dot" style="background:' + color + '"></i>'; }
         function legend() {
             return '<div class="d3-legend">' +
-                '<span>' + dot(statusCss('AVAILABLE')) + 'ว่าง</span>' +
-                '<span>' + dot(statusCss('SOON')) + 'ใกล้หมดสัญญา (≤ ' + soonDays + ' วัน)</span>' +
-                '<span>' + dot(statusCss('OCCUPIED')) + 'มีผู้เช่า</span>' +
-                '<span>' + dot(statusCss('MAINTENANCE')) + 'ปิดซ่อม</span></div>';
+                '<span>' + dot(statusCss('AVAILABLE')) + dhT('ว่าง', 'Available') + '</span>' +
+                '<span>' + dot(statusCss('SOON')) + dhT('ใกล้หมดสัญญา (≤ ' + soonDays + ' วัน)', 'Contract ending (≤ ' + soonDays + ' days)') + '</span>' +
+                '<span>' + dot(statusCss('OCCUPIED')) + dhT('มีผู้เช่า', 'Occupied') + '</span>' +
+                '<span>' + dot(statusCss('MAINTENANCE')) + dhT('ปิดซ่อม', 'Maintenance') + '</span></div>';
         }
         function bar(c) {
             var t = c.total || 1;
@@ -927,43 +929,46 @@
         function renderPanel() {
             backBtn.hidden = state.view === 'site' && !state.room;
             root.classList.toggle('d3-has-back', !backBtn.hidden);
-            var parts = ['<button type="button" data-go="site">ภาพรวม</button>'];
-            if (state.b) parts.push('<span>›</span>', state.f ? '<button type="button" data-go="b">ตึก ' + esc(state.b) + '</button>' : '<span>ตึก ' + esc(state.b) + '</span>');
-            if (state.f) parts.push('<span>›</span><span>ชั้น ' + state.f + '</span>');
+            var parts = ['<button type="button" data-go="site">' + dhT('ภาพรวม', 'Overview') + '</button>'];
+            if (state.b) parts.push('<span>›</span>', state.f ? '<button type="button" data-go="b">' + dhT('ตึก ', 'Building ') + esc(state.b) + '</button>' : '<span>' + dhT('ตึก ', 'Building ') + esc(state.b) + '</span>');
+            if (state.f) parts.push('<span>›</span><span>' + dhT('ชั้น ', 'Floor ') + state.f + '</span>');
             crumbs.innerHTML = parts.join(' ');
 
             var html;
             if (state.view === 'site') {
                 var all = counts(allRooms);
-                html = '<div><h2 class="d3-h">เลือกตึก</h2><p class="d3-hint">ทั้งหมด ' + all.total + ' ห้อง ว่างตอนนี้ ' + all.AVAILABLE +
-                    ' ห้อง และจะว่างภายใน ' + soonDays + ' วันอีก ' + all.SOON + ' ห้อง ลากเพื่อหมุน เลื่อนเพื่อซูม</p></div><div class="d3-list">';
+                html = '<div><h2 class="d3-h">' + dhT('เลือกตึก', 'Choose a building') + '</h2><p class="d3-hint">' +
+                    dhT('ทั้งหมด ' + all.total + ' ห้อง ว่างตอนนี้ ' + all.AVAILABLE + ' ห้อง และจะว่างภายใน ' + soonDays + ' วันอีก ' + all.SOON + ' ห้อง ลากเพื่อหมุน เลื่อนเพื่อซูม',
+                        all.total + ' rooms: ' + all.AVAILABLE + ' free now and ' + all.SOON + ' more within ' + soonDays + ' days. Drag to rotate, scroll to zoom.') +
+                    '</p></div><div class="d3-list">';
                 buildings.forEach(function (b) {
                     var c = counts(roomsOf(b));
                     html += '<button type="button" class="d3-bcard" data-b="' + esc(b.id) + '"><span class="d3-tag">' + esc(b.id) + '</span>' +
-                        '<span><span class="fw-medium">ตึก ' + esc(b.id) + '</span><br><span class="small text-muted">' + b.floorCount + ' ชั้น · ' + c.total + ' ห้อง</span></span>' +
-                        '<span class="d3-n">' + c.AVAILABLE + ' ว่าง<span>' + c.SOON + ' ใกล้ว่าง</span></span></button>';
+                        '<span><span class="fw-medium">' + dhT('ตึก ', 'Building ') + esc(b.id) + '</span><br><span class="small text-muted">' + dhT(b.floorCount + ' ชั้น · ' + c.total + ' ห้อง', b.floorCount + ' floors · ' + c.total + ' rooms') + '</span></span>' +
+                        '<span class="d3-n">' + c.AVAILABLE + dhT(' ว่าง', ' free') + '<span>' + c.SOON + dhT(' ใกล้ว่าง', ' soon') + '</span></span></button>';
                 });
                 html += '</div>' + legend();
             } else {
                 var b = find(state.b);
-                html = '<div><h2 class="d3-h">ตึก ' + esc(b.id) + (state.f ? ' ชั้น ' + state.f : '') + '</h2><p class="d3-hint">' +
-                    (state.f ? 'กดที่ห้องเพื่อดูรายละเอียด' + (isAdmin ? '' : ' ราคา และจอง') : 'สีของแต่ละห้องบอกสถานะ เลือกชั้นเพื่อเปิดดูข้างใน') + '</p></div><div class="d3-floors">';
+                html = '<div><h2 class="d3-h">' + dhT('ตึก ', 'Building ') + esc(b.id) + (state.f ? dhT(' ชั้น ', ' · Floor ') + state.f : '') + '</h2><p class="d3-hint">' +
+                    (state.f ? (isAdmin ? dhT('กดที่ห้องเพื่อดูรายละเอียด', 'Tap a room for details') : dhT('กดที่ห้องเพื่อดูรายละเอียด ราคา และจอง', 'Tap a room for details, price and booking'))
+                        : dhT('สีของแต่ละห้องบอกสถานะ เลือกชั้นเพื่อเปิดดูข้างใน', 'Room colours show their status. Choose a floor to look inside.')) + '</p></div><div class="d3-floors">';
                 for (var k = b.roomFloors.length - 1; k >= 0; k--) {
                     var f = b.roomFloors[k];
                     var c2 = counts(roomsOf(b, f));
-                    html += '<button type="button" class="d3-fbtn' + (state.f === f ? ' active' : '') + '" data-f="' + f + '"><span class="fw-medium">ชั้น ' + f + '</span>' + bar(c2) +
-                        '<span class="small text-muted">ว่าง ' + c2.AVAILABLE + '</span></button>';
+                    html += '<button type="button" class="d3-fbtn' + (state.f === f ? ' active' : '') + '" data-f="' + f + '"><span class="fw-medium">' + dhT('ชั้น ', 'Floor ') + f + '</span>' + bar(c2) +
+                        '<span class="small text-muted">' + dhT('ว่าง ' + c2.AVAILABLE, c2.AVAILABLE + ' free') + '</span></button>';
                 }
                 html += '</div>';
                 if (state.f) {
                     var list = roomsOf(b, state.f).filter(function (r) { return isAdmin || bookable(r); });
-                    html += '<div class="d3-sec">' + (isAdmin ? 'ห้องในชั้นนี้' : 'ห้องที่จองได้') + '</div>';
+                    html += '<div class="d3-sec">' + (isAdmin ? dhT('ห้องในชั้นนี้', 'Rooms on this floor') : dhT('ห้องที่จองได้', 'Rooms you can book')) + '</div>';
                     html += list.length ? '<div class="d3-chips">' + list.map(function (r) {
                         return '<button type="button" class="d3-rbtn" data-r="' + esc(r.number) + '" style="border-color:' + statusCss(r.status) + '">' + esc(r.number) + '<i>฿' + baht(r.rent) + '</i></button>';
-                    }).join('') + '</div>' : '<p class="d3-hint">ชั้นนี้ไม่มีห้องว่าง ลองดูชั้นอื่น</p>';
+                    }).join('') + '</div>' : '<p class="d3-hint">' + dhT('ชั้นนี้ไม่มีห้องว่าง ลองดูชั้นอื่น', 'No free rooms on this floor. Try another floor.') + '</p>';
                 }
-                html += '<div class="d-flex flex-wrap gap-2"><button type="button" class="btn btn-sm ' + (state.onlyBookable ? 'btn-primary' : 'btn-light') + '" data-toggle="bookable" aria-pressed="' + state.onlyBookable + '">เน้นห้องที่จองได้</button>' +
-                    (state.f ? '<button type="button" class="btn btn-sm btn-light" data-go="b">ดูทั้งตึก</button>' : '') + '</div>' + legend();
+                html += '<div class="d-flex flex-wrap gap-2"><button type="button" class="btn btn-sm ' + (state.onlyBookable ? 'btn-primary' : 'btn-light') + '" data-toggle="bookable" aria-pressed="' + state.onlyBookable + '">' + dhT('เน้นห้องที่จองได้', 'Highlight bookable rooms') + '</button>' +
+                    (state.f ? '<button type="button" class="btn btn-sm btn-light" data-go="b">' + dhT('ดูทั้งตึก', 'Whole building') + '</button>' : '') + '</div>' + legend();
             }
             pbody.innerHTML = html;
         }
@@ -993,35 +998,38 @@
             refreshColors(); renderPanel();
 
             var big = /ใหญ่/.test(r.type || '') || r.capacity >= 3;
-            shead.innerHTML = '<h3 class="d3-title">ห้อง ' + esc(r.number) + '</h3><div class="small text-muted">ตึก ' + esc(r.building) + ' · ชั้น ' + r.floor +
-                ' · ' + (r.side === 0 ? 'ฝั่งส่วนกลาง' : 'ฝั่งด้านนอก') + '</div>';
+            shead.innerHTML = '<h3 class="d3-title">' + dhT('ห้อง ', 'Room ') + esc(r.number) + '</h3><div class="small text-muted">' + dhT('ตึก ', 'Building ') + esc(r.building) + dhT(' · ชั้น ', ' · Floor ') + r.floor +
+                ' · ' + (r.side === 0 ? dhT('ฝั่งส่วนกลาง', 'Courtyard side') : dhT('ฝั่งด้านนอก', 'Outer side')) + '</div>';
             var statusLine;
-            if (r.status === 'AVAILABLE') statusLine = 'ว่าง เข้าอยู่ได้ทันที';
-            else if (r.status === 'SOON') statusLine = 'สัญญาปัจจุบันหมด <b>' + thDate(r.contractEnd) + '</b> จองล่วงหน้าได้ เข้าอยู่ได้ตั้งแต่ ' + thDate(r.availableFrom);
-            else if (r.status === 'MAINTENANCE') statusLine = 'ห้องนี้ปิดซ่อมชั่วคราว';
-            else statusLine = 'มีผู้เช่าแล้ว' + (r.contractEnd ? ' (สัญญาถึง ' + thDate(r.contractEnd) + ')' : '');
-            if (r.floor === 1) statusLine += '<br><span class="small text-muted">ห้องชั้น 1 มีประตูเข้าห้องจากด้านนอกตึก</span>';
+            if (r.status === 'AVAILABLE') statusLine = dhT('ว่าง เข้าอยู่ได้ทันที', 'Available. Move in right away.');
+            else if (r.status === 'SOON') statusLine = dhT('สัญญาปัจจุบันหมด <b>' + thDate(r.contractEnd) + '</b> จองล่วงหน้าได้ เข้าอยู่ได้ตั้งแต่ ' + thDate(r.availableFrom),
+                'The current contract ends on <b>' + thDate(r.contractEnd) + '</b>. Book ahead to move in from ' + thDate(r.availableFrom) + '.');
+            else if (r.status === 'MAINTENANCE') statusLine = dhT('ห้องนี้ปิดซ่อมชั่วคราว', 'This room is closed for maintenance.');
+            else statusLine = dhT('มีผู้เช่าแล้ว', 'Occupied') + (r.contractEnd ? dhT(' (สัญญาถึง ', ' (contract until ') + thDate(r.contractEnd) + ')' : '');
+            if (r.floor === 1) statusLine += '<br><span class="small text-muted">' + dhT('ห้องชั้น 1 มีประตูเข้าห้องจากด้านนอกตึก', 'Floor 1 rooms have their door on the outside of the building.') + '</span>';
 
             var html = '<div class="d-flex align-items-center gap-2 flex-wrap"><span class="d3-pill" style="background:' + statusCss(r.status) + '">' + esc(r.statusLabel) + '</span>' +
-                (r.pendingBookings ? '<span class="badge soft-warning">มีคำขอจอง ' + r.pendingBookings + ' รายการ</span>' : '') + '</div>' +
-                '<button type="button" class="d3-preview" data-act="room3d"><span class="d3-preview-ic"><i data-lucide="box"></i></span><span><b>ดูห้องแบบ 3D</b><br><span class="small text-muted">หมุนดูการจัดห้อง ' + esc(r.type || '') + '</span></span><i data-lucide="chevron-right"></i></button>' +
-                '<div class="d3-price"><b>฿' + baht(r.rent) + '</b><span>/ เดือน</span></div>' +
+                (r.pendingBookings ? '<span class="badge soft-warning">' + dhT('มีคำขอจอง ' + r.pendingBookings + ' รายการ', r.pendingBookings + ' booking request' + (r.pendingBookings === 1 ? '' : 's')) + '</span>' : '') + '</div>' +
+                '<button type="button" class="d3-preview" data-act="room3d"><span class="d3-preview-ic"><i data-lucide="box"></i></span><span><b>' + dhT('ดูห้องแบบ 3D', 'View room in 3D') + '</b><br><span class="small text-muted">' + dhT('หมุนดูการจัดห้อง ', 'Rotate to see the layout ') + esc(r.type || '') + '</span></span><i data-lucide="chevron-right"></i></button>' +
+                '<div class="d3-price"><b>฿' + baht(r.rent) + '</b><span>' + dhT('/ เดือน', '/ month') + '</span></div>' +
                 '<div class="d3-status">' + statusLine + '</div>' +
                 '<dl class="d3-spec">' +
-                '<div><dt>ประเภท</dt><dd>' + esc(r.type || '-') + '</dd></div>' +
-                '<div><dt>ค่าไฟ / ค่าน้ำ</dt><dd>' + (opts.electricRate || 7) + ' / ' + (opts.waterRate || 20) + ' บาท/หน่วย</dd></div>' +
-                '<div><dt>รับผู้เช่าได้</dt><dd>' + r.capacity + ' คน' + (r.capacity > 1 ? ' (หารค่าห้องได้)' : '') + '</dd></div>' +
-                '<div><dt>' + (isAdmin ? 'ผู้เช่าตอนนี้' : 'ต่อคน (ถ้าอยู่เต็ม)') + '</dt><dd>' + (isAdmin ? r.occupants + ' / ' + r.capacity + ' คน' : '฿' + baht(r.rent / Math.max(1, r.capacity))) + '</dd></div>' +
+                '<div><dt>' + dhT('ประเภท', 'Type') + '</dt><dd>' + esc(r.type || '-') + '</dd></div>' +
+                '<div><dt>' + dhT('ค่าไฟ / ค่าน้ำ', 'Electricity / water') + '</dt><dd>' + (opts.electricRate || 7) + ' / ' + (opts.waterRate || 20) + dhT(' บาท/หน่วย', ' baht/unit') + '</dd></div>' +
+                '<div><dt>' + dhT('รับผู้เช่าได้', 'Capacity') + '</dt><dd>' + dhT(r.capacity + ' คน', r.capacity + (r.capacity === 1 ? ' person' : ' people')) + (r.capacity > 1 ? dhT(' (หารค่าห้องได้)', ' (rent can be shared)') : '') + '</dd></div>' +
+                '<div><dt>' + (isAdmin ? dhT('ผู้เช่าตอนนี้', 'Tenants now') : dhT('ต่อคน (ถ้าอยู่เต็ม)', 'Per person (when full)')) + '</dt><dd>' + (isAdmin ? r.occupants + ' / ' + r.capacity + dhT(' คน', '') : '฿' + baht(r.rent / Math.max(1, r.capacity))) + '</dd></div>' +
                 '</dl>';
 
             if (isAdmin) {
-                html += '<div><div class="d3-sec mb-1">ผู้เช่า</div>' + ((r.tenants && r.tenants.length) ? '<ul class="d3-tenants">' + r.tenants.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul>' : '<div class="small text-muted">ยังไม่มีผู้เช่า</div>') + '</div>' +
-                    '<div class="d-flex gap-2 flex-wrap"><a class="btn btn-primary" href="' + esc(opts.editUrl + r.id) + '"><i data-lucide="pencil"></i> แก้ไขห้อง</a>' +
-                    (r.pendingBookings ? '<a class="btn btn-light" href="' + esc(opts.bookingsUrl) + '"><i data-lucide="inbox"></i> ดูคำขอจอง</a>' : '') + '</div>';
+                html += '<div><div class="d3-sec mb-1">' + dhT('ผู้เช่า', 'Tenants') + '</div>' + ((r.tenants && r.tenants.length) ? '<ul class="d3-tenants">' + r.tenants.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul>' : '<div class="small text-muted">' + dhT('ยังไม่มีผู้เช่า', 'No tenants yet') + '</div>') + '</div>' +
+                    '<div class="d-flex gap-2 flex-wrap"><a class="btn btn-primary" href="' + esc(opts.editUrl + r.id) + '"><i data-lucide="pencil"></i> ' + dhT('แก้ไขห้อง', 'Edit room') + '</a>' +
+                    (r.pendingBookings ? '<a class="btn btn-light" href="' + esc(opts.bookingsUrl) + '"><i data-lucide="inbox"></i> ' + dhT('ดูคำขอจอง', 'View booking requests') + '</a>' : '') + '</div>';
             } else if (bookable(r) && opts.bookTemplate) {
                 html += '<div data-slot="book"></div>';
+            } else if (bookable(r) && opts.bookBlockedText) {
+                html += '<button class="btn btn-light w-100" disabled>' + esc(opts.bookBlockedText) + '</button>';
             } else {
-                html += '<button class="btn btn-light w-100" disabled>' + (r.status === 'MAINTENANCE' ? 'ปิดซ่อม จองไม่ได้ชั่วคราว' : 'ห้องนี้มีผู้เช่าแล้ว') + '</button>';
+                html += '<button class="btn btn-light w-100" disabled>' + (r.status === 'MAINTENANCE' ? dhT('ปิดซ่อม จองไม่ได้ชั่วคราว', 'Under maintenance, not bookable for now') : dhT('ห้องนี้มีผู้เช่าแล้ว', 'This room is taken')) + '</button>';
             }
             sbody.innerHTML = html;
 
@@ -1031,7 +1039,7 @@
                 form.querySelector('[data-field="room"]').value = r.id;
                 var date = form.querySelector('[data-field="date"]');
                 date.min = r.availableFrom; date.value = r.availableFrom;
-                form.querySelector('[data-field="title"]').textContent = r.status === 'SOON' ? 'จองล่วงหน้าห้อง ' + r.number : 'จองห้อง ' + r.number;
+                form.querySelector('[data-field="title"]').textContent = (r.status === 'SOON' ? dhT('จองล่วงหน้าห้อง ', 'Book ahead: room ') : dhT('จองห้อง ', 'Book room ')) + r.number;
                 slot.appendChild(form);
             }
             if (window.lucide) lucide.createIcons();
@@ -1079,7 +1087,7 @@
             if (hovered) hovered.hover = 1;
             renderer.domElement.style.cursor = p ? 'pointer' : 'grab';
             if (p && p.room) tip.innerHTML = '<b>' + esc(p.room.number) + '</b> · ' + esc(p.room.statusLabel) + ' · ฿' + baht(p.room.rent);
-            else if (p && p.b) tip.innerHTML = 'ตึก ' + esc(p.b) + ' · กดเพื่อเข้าไปดู';
+            else if (p && p.b) tip.innerHTML = dhT('ตึก ', 'Building ') + esc(p.b) + dhT(' · กดเพื่อเข้าไปดู', ' · tap to go in');
             tip.hidden = !p;
             var rect = root.getBoundingClientRect();
             tip.style.transform = 'translate(' + (e.clientX - rect.left + 14) + 'px,' + (e.clientY - rect.top + 14) + 'px)';
@@ -1182,11 +1190,11 @@
             if (r3) closeRoom3D(true);
             roomView.innerHTML = '';
             var head = el('div', 'd3-r3-head',
-                '<div><div class="fw-semibold">ห้อง ' + esc(r.number) + ' · ' + esc(r.type || '') + '</div>' +
-                '<div class="small text-muted">ภาพจำลองจากห้องจริงของหอ (เฟอร์นิเจอร์ตามประเภทห้อง) ลากเพื่อหมุนดู</div></div>');
+                '<div><div class="fw-semibold">' + dhT('ห้อง ', 'Room ') + esc(r.number) + ' · ' + esc(r.type || '') + '</div>' +
+                '<div class="small text-muted">' + dhT('ภาพจำลองจากห้องจริงของหอ (เฟอร์นิเจอร์ตามประเภทห้อง) ลากเพื่อหมุนดู', 'Modelled on the dorm\'s real rooms (furniture depends on room type). Drag to rotate.') + '</div></div>');
             var x = el('button', 'btn btn-light btn-icon', '&times;');
             x.type = 'button';
-            x.setAttribute('aria-label', 'ปิดห้อง 3D');
+            x.setAttribute('aria-label', dhT('ปิดห้อง 3D', 'Close 3D room'));
             x.addEventListener('click', closeRoom3D);
             head.appendChild(x);
             var canvasHost = el('div', 'd3-r3-canvas');
