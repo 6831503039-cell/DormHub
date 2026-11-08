@@ -78,7 +78,7 @@ Spring Boot + Thymeleaf + Spring Security + H2, deploy ขึ้น Google Cloud
 2. ตั้ง environment variable ชื่อ `GEMINI_API_KEY` (ห้ามใส่ key ลงในโค้ดหรือ commit ขึ้น GitHub)
    - ในเครื่อง (PowerShell): `$env:GEMINI_API_KEY = 'คีย์ของคุณ'` แล้วค่อยรันแอปใน terminal เดียวกัน
    - บน Cloud Run: เปิด service `dormhub` → Edit & deploy new revision → Variables & Secrets → เพิ่ม `GEMINI_API_KEY`
-3. เปลี่ยนรุ่นโมเดลได้ด้วย `GEMINI_MODEL` (ค่าเริ่มต้น `gemini-2.5-flash`)
+3. เปลี่ยนรุ่นโมเดลได้ด้วย `GEMINI_MODEL` (ค่าเริ่มต้น `gemini-3.8-flash`)
 
 ถ้าไม่ได้ตั้ง key แอปยังใช้งานได้ปกติ: แชทบอทตอบจากชุดคำตอบสำเร็จรูป และสลิปจะรอแอดมินตรวจเอง
 
