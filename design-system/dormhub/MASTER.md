@@ -47,7 +47,12 @@
 class badge เดิม (`soft-success`, `soft-warning` ฯลฯ) ใช้ต่อได้ และมีชื่อใหม่ `status-success`, `status-soon` ฯลฯ
 
 ## ตัวอักษร
-ฟอนต์เดียว: **IBM Plex Sans Thai** น้ำหนัก 400 / 500 / 600, line-height 1.6
+ฟอนต์เดียว: **Anuphan** ทั้งภาษาไทย อังกฤษ และตัวเลข (ออกแบบมาคู่กัน ไม่ผสมฟอนต์อื่น) โหลดใน `fragments/fonts.html`
+
+- น้ำหนัก 3 ระดับเท่านั้น: `--fw-regular` 400 · `--fw-medium` 500 · `--fw-semibold` 600 (`b`, `strong` = 600; ไม่มี 700 และไม่ใช้ตัวเอียง เพราะภาษาไทยไม่มีตัวเอียง)
+- line-height `--lh` 1.65 (เนื้อหา) · `--lh-tight` 1.3 (หัวข้อ, ตัวเลขใหญ่)
+- ไม่ใช้ตัวพิมพ์ใหญ่ทั้งคำ และไม่ปรับ letter-spacing
+- ขนาดตัวอักษรทุกที่ (รวมแผนผัง 3D) ใช้ token ด้านล่างเท่านั้น
 
 | Token | ขนาด | ใช้กับ |
 |---|---|---|
@@ -58,7 +63,7 @@ class badge เดิม (`soft-success`, `soft-warning` ฯลฯ) ใช้ต
 | `--fs-xl` | 22px | หัวหน้า |
 | `--fs-2xl` | 28px | ตัวเลขสำคัญ |
 
-ตัวเลขเงินใช้ `font-variant-numeric: tabular-nums` (class `.num`)
+ตัวเลขของ Anuphan กว้างเท่ากันทุกตัว ยอดเงินในคอลัมน์จึงตรงกันโดยไม่ต้องใช้ฟอนต์ monospace; class `.num` ใส่ `tabular-nums` ไว้กันกรณีฟอนต์สำรอง
 
 ## Spacing, radius, shadow
 - Spacing (4/8px): `--sp-1` 4 · `--sp-2` 8 · `--sp-3` 12 · `--sp-4` 16 · `--sp-5` 24 · `--sp-6` 32 · `--sp-7` 48 · `--sp-8` 64
