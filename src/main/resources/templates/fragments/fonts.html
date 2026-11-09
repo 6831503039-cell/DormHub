@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <!-- Web fonts, loaded once here for every page:
      <th:block th:replace="~{fragments/fonts :: fonts}"></th:block>
-     Geist for Latin text, Anuphan for Thai (it fills in the Thai glyphs Geist lacks), Geist Mono for numbers. -->
+     One family for everything: Anuphan draws Thai, Latin and digits together, so the two scripts match.
+     Only the weights the design uses are loaded (see --fw-* in app.css). -->
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
 <th:block th:fragment="fonts">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600&display=swap" rel="stylesheet">
 </th:block>
 </head>
 </html>

@@ -56,6 +56,10 @@
         var p = iso.split('-');
         return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString(dhT('th-TH', 'en-GB'), { day: 'numeric', month: 'short', year: 'numeric' });
     }
+    // Lucide line icons, inlined because these buttons are built before the icon script runs
+    // (the UI font has no arrow glyphs, and a text × does not sit on the type scale)
+    var ICON_X = '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
+    var ICON_BACK = '<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>';
     function damp(k, dt) { return 1 - Math.exp(-k * dt); }
     function smoother(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
     function easeInOut(t) { return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
@@ -82,11 +86,11 @@
         panel.appendChild(crumbs); panel.appendChild(pbody);
         var sheet = el('section', 'd3-sheet closed'); sheet.setAttribute('aria-live', 'polite');
         var shead = el('div', 'd3-shead');
-        var closeBtn = el('button', 'btn btn-light btn-icon d3-x', '&times;'); closeBtn.setAttribute('aria-label', dhT('ปิด', 'Close'));
+        var closeBtn = el('button', 'btn btn-light btn-icon d3-x', ICON_X); closeBtn.setAttribute('aria-label', dhT('ปิด', 'Close'));
         var sheadWrap = el('div', 'd3-shead-wrap'); sheadWrap.appendChild(shead); sheadWrap.appendChild(closeBtn);
         var sbody = el('div', 'd3-sbody');
         sheet.appendChild(sheadWrap); sheet.appendChild(sbody);
-        var backBtn = el('button', 'btn d3-back', '<span aria-hidden="true">&larr;</span> ' + dhT('ย้อนกลับ', 'Back'));
+        var backBtn = el('button', 'btn d3-back', ICON_BACK + ' ' + dhT('ย้อนกลับ', 'Back'));
         backBtn.type = 'button';
         backBtn.hidden = true;
         var loading = el('div', 'd3-msg', '<div class="spinner-border text-primary mb-2" role="status"></div><div>' + dhT('กำลังโหลดแผนผังหอพัก…', 'Loading the dorm map…') + '</div>');
@@ -424,14 +428,25 @@
             var g = c.getContext('2d');
             g.fillStyle = '#2fa84f'; g.fillRect(0, 0, 512, 320);
             g.fillStyle = '#ffffff'; g.fillRect(28, 28, 456, 264);
-            g.fillStyle = '#2fa84f'; g.fillRect(40, 40, 432, 240);
-            g.fillStyle = '#ffffff';
-            g.textAlign = 'center'; g.textBaseline = 'middle';
-            g.font = 'bold 150px "Geist", "Anuphan", sans-serif';
-            g.fillText(top, 256, 135);
-            g.font = '600 64px "Geist", "Anuphan", sans-serif';
-            g.fillText(bottom, 256, 240);
-            return new THREE.CanvasTexture(c);
+            function text() {
+                g.fillStyle = '#2fa84f'; g.fillRect(40, 40, 432, 240);
+                g.fillStyle = '#ffffff';
+                g.textAlign = 'center'; g.textBaseline = 'middle';
+                g.font = '600 150px "Anuphan", sans-serif';
+                g.fillText(top, 256, 135);
+                g.font = '600 64px "Anuphan", sans-serif';
+                g.fillText(bottom, 256, 240);
+            }
+            text();
+            var texture = new THREE.CanvasTexture(c);
+            // the web font may still be loading: redraw the sign once it is there
+            if (document.fonts && document.fonts.load) {
+                document.fonts.load('600 64px "Anuphan"', top + bottom).then(function () {
+                    text();
+                    texture.needsUpdate = true;
+                });
+            }
+            return texture;
         }
 
         function buildBuilding(b) {
@@ -914,7 +929,7 @@
         function legend() {
             return '<div class="d3-legend">' +
                 '<span>' + dot(statusCss('AVAILABLE')) + dhT('ว่าง', 'Available') + '</span>' +
-                '<span>' + dot(statusCss('SOON')) + dhT('ใกล้หมดสัญญา (≤ ' + soonDays + ' วัน)', 'Contract ending (≤ ' + soonDays + ' days)') + '</span>' +
+                '<span>' + dot(statusCss('SOON')) + dhT('ใกล้หมดสัญญา (ภายใน ' + soonDays + ' วัน)', 'Contract ending (within ' + soonDays + ' days)') + '</span>' +
                 '<span>' + dot(statusCss('OCCUPIED')) + dhT('มีผู้เช่า', 'Occupied') + '</span>' +
                 '<span>' + dot(statusCss('MAINTENANCE')) + dhT('ปิดซ่อม', 'Maintenance') + '</span></div>';
         }
@@ -1192,7 +1207,7 @@
             var head = el('div', 'd3-r3-head',
                 '<div><div class="fw-semibold">' + dhT('ห้อง ', 'Room ') + esc(r.number) + ' · ' + esc(r.type || '') + '</div>' +
                 '<div class="small text-muted">' + dhT('ภาพจำลองจากห้องจริงของหอ (เฟอร์นิเจอร์ตามประเภทห้อง) ลากเพื่อหมุนดู', 'Modelled on the dorm\'s real rooms (furniture depends on room type). Drag to rotate.') + '</div></div>');
-            var x = el('button', 'btn btn-light btn-icon', '&times;');
+            var x = el('button', 'btn btn-light btn-icon', ICON_X);
             x.type = 'button';
             x.setAttribute('aria-label', dhT('ปิดห้อง 3D', 'Close 3D room'));
             x.addEventListener('click', closeRoom3D);
