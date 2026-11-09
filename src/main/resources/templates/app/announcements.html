@@ -6,13 +6,13 @@
     <p class="app-sub" th:text="#{announcements.sub(${residenceName})}">ข่าวสารจากสำนักงานหอพัก</p>
 
     <div class="card" th:if="${#lists.isEmpty(announcements)}">
-        <div th:replace="~{fragments/ui :: emptyState('megaphone', #{announcements.empty.title}, #{announcements.empty.text}, null, null)}"></div>
+        <div th:replace="~{fragments/ui :: emptyState(#{announcements.empty.title}, #{announcements.empty.text}, null, null)}"></div>
     </div>
 
-    <div class="d-grid gap-3 mb-4">
-        <article class="card news-card" th:each="a : ${announcements}" th:id="'a' + ${a.id}">
+    <div class="rows mb-5">
+        <article class="news-card" th:each="a : ${announcements}" th:id="'a' + ${a.id}">
             <img th:if="${a.hasImage()}" class="news-image" th:src="@{/announcements/{id}/image(id=${a.id})}" th:alt="${a.title}" loading="lazy">
-            <div class="card-body">
+            <div class="py-3">
                 <div class="d-flex gap-2 align-items-center mb-1">
                     <span class="badge status-info" th:if="${a.pinned}"><i data-lucide="pin"></i> <span th:text="#{announcements.pinned}">ปักหมุด</span></span>
                     <span class="item-meta num" th:text="${#temporals.format(a.createdAt, 'dd/MM/yyyy HH:mm')}"></span>

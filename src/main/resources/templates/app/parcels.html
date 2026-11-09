@@ -6,22 +6,21 @@
     <p class="app-sub" th:text="${linked} ? #{parcels.sub(${tenant.room.roomNumber})} : #{parcels.sub.noRoom}">พัสดุที่มาส่งถึงห้องของคุณ</p>
 
     <!-- parcels without a room number on the label cannot be announced -->
-    <div class="notice info mb-3" role="note">
-        <span class="ic"><i data-lucide="info"></i></span>
-        <div class="small" th:text="#{parcels.labelHint(${officeHours})}">ระบุเลขห้องในที่อยู่จัดส่งทุกครั้ง ถ้าไม่ได้เขียนเลขห้องไว้ สำนักงานจะแจ้งเตือนไม่ได้ ต้องมาตรวจสอบพัสดุที่สำนักงานเอง</div>
+    <div class="notice info mb-5" role="note">
+        <div th:text="#{parcels.labelHint(${officeHours})}">ระบุเลขห้องในที่อยู่จัดส่งทุกครั้ง ถ้าไม่ได้เขียนเลขห้องไว้ สำนักงานจะแจ้งเตือนไม่ได้ ต้องมาตรวจสอบพัสดุที่สำนักงานเอง</div>
     </div>
 
     <div class="card" th:unless="${linked}">
-        <div th:replace="~{fragments/ui :: emptyState('link', #{parcels.notLinked.title}, #{requests.notLinked}, null, null)}"></div>
+        <div th:replace="~{fragments/ui :: emptyState(#{parcels.notLinked.title}, #{requests.notLinked}, null, null)}"></div>
     </div>
 
     <th:block th:if="${linked}">
         <h2 class="section-title mt-0" th:text="#{parcels.waiting}">รอรับที่สำนักงาน</h2>
         <div class="card mb-3" th:if="${#lists.isEmpty(waiting)}">
-            <div th:replace="~{fragments/ui :: emptyState('package-check', #{parcels.none.title}, #{parcels.none.text}, null, null)}"></div>
+            <div th:replace="~{fragments/ui :: emptyState(#{parcels.none.title}, #{parcels.none.text}, null, null)}"></div>
         </div>
-        <div class="d-grid gap-2 mb-4">
-            <article class="card parcel-card" th:each="p : ${waiting}">
+        <div class="rows mb-5">
+            <article class="parcel-card" th:each="p : ${waiting}">
                 <a th:if="${p.hasPhoto()}" th:href="@{/parcels/{id}/photo(id=${p.id})}" target="_blank" rel="noopener">
                     <img class="parcel-photo" th:src="@{/parcels/{id}/photo(id=${p.id})}" th:alt="#{parcels.photoOf(${tenant.room.roomNumber})}" loading="lazy">
                 </a>
@@ -34,7 +33,7 @@
                     <form class="mt-2" th:action="@{/app/parcels/{id}/picked-up(id=${p.id})}" method="post">
                         <button class="btn btn-soft btn-sm" type="submit" data-confirm-tone="primary"
                                 th:attr="data-confirm=#{parcels.confirm.question},data-confirm-title=#{parcels.confirm.title},data-confirm-ok=#{parcels.confirm.ok}">
-                            <i data-lucide="package-check"></i> <span th:text="#{parcels.confirm.button}">ยืนยันรับของแล้ว</span>
+                            <span th:text="#{parcels.confirm.button}">ยืนยันรับของแล้ว</span>
                         </button>
                     </form>
                 </div>

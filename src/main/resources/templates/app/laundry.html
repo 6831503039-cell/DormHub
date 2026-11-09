@@ -3,7 +3,7 @@
 <body>
 <main th:with="free=${#lists.size(machines.?[isAvailableAt(#vars.now)])},
                groups=${ {'WASHER', 'DRYER'} }">
-    <div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex justify-content-between align-items-baseline">
         <h1 class="app-title" th:text="#{laundry.title}">ห้องซักผ้า</h1>
         <span class="badge status-neutral" th:text="#{common.simulated}">จำลอง</span>
     </div>
@@ -11,16 +11,18 @@
 
     <!-- th:unless runs before th:with, so the filter is repeated in the condition -->
     <section th:each="g : ${groups}" th:unless="${#lists.isEmpty(machines.?[type.name() == #vars.g])}"
-             th:with="list=${machines.?[type.name() == #vars.g]}" class="mb-4" th:attr="aria-label=#{${list[0].type.key}}">
-        <h2 class="section-title mt-0" th:text="#{${list[0].type.key}} + ' · ' + #{laundry.cycle(${list[0].type.minutes})}"></h2>
-        <div class="d-grid gap-2">
-            <div class="card machine" th:each="m : ${list}" th:classappend="${m.isAvailableAt(now)} ? '' : 'busy'">
-                <span class="ring"><i th:data-lucide="${m.type.name() == 'WASHER'} ? 'washing-machine' : 'wind'"></i></span>
+             th:with="list=${machines.?[type.name() == #vars.g]}" class="mb-5" th:attr="aria-label=#{${list[0].type.key}}">
+        <div class="d-flex justify-content-between align-items-baseline">
+            <h2 class="section-title mt-0" th:text="#{${list[0].type.key}}"></h2>
+            <span class="item-meta" th:text="#{laundry.cycle(${list[0].type.minutes})}"></span>
+        </div>
+        <div class="rows">
+            <div class="machine" th:each="m : ${list}" th:classappend="${m.isAvailableAt(now)} ? '' : 'busy'">
                 <div class="flex-grow-1 min-w-0">
                     <div class="fw-medium" th:text="${m.name}"></div>
                     <div class="small" th:if="${m.isAvailableAt(now)}"><span class="badge status-success" th:text="#{common.free}">ว่าง</span></div>
                     <div class="small text-muted" th:unless="${m.isAvailableAt(now)}">
-                        <span class="badge status-warning" th:text="#{common.minutesLeft(${m.minutesLeftAt(now)})}"></span>
+                        <span class="badge status-warning me-2" th:text="#{common.minutesLeft(${m.minutesLeftAt(now)})}"></span>
                         <span th:if="${m.usedBy != null}" th:text="${m.usedBy}"></span>
                     </div>
                 </div>
@@ -29,6 +31,8 @@
                     <button class="btn btn-soft" type="submit" data-confirm-tone="primary" th:text="#{laundry.start}"
                             th:attr="aria-label=#{laundry.startMachine(${m.name})},data-confirm=#{laundry.confirm.text(${m.name}, ${m.type.minutes})},data-confirm-title=#{laundry.confirm.title},data-confirm-ok=#{laundry.start}">เริ่มใช้งาน</button>
                 </form>
+                <span class="machine-bar" aria-hidden="true" th:unless="${m.isAvailableAt(now)}"
+                      th:style="'width:' + ${m.minutesLeftAt(now) * 100 / m.type.minutes} + '%'"></span>
             </div>
         </div>
     </section>

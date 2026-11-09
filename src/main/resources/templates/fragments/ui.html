@@ -25,28 +25,37 @@
     </div>
 </div>
 
-<!-- Empty state: icon (Lucide name), title, text; action link optional (pass null to hide it).
-     Usage: <div th:replace="~{fragments/ui :: emptyState('door-closed', #{rooms.empty.title}, #{rooms.empty.text}, @{/admin/rooms/new}, #{rooms.add})}"></div> -->
-<div th:fragment="emptyState(icon, title, text, actionHref, actionLabel)" class="empty-state">
-    <div class="empty-icon"><i th:data-lucide="${icon}"></i></div>
+<!-- Empty state: title, text; action link optional (pass null to hide it).
+     Usage: <div th:replace="~{fragments/ui :: emptyState(#{rooms.empty.title}, #{rooms.empty.text}, @{/admin/rooms/new}, #{rooms.add})}"></div> -->
+<div th:fragment="emptyState(title, text, actionHref, actionLabel)" class="empty-state">
     <p class="empty-title" th:text="${title}"></p>
     <p class="empty-text" th:if="${text != null}" th:text="${text}"></p>
     <a th:if="${actionHref != null}" class="btn btn-primary" th:href="${actionHref}">
-        <i data-lucide="plus"></i> <span th:text="${actionLabel}"></span>
+        <span th:text="${actionLabel}"></span>
     </a>
 </div>
 
 <!-- Flash messages after a redirect (success / error). -->
 <th:block th:fragment="flash">
     <div th:if="${success}" class="alert alert-success alert-dismissible fade show d-flex align-items-start gap-2" role="status">
-        <i data-lucide="circle-check"></i><span th:text="${success}"></span>
+        <span th:text="${success}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert" th:aria-label="#{common.close}"></button>
     </div>
     <div th:if="${error}" class="alert alert-danger alert-dismissible fade show d-flex align-items-start gap-2" role="alert">
-        <i data-lucide="circle-alert"></i><span th:text="${error}"></span>
+        <span th:text="${error}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert" th:aria-label="#{common.close}"></button>
     </div>
 </th:block>
+
+<!-- Left half of the sign-in pages: the building at night. The window pattern is decoration only. -->
+<aside th:fragment="authSide" class="auth-side">
+    <div class="auth-name" th:text="${dormName}">DormHub</div>
+    <p class="auth-line" th:text="#{auth.line}">บิล ค่าไฟ พัสดุ และงานซ่อมของทุกห้อง</p>
+    <a class="auth-explore" th:href="@{/explore}" th:text="#{auth.explore}">ดูห้องว่างโดยไม่ต้องเข้าสู่ระบบ</a>
+    <div class="facade" aria-hidden="true">
+        <i th:each="n : ${#numbers.sequence(1, 84)}" th:class="${n % 7 == 2 or n % 11 == 5 or n % 9 == 0} ? 'lit'"></i>
+    </div>
+</aside>
 
 <!-- Settings dialog: language (reloads the page with ?lang=) and colour theme (prefs.js, applied at once).
      Included once per page; open it with data-bs-toggle="modal" data-bs-target="#settingsModal". -->
@@ -59,7 +68,7 @@
             </div>
             <div class="modal-body">
                 <div class="settings-group" role="group" aria-labelledby="settingsLangLabel">
-                    <div class="form-label" id="settingsLangLabel"><i data-lucide="languages"></i> <span th:text="#{settings.language}">ภาษา</span></div>
+                    <div class="form-label" id="settingsLangLabel"><span th:text="#{settings.language}">ภาษา</span></div>
                     <div class="choice-group">
                         <a class="choice" href="?lang=th" data-set-lang="th" lang="th" th:classappend="${#locale.language != 'en'} ? 'active'"
                            th:attr="aria-current=${#locale.language != 'en'} ? 'true' : null">ไทย</a>
@@ -68,11 +77,11 @@
                     </div>
                 </div>
                 <div class="settings-group" role="radiogroup" aria-labelledby="settingsThemeLabel">
-                    <div class="form-label" id="settingsThemeLabel"><i data-lucide="palette"></i> <span th:text="#{settings.theme}">ธีม</span></div>
+                    <div class="form-label" id="settingsThemeLabel"><span th:text="#{settings.theme}">ธีม</span></div>
                     <div class="choice-group">
-                        <label class="choice"><input type="radio" name="theme" value="light"><i data-lucide="sun"></i> <span th:text="#{settings.theme.light}">สว่าง</span></label>
-                        <label class="choice"><input type="radio" name="theme" value="dark"><i data-lucide="moon"></i> <span th:text="#{settings.theme.dark}">มืด</span></label>
-                        <label class="choice"><input type="radio" name="theme" value="system"><i data-lucide="monitor"></i> <span th:text="#{settings.theme.system}">ตามระบบ</span></label>
+                        <label class="choice"><input type="radio" name="theme" value="light"><span th:text="#{settings.theme.light}">สว่าง</span></label>
+                        <label class="choice"><input type="radio" name="theme" value="dark"><span th:text="#{settings.theme.dark}">มืด</span></label>
+                        <label class="choice"><input type="radio" name="theme" value="system"><span th:text="#{settings.theme.system}">ตามระบบ</span></label>
                     </div>
                     <div class="form-text" th:text="#{settings.theme.help}">ตามระบบ = ใช้โหมดมืดเมื่อเครื่องของคุณใช้โหมดมืด</div>
                 </div>
@@ -83,7 +92,7 @@
 
 <!-- Menu item that opens the Settings dialog; used inside the account dropdowns. -->
 <button th:fragment="settingsMenuItem" class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#settingsModal">
-    <i data-lucide="settings"></i> <span th:text="#{settings.title}">ตั้งค่า</span>
+    <span th:text="#{settings.title}">ตั้งค่า</span>
 </button>
 
 <!-- Booking form for the 3D room map; dorm3d.js copies it into the room panel and fills room, date and title.
@@ -113,7 +122,7 @@
             <label class="form-label" for="bkNote" th:text="#{book.note} + ' ' + #{common.optional}">ข้อความถึงหอ (ไม่บังคับ)</label>
             <textarea class="form-control" id="bkNote" name="note" rows="2" maxlength="500"></textarea>
         </div>
-        <button class="btn btn-primary w-100" type="submit"><i data-lucide="send"></i> <span th:text="#{book.send}">ส่งคำขอจอง</span></button>
+        <button class="btn btn-primary w-100" type="submit"><span th:text="#{book.send}">ส่งคำขอจอง</span></button>
         <div class="small text-muted" th:text="${emailLocked} ? #{rent.afterConfirm} : #{book.noPayment}">ยังไม่ต้องโอนเงิน เจ้าหน้าที่หอจะติดต่อกลับเพื่อยืนยันการจอง</div>
     </form>
 </template>

@@ -12,12 +12,12 @@
             <p class="page-sub" th:unless="${#lists.isEmpty(unpaid)}"
                th:text="#{bills.unpaidCount(${#lists.size(unpaid)})} + ' · ฿' + ${#numbers.formatDecimal(#aggregates.sum(unpaid.![total]), 1, 'COMMA', 0, 'POINT')} + (${overdueCount > 0} ? ' · ' + #{billList.overdueCount(${overdueCount})} : '')"></p>
         </div>
-        <a class="btn btn-primary" th:href="@{/admin/bills/new}"><i data-lucide="plus"></i> <span th:text="#{bill.new}">ออกบิล / จดมิเตอร์</span></a>
+        <a class="btn btn-primary" th:href="@{/admin/bills/new}"><span th:text="#{bill.new}">ออกบิล / จดมิเตอร์</span></a>
     </div>
 
     <th:block th:if="${#lists.isEmpty(bills)}">
         <div class="card">
-            <div th:replace="~{fragments/ui :: emptyState('receipt', #{bills.none}, #{billList.empty.text}, @{/admin/bills/new}, #{billList.create})}"></div>
+            <div th:replace="~{fragments/ui :: emptyState(#{bills.none}, #{billList.empty.text}, @{/admin/bills/new}, #{billList.create})}"></div>
         </div>
     </th:block>
 
@@ -90,7 +90,7 @@
                         </td>
                         <td class="td-actions">
                             <a th:unless="${b.paid}" class="btn btn-soft btn-sm" th:href="@{/admin/bills/{id}/pay(id=${b.id})}"
-                               th:attr="aria-label=#{billList.markPaidN(${b.room.roomNumber}, ${b.billMonth})}"><i data-lucide="check"></i> <span th:text="#{billList.markPaid}">รับชำระ</span></a>
+                               th:attr="aria-label=#{billList.markPaidN(${b.room.roomNumber}, ${b.billMonth})}"><span th:text="#{billList.markPaid}">รับชำระ</span></a>
                             <a th:if="${b.paid}" class="btn btn-ghost btn-sm" th:href="@{/admin/bills/{id}/pay(id=${b.id})}"
                                th:attr="aria-label=#{billList.unpayN(${b.room.roomNumber}, ${b.billMonth})},data-confirm=#{billList.unpay.confirm(${b.room.roomNumber}, ${b.billMonth})},data-confirm-title=#{billList.unpay.title},data-confirm-ok=#{billList.unpay.ok}"
                                data-confirm-tone="primary" th:text="#{billList.unpay}">ยกเลิก</a>
@@ -105,7 +105,7 @@
                 </table>
             </div>
             <div data-filter-empty="#billTable" hidden>
-                <div th:replace="~{fragments/ui :: emptyState('search-x', #{billList.noMatch}, #{common.noMatch.text}, null, null)}"></div>
+                <div th:replace="~{fragments/ui :: emptyState(#{billList.noMatch}, #{common.noMatch.text}, null, null)}"></div>
             </div>
         </div>
     </th:block>

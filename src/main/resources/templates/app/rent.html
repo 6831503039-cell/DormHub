@@ -8,11 +8,11 @@
 
     <!-- already has a room: nothing to book -->
     <div class="card mb-3" th:if="${linked}">
-        <div th:replace="~{fragments/ui :: emptyState('house', #{rent.hasRoom.title(${tenant.room.roomNumber})}, #{rent.hasRoom.text}, @{/app}, #{tab.home})}"></div>
+        <div th:replace="~{fragments/ui :: emptyState(#{rent.hasRoom.title(${tenant.room.roomNumber})}, #{rent.hasRoom.text}, @{/app}, #{tab.home})}"></div>
     </div>
 
     <th:block th:unless="${linked}">
-        <p class="form-text d-flex gap-2 mb-2" th:if="${pending}"><i data-lucide="info"></i> <span th:text="#{rent.onePending}">มีคำขอที่รอยืนยันอยู่ ส่งคำขอใหม่ได้เมื่อเจ้าของหอตอบกลับแล้ว</span></p>
+        <p class="form-text d-flex gap-2 mb-2" th:if="${pending}"><span th:text="#{rent.onePending}">มีคำขอที่รอยืนยันอยู่ ส่งคำขอใหม่ได้เมื่อเจ้าของหอตอบกลับแล้ว</span></p>
         <!-- the map has its own colour legend -->
         <div id="dormMap" class="layout-3d rent-3d mb-3" th:aria-label="#{map.aria}"></div>
     </th:block>
@@ -35,9 +35,8 @@
     <!-- shown once, right after a request is sent -->
     <div class="modal fade" id="bookingSentModal" tabindex="-1" aria-labelledby="bookingSentTitle" aria-hidden="true" th:if="${bookingSent}">
         <div class="modal-dialog modal-dialog-centered" style="max-width: 400px">
-            <div class="modal-content text-center">
+            <div class="modal-content">
                 <div class="modal-body p-4">
-                    <div class="sent-icon mx-auto mb-3"><i data-lucide="hourglass"></i></div>
                     <h2 class="modal-title mb-2" id="bookingSentTitle" th:text="#{rent.sent.title}">ส่งคำขอจองแล้ว</h2>
                     <p class="mb-1" th:text="#{rent.sent.room(${bookingSent})}">ห้อง A103</p>
                     <p class="text-muted mb-4" th:text="#{rent.sent.text}">รอเจ้าหน้าที่ของหอกดยืนยัน</p>

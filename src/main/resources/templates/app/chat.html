@@ -2,21 +2,16 @@
 <html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/app :: layout(#{tab.chat}, 'chat', ~{::main})}">
 <body>
 <main>
-    <div class="d-flex align-items-center gap-3 mb-3">
-        <span class="stat-icon"><i data-lucide="bot"></i></span>
-        <div>
-            <h1 class="h2 mb-0" th:text="#{chat.title}">แอดมินเสมือน</h1>
-            <div class="small text-muted" th:text="${aiEnabled} ? #{chat.gemini} : #{chat.fallback}"></div>
-        </div>
-    </div>
+    <h1 class="app-title" th:text="#{chat.title}">แอดมินเสมือน</h1>
+    <p class="app-sub mb-3" th:text="${aiEnabled} ? #{chat.gemini} : #{chat.fallback}"></p>
 
-    <div class="card mb-3">
+    <div class="card mb-2">
         <div class="chat-box" id="chatBox" role="log" aria-live="polite" th:aria-label="#{chat.log}">
             <div class="bubble bot" th:text="#{chat.welcome}">สวัสดีครับ ถามได้เลย เช่น รหัส Wi-Fi ยอดค่าห้อง เครื่องซักผ้าว่างไหม หรือวิธีแจ้งซ่อม</div>
         </div>
     </div>
 
-    <div class="chips mb-3" th:aria-label="#{chat.faq}">
+    <div class="chips mb-2" th:aria-label="#{chat.faq}">
         <button class="chip" type="button" th:text="#{chat.chip.wifi}">ขอรหัส Wi-Fi</button>
         <button class="chip" type="button" th:text="#{chat.chip.bill}">ค่าห้องเดือนนี้เท่าไหร่</button>
         <button class="chip" type="button" th:text="#{chat.chip.laundry}">เครื่องซักผ้าว่างไหม</button>

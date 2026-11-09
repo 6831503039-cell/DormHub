@@ -17,31 +17,30 @@
 <body>
 <div class="admin-shell">
     <aside class="sidebar d-none d-lg-flex flex-column">
-        <a class="brand mb-4 px-2" th:href="@{/admin}">
+        <a class="brand" th:href="@{/admin}">
             <img class="brand-logo" th:src="@{/img/logo-icon.png}" alt="">
             <span th:text="${dormName}">DormHub</span>
         </a>
         <nav class="side-nav nav flex-column" th:fragment="adminNav(active)" th:aria-label="#{nav.main}">
-            <a class="nav-link" th:classappend="${active == 'dashboard'} ? 'active'" th:href="@{/admin}"><i data-lucide="layout-dashboard"></i> <span th:text="#{nav.dashboard}">ภาพรวม</span></a>
-            <a class="nav-link" th:classappend="${active == 'analytics'} ? 'active'" th:href="@{/admin/analytics}"><i data-lucide="bar-chart-3"></i> <span th:text="#{nav.analytics}">วิเคราะห์ค่าไฟ</span></a>
+            <a class="nav-link" th:classappend="${active == 'dashboard'} ? 'active'" th:href="@{/admin}"> <span th:text="#{nav.dashboard}">ภาพรวม</span></a>
+            <a class="nav-link" th:classappend="${active == 'analytics'} ? 'active'" th:href="@{/admin/analytics}"> <span th:text="#{nav.analytics}">วิเคราะห์ค่าไฟ</span></a>
             <div class="nav-section" th:text="#{nav.section.rooms}">ห้องพัก</div>
-            <a class="nav-link" th:classappend="${active == 'layout'} ? 'active'" th:href="@{/admin/layout}"><i data-lucide="layout-grid"></i> <span th:text="#{nav.layout}">แผนผังห้อง</span></a>
-            <a class="nav-link" th:classappend="${active == 'rooms'} ? 'active'" th:href="@{/admin/rooms}"><i data-lucide="door-closed"></i> <span th:text="#{nav.rooms}">จัดการห้อง</span></a>
-            <a class="nav-link" th:classappend="${active == 'tenants'} ? 'active'" th:href="@{/admin/tenants}"><i data-lucide="users"></i> <span th:text="#{nav.tenants}">ผู้เช่า</span></a>
-            <a class="nav-link" th:classappend="${active == 'bookings'} ? 'active'" th:href="@{/admin/bookings}"><i data-lucide="inbox"></i> <span th:text="#{nav.bookings}">คำขอจอง</span></a>
+            <a class="nav-link" th:classappend="${active == 'layout'} ? 'active'" th:href="@{/admin/layout}"> <span th:text="#{nav.layout}">แผนผังห้อง</span></a>
+            <a class="nav-link" th:classappend="${active == 'rooms'} ? 'active'" th:href="@{/admin/rooms}"> <span th:text="#{nav.rooms}">จัดการห้อง</span></a>
+            <a class="nav-link" th:classappend="${active == 'tenants'} ? 'active'" th:href="@{/admin/tenants}"> <span th:text="#{nav.tenants}">ผู้เช่า</span></a>
+            <a class="nav-link" th:classappend="${active == 'bookings'} ? 'active'" th:href="@{/admin/bookings}"> <span th:text="#{nav.bookings}">คำขอจอง</span></a>
             <div class="nav-section" th:text="#{nav.section.money}">การเงิน</div>
-            <a class="nav-link" th:classappend="${active == 'bills'} ? 'active'" th:href="@{/admin/bills}"><i data-lucide="receipt"></i> <span th:text="#{nav.bills}">บิลค่าเช่า</span></a>
-            <a class="nav-link" th:classappend="${active == 'payments'} ? 'active'" th:href="@{/admin/payments}"><i data-lucide="scan-line"></i> <span th:text="#{nav.payments}">ตรวจสลิป</span></a>
+            <a class="nav-link" th:classappend="${active == 'bills'} ? 'active'" th:href="@{/admin/bills}"> <span th:text="#{nav.bills}">บิลค่าเช่า</span></a>
+            <a class="nav-link" th:classappend="${active == 'payments'} ? 'active'" th:href="@{/admin/payments}"> <span th:text="#{nav.payments}">ตรวจสลิป</span></a>
             <div class="nav-section" th:text="#{nav.section.services}">บริการ</div>
-            <a class="nav-link" th:classappend="${active == 'repairs'} ? 'active'" th:href="@{/admin/repairs}"><i data-lucide="wrench"></i> <span th:text="#{nav.repairs}">แจ้งซ่อม</span></a>
-            <a class="nav-link" th:classappend="${active == 'feedback'} ? 'active'" th:href="@{/admin/feedback}"><i data-lucide="message-square"></i> <span th:text="#{nav.feedback}">ฟีดแบ็ก</span></a>
-            <a class="nav-link" th:classappend="${active == 'announcements'} ? 'active'" th:href="@{/admin/announcements}"><i data-lucide="megaphone"></i> <span th:text="#{nav.announcements}">ประกาศ</span></a>
-            <a class="nav-link" th:classappend="${active == 'parcels'} ? 'active'" th:href="@{/admin/parcels}"><i data-lucide="package"></i> <span th:text="#{nav.parcels}">พัสดุ</span></a>
+            <a class="nav-link" th:classappend="${active == 'repairs'} ? 'active'" th:href="@{/admin/repairs}"> <span th:text="#{nav.repairs}">แจ้งซ่อม</span></a>
+            <a class="nav-link" th:classappend="${active == 'feedback'} ? 'active'" th:href="@{/admin/feedback}"> <span th:text="#{nav.feedback}">ฟีดแบ็ก</span></a>
+            <a class="nav-link" th:classappend="${active == 'announcements'} ? 'active'" th:href="@{/admin/announcements}"> <span th:text="#{nav.announcements}">ประกาศ</span></a>
+            <a class="nav-link" th:classappend="${active == 'parcels'} ? 'active'" th:href="@{/admin/parcels}"> <span th:text="#{nav.parcels}">พัสดุ</span></a>
         </nav>
         <!-- account menu: settings and log out -->
         <div class="user-box mt-auto dropup">
             <button class="user-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false" th:aria-label="#{nav.account}">
-                <span class="user-avatar"><i data-lucide="user"></i></span>
                 <span class="min-w-0 flex-grow-1 text-start">
                     <span class="d-block fw-medium text-truncate" th:text="${currentUser?.fullName}">Admin</span>
                     <span class="d-block text-muted small text-truncate" th:text="${currentUser?.email}"></span>
@@ -52,7 +51,7 @@
                 <button th:replace="~{fragments/ui :: settingsMenuItem}"></button>
                 <div class="dropdown-divider"></div>
                 <form th:action="@{/logout}" method="post">
-                    <button class="dropdown-item" type="submit" data-no-loading><i data-lucide="log-out"></i> <span th:text="#{common.logout}">ออกจากระบบ</span></button>
+                    <button class="dropdown-item" type="submit" data-no-loading><span th:text="#{common.logout}">ออกจากระบบ</span></button>
                 </form>
             </div>
         </div>
@@ -78,10 +77,10 @@
                 <nav th:replace="~{fragments/admin :: adminNav(${active})}"></nav>
                 <div class="mt-auto pt-3 d-grid gap-2">
                     <button class="btn btn-secondary w-100" type="button" data-bs-toggle="modal" data-bs-target="#settingsModal">
-                        <i data-lucide="settings"></i> <span th:text="#{settings.title}">ตั้งค่า</span>
+                        <span th:text="#{settings.title}">ตั้งค่า</span>
                     </button>
                     <form th:action="@{/logout}" method="post">
-                        <button class="btn btn-secondary w-100" type="submit"><i data-lucide="log-out"></i> <span th:text="#{common.logout}">ออกจากระบบ</span></button>
+                        <button class="btn btn-secondary w-100" type="submit"><span th:text="#{common.logout}">ออกจากระบบ</span></button>
                     </form>
                 </div>
             </div>

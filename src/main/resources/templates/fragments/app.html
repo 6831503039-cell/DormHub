@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#f7f6f1">
+    <meta name="theme-color" content="#f3f0e7">
     <meta name="_csrf" th:content="${_csrf.token}">
     <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <title th:text="${title} + ' · ' + ${dormName}">DormHub</title>
@@ -18,13 +18,10 @@
 <body class="app-body">
 <div class="app-wrap">
     <header class="app-header">
-        <div class="d-flex align-items-center gap-2">
+        <a class="brand" th:href="@{/app}">
             <img class="brand-logo" th:src="@{/img/logo-icon.png}" alt="">
-            <div>
-                <div class="text-muted small" th:text="${dormName}">DormHub</div>
-                <div class="fw-semibold" th:text="#{app.hello(${currentUser?.fullName})}">สวัสดี</div>
-            </div>
-        </div>
+            <span th:text="${dormName}">DormHub</span>
+        </a>
         <div class="dropdown">
             <button class="btn btn-ghost btn-icon account-btn" data-bs-toggle="dropdown" type="button" th:aria-label="#{nav.account}" aria-expanded="false">
                 <img class="header-avatar" th:if="${currentUser != null and currentUser.hasAvatar()}"
@@ -32,12 +29,15 @@
                 <i data-lucide="user" th:unless="${currentUser != null and currentUser.hasAvatar()}"></i>
             </button>
             <div class="dropdown-menu dropdown-menu-end">
-                <span class="dropdown-item-text small text-muted" th:text="${currentUser?.email}"></span>
+                <div class="account-head">
+                    <div class="fw-semibold" th:text="${currentUser?.fullName}"></div>
+                    <div class="text-muted small" th:text="${currentUser?.email}"></div>
+                </div>
                 <div class="dropdown-divider"></div>
-                <a class="dropdown-item" th:href="@{/app/profile}" th:classappend="${active == 'profile'} ? 'active'"><i data-lucide="user-round-pen"></i> <span th:text="#{profile.edit}">แก้ไขโปรไฟล์</span></a>
+                <a class="dropdown-item" th:href="@{/app/profile}" th:classappend="${active == 'profile'} ? 'active'"><span th:text="#{profile.edit}">แก้ไขโปรไฟล์</span></a>
                 <button th:replace="~{fragments/ui :: settingsMenuItem}"></button>
                 <form th:action="@{/logout}" method="post">
-                    <button class="dropdown-item" type="submit"><i data-lucide="log-out"></i> <span th:text="#{common.logout}">ออกจากระบบ</span></button>
+                    <button class="dropdown-item" type="submit"><span th:text="#{common.logout}">ออกจากระบบ</span></button>
                 </form>
             </div>
         </div>
@@ -53,7 +53,7 @@
         <a th:href="@{/app}" th:classappend="${active == 'home'} ? 'active'"><i data-lucide="house"></i><span th:text="#{tab.home}">หน้าแรก</span></a>
         <th:block th:if="${hasRoom}">
         <a th:href="@{/app/bills}" th:classappend="${active == 'bills'} ? 'active'"><i data-lucide="receipt"></i><span th:text="#{tab.bills}">บิล</span></a>
-        <a class="ai" th:href="@{/app/chat}" th:classappend="${active == 'chat'} ? 'active'"><i data-lucide="sparkles"></i><span th:text="#{tab.chat}">ถาม AI</span></a>
+        <a class="ai" th:href="@{/app/chat}" th:classappend="${active == 'chat'} ? 'active'"><i data-lucide="message-circle"></i><span th:text="#{tab.chat}">ถาม AI</span></a>
         <a th:href="@{/app/laundry}" th:classappend="${active == 'laundry'} ? 'active'"><i data-lucide="washing-machine"></i><span th:text="#{tab.laundry}">ซักผ้า</span></a>
         <a th:href="@{/app/requests}" th:classappend="${active == 'requests'} ? 'active'"><i data-lucide="clipboard-list"></i><span th:text="#{tab.requests}">คำร้อง</span></a>
         </th:block>

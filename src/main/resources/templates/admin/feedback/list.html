@@ -13,7 +13,7 @@
 
     <th:block th:if="${#lists.isEmpty(feedbacks)}">
         <div class="card">
-            <div th:replace="~{fragments/ui :: emptyState('message-square', #{feedback.empty.title}, #{feedback.empty.text}, null, null)}"></div>
+            <div th:replace="~{fragments/ui :: emptyState(#{feedback.empty.title}, #{feedback.empty.text}, null, null)}"></div>
         </div>
     </th:block>
 
@@ -45,9 +45,7 @@
                     th:attr="data-category='c' + ${catIndex},data-read=${f.readByOwner} ? 'read' : 'unread'">
                     <div class="min-w-0 flex-grow-1">
                         <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                            <span class="rating text-nowrap" role="img" th:attr="aria-label=#{common.starsOf5(${f.rating})}">
-                                <i th:each="s : ${#numbers.sequence(1, 5)}" data-lucide="star" th:class="${s <= f.rating} ? 'star-on' : 'star-off'"></i>
-                            </span>
+                            <span class="score" th:classappend="${f.rating <= 2} ? 'is-low'" role="img" th:attr="aria-label=#{common.starsOf5(${f.rating})}"><span th:text="${f.rating}">4</span><small>/5</small></span>
                             <span class="badge status-neutral" th:text="${f.categoryKey != null} ? #{${f.categoryKey}} : ${f.category}"></span>
                             <span class="badge status-info" th:unless="${f.readByOwner}" th:text="#{feedback.new}">ใหม่</span>
                         </div>
@@ -67,7 +65,7 @@
                 </li>
             </ul>
             <div data-filter-empty="#feedbackList" hidden>
-                <div th:replace="~{fragments/ui :: emptyState('circle-check', #{feedback.noMatch.title}, #{feedback.noMatch.text}, null, null)}"></div>
+                <div th:replace="~{fragments/ui :: emptyState(#{feedback.noMatch.title}, #{feedback.noMatch.text}, null, null)}"></div>
             </div>
         </div>
     </th:block>

@@ -10,12 +10,12 @@
             <h1 class="page-title" th:text="#{nav.tenants}">ผู้เช่า</h1>
             <p class="page-sub" th:text="#{tenants.sub(${#lists.size(tenants)}, ${appCount})}"></p>
         </div>
-        <a class="btn btn-primary" th:href="@{/admin/tenants/new}"><i data-lucide="user-plus"></i> <span th:text="#{tenants.add}">เพิ่มผู้เช่า</span></a>
+        <a class="btn btn-primary" th:href="@{/admin/tenants/new}"><span th:text="#{tenants.add}">เพิ่มผู้เช่า</span></a>
     </div>
 
     <th:block th:if="${#lists.isEmpty(tenants)}">
         <div class="card">
-            <div th:replace="~{fragments/ui :: emptyState('users', #{tenants.empty.title}, #{tenants.empty.text}, @{/admin/tenants/new}, #{tenants.add})}"></div>
+            <div th:replace="~{fragments/ui :: emptyState(#{tenants.empty.title}, #{tenants.empty.text}, @{/admin/tenants/new}, #{tenants.add})}"></div>
         </div>
     </th:block>
 
@@ -47,7 +47,6 @@
             <span class="list-count" data-filter-count="#tenantTable" aria-live="polite"></span>
         </div>
         <p class="form-text d-flex gap-2 mb-3">
-            <i data-lucide="info"></i>
             <span th:text="#{tenants.appHint}">ผู้เช่าที่สมัครแอปด้วยอีเมลเดียวกับในรายการนี้ จะเห็นห้อง บิล และเพื่อนร่วมห้องของตัวเองอัตโนมัติ</span>
         </p>
 
@@ -132,7 +131,7 @@
             </details>
         </div>
         <div class="card" data-filter-empty="#tenantTable" hidden>
-            <div th:replace="~{fragments/ui :: emptyState('search-x', #{tenants.noMatch}, #{common.noMatch.text}, null, null)}"></div>
+            <div th:replace="~{fragments/ui :: emptyState(#{tenants.noMatch}, #{common.noMatch.text}, null, null)}"></div>
         </div>
     </th:block>
 </main>

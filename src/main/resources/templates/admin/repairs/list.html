@@ -12,12 +12,12 @@
                     ? #{repairs.counts(${pendingCount}, ${progressCount})}
                     : #{repairs.noneOpen}">ไม่มีงานซ่อมค้าง</p>
         </div>
-        <a class="btn btn-primary" th:href="@{/admin/repairs/new}"><i data-lucide="plus"></i> <span th:text="#{repairs.add}">เพิ่มรายการ</span></a>
+        <a class="btn btn-primary" th:href="@{/admin/repairs/new}"><span th:text="#{repairs.add}">เพิ่มรายการ</span></a>
     </div>
 
     <th:block th:if="${#lists.isEmpty(repairs)}">
         <div class="card">
-            <div th:replace="~{fragments/ui :: emptyState('wrench', #{repairs.empty.title}, #{repairs.empty.text}, @{/admin/repairs/new}, #{repairs.add})}"></div>
+            <div th:replace="~{fragments/ui :: emptyState(#{repairs.empty.title}, #{repairs.empty.text}, @{/admin/repairs/new}, #{repairs.add})}"></div>
         </div>
     </th:block>
 
@@ -75,7 +75,7 @@
                         <td class="td-actions">
                             <a class="btn btn-soft btn-sm" th:href="@{/admin/repairs/{id}(id=${r.id})}"
                                th:attr="aria-label=#{repairs.updateN(${r.title}, ${r.room.roomNumber})}">
-                                <i data-lucide="pencil"></i> <span th:text="${open} ? #{repairs.update} : #{common.edit}">อัปเดต</span>
+                                <span th:text="${open} ? #{repairs.update} : #{common.edit}">อัปเดต</span>
                             </a>
                             <a class="btn btn-ghost-danger btn-icon btn-sm" th:href="@{/admin/repairs/{id}/delete(id=${r.id})}"
                                th:attr="aria-label=#{repairs.deleteN(${r.title}, ${r.room.roomNumber})},data-confirm=#{repairs.delete.confirm},data-confirm-title=#{repairs.deleteTitle(${r.title})}"
@@ -86,7 +86,7 @@
                 </table>
             </div>
             <div data-filter-empty="#repairTable" hidden>
-                <div th:replace="~{fragments/ui :: emptyState('circle-check', #{repairs.noMatch.title}, #{repairs.noMatch.text}, null, null)}"></div>
+                <div th:replace="~{fragments/ui :: emptyState(#{repairs.noMatch.title}, #{repairs.noMatch.text}, null, null)}"></div>
             </div>
         </div>
     </th:block>

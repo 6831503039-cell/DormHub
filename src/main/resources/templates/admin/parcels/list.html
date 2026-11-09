@@ -7,7 +7,7 @@
             <h1 class="page-title" th:text="#{nav.parcels}">พัสดุ</h1>
             <p class="page-sub" th:text="${waitingCount > 0} ? #{parcels.admin.waitingN(${waitingCount})} : #{parcels.admin.noneWaiting}"></p>
         </div>
-        <a class="btn btn-primary" th:href="@{/admin/parcels/new}"><i data-lucide="plus"></i> <span th:text="#{parcels.add}">แจ้งพัสดุมาถึง</span></a>
+        <a class="btn btn-primary" th:href="@{/admin/parcels/new}"><span th:text="#{parcels.add}">แจ้งพัสดุมาถึง</span></a>
     </div>
     <p class="form-text d-flex gap-2 mb-3">
         <i data-lucide="info"></i>
@@ -15,7 +15,7 @@
     </p>
 
     <div class="card" th:if="${#lists.isEmpty(parcels)}">
-        <div th:replace="~{fragments/ui :: emptyState('package', #{parcels.admin.empty.title}, #{parcels.admin.empty.text}, @{/admin/parcels/new}, #{parcels.add})}"></div>
+        <div th:replace="~{fragments/ui :: emptyState(#{parcels.admin.empty.title}, #{parcels.admin.empty.text}, @{/admin/parcels/new}, #{parcels.add})}"></div>
     </div>
 
     <th:block th:unless="${#lists.isEmpty(parcels)}">
@@ -74,7 +74,7 @@
                         <td class="td-actions">
                             <form class="d-inline" th:if="${p.waiting}" th:action="@{/admin/parcels/{id}/picked-up(id=${p.id})}" method="post">
                                 <button class="btn btn-soft btn-sm" type="submit" th:attr="aria-label=#{parcels.markPickedN(${p.room.roomNumber})}">
-                                    <i data-lucide="check"></i> <span th:text="#{parcels.markPicked}">รับแล้ว</span></button>
+                                    <span th:text="#{parcels.markPicked}">รับแล้ว</span></button>
                             </form>
                             <form class="d-inline" th:action="@{/admin/parcels/{id}/delete(id=${p.id})}" method="post">
                                 <button class="btn btn-ghost-danger btn-icon btn-sm" type="submit" th:title="#{common.delete}"
@@ -86,7 +86,7 @@
                 </table>
             </div>
             <div data-filter-empty="#parcelTable" hidden>
-                <div th:replace="~{fragments/ui :: emptyState('circle-check', #{parcels.noMatch}, #{common.noMatch.text}, null, null)}"></div>
+                <div th:replace="~{fragments/ui :: emptyState(#{parcels.noMatch}, #{common.noMatch.text}, null, null)}"></div>
             </div>
         </div>
     </th:block>

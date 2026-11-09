@@ -6,21 +6,21 @@
     <p class="app-sub" th:text="${linked} ? #{usage.sub(${tenant.room.roomNumber})} : #{usage.sub.noRoom}">หน่วยไฟฟ้าย้อนหลัง 12 เดือนของห้อง</p>
 
     <div class="card" th:if="${#lists.isEmpty(bills)}">
-        <div th:replace="~{fragments/ui :: emptyState('zap', #{usage.empty.title}, ${linked} ? #{usage.empty.text} : #{requests.notLinked}, null, null)}"></div>
+        <div th:replace="~{fragments/ui :: emptyState(#{usage.empty.title}, ${linked} ? #{usage.empty.text} : #{requests.notLinked}, null, null)}"></div>
     </div>
 
     <th:block th:unless="${#lists.isEmpty(bills)}">
-        <div class="row g-2 mb-3">
+        <div class="row g-3 mb-5">
             <div class="col-6">
-                <div class="card kpi tone-warning">
-                    <span class="kpi-head"><span th:text="#{home.lastElectric}">ไฟเดือนล่าสุด</span> <i data-lucide="zap"></i></span>
+                <div class="card kpi">
+                    <span class="kpi-head" th:text="#{home.lastElectric}">ไฟเดือนล่าสุด</span>
                     <span class="kpi-value"><span th:text="${bills[0].electricUnits}">0</span> <small th:text="#{common.units}">หน่วย</small></span>
                     <span class="kpi-meta" th:text="${bills[0].billMonth} + ' · ฿' + ${#numbers.formatDecimal(bills[0].electricCost, 1, 'COMMA', 2, 'POINT')}"></span>
                 </div>
             </div>
             <div class="col-6">
                 <div class="card kpi">
-                    <span class="kpi-head"><span th:text="#{usage.average}">เฉลี่ยต่อเดือน</span> <i data-lucide="activity"></i></span>
+                    <span class="kpi-head" th:text="#{usage.average}">เฉลี่ยต่อเดือน</span>
                     <span class="kpi-value"><span th:text="${avgUnits}">0</span> <small th:text="#{common.units}">หน่วย</small></span>
                     <span class="kpi-meta" th:text="#{usage.monthsN(${#lists.size(bills)})}"></span>
                 </div>
@@ -36,10 +36,10 @@
                         <span th:style="'width:' + (${maxUnits} > 0 ? ${b.electricUnits * 100 / maxUnits} : 0) + '%'"
                               th:classappend="${b.electricUnits > avgUnits * 1.3} ? 'is-high'"></span>
                     </span>
-                    <span class="num usage-units" th:text="${b.electricUnits} + ' ' + #{common.units}"></span>
+                    <span class="usage-units" th:text="${b.electricUnits} + ' ' + #{common.units}"></span>
                 </li>
             </ul>
-            <p class="form-text px-4 pb-3 mb-0" th:text="#{usage.note}">ค่าไฟแสดงเป็นยอดรวมของทั้งห้อง ดูยอดที่ต้องชำระได้ที่เมนูบิล</p>
+            <p class="form-text mt-2 mb-0" th:text="#{usage.note}">ค่าไฟแสดงเป็นยอดรวมของทั้งห้อง ดูยอดที่ต้องชำระได้ที่เมนูบิล</p>
         </section>
     </th:block>
 </main>

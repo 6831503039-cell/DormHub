@@ -63,7 +63,7 @@
         </div>
 
         <div class="form-actions">
-            <button class="btn btn-primary" type="submit"><i data-lucide="check"></i> <span th:text="#{common.save}">บันทึก</span></button>
+            <button class="btn btn-primary" type="submit"><span th:text="#{common.save}">บันทึก</span></button>
             <a class="btn btn-secondary" th:href="@{/admin/rooms}" th:text="#{common.cancel}">ยกเลิก</a>
         </div>
     </form>
@@ -84,7 +84,7 @@
             </li>
         </ul>
         <th:block th:if="${#lists.isEmpty(tenants)}">
-            <div th:replace="~{fragments/ui :: emptyState('user-plus', #{tenants.empty.title}, #{room.tenants.empty}, @{/admin/tenants/new}, #{tenants.add})}"></div>
+            <div th:replace="~{fragments/ui :: emptyState(#{tenants.empty.title}, #{room.tenants.empty}, @{/admin/tenants/new}, #{tenants.add})}"></div>
         </th:block>
     </section>
 </main>

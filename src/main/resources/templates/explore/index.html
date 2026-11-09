@@ -21,12 +21,12 @@
         <span class="text-muted small d-none d-md-inline" th:text="#{explore.hint}">ดูห้องว่างและจองห้องได้โดยไม่ต้องสมัครสมาชิก</span>
         <button class="btn btn-ghost btn-icon btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#settingsModal"
                 th:aria-label="#{settings.title}" th:title="#{settings.title}"><i data-lucide="settings"></i></button>
-        <a class="btn btn-light btn-sm" th:href="@{/login}"><i data-lucide="log-in"></i> <span th:text="#{common.login}">เข้าสู่ระบบ</span></a>
+        <a class="btn btn-light btn-sm" th:href="@{/login}"><span th:text="#{common.login}">เข้าสู่ระบบ</span></a>
     </div>
 </header>
 
 <div th:if="${success}" class="alert alert-success alert-dismissible fade show explore-toast" role="status">
-    <i data-lucide="check-circle-2"></i> <span th:text="${success}"></span>
+    <span th:text="${success}"></span>
     <button type="button" class="btn-close" data-bs-dismiss="alert" th:aria-label="#{common.close}"></button>
 </div>
 <div th:if="${error}" class="alert alert-danger alert-dismissible fade show explore-toast" role="alert">

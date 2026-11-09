@@ -7,14 +7,14 @@
 
     <th:block th:if="${tenant == null or tenant.room == null}">
         <div class="card">
-            <div th:replace="~{fragments/ui :: emptyState('link', #{bills.none}, #{bills.notLinked}, null, null)}"></div>
+            <div th:replace="~{fragments/ui :: emptyState(#{bills.none}, #{bills.notLinked}, null, null)}"></div>
         </div>
     </th:block>
 
     <th:block th:if="${unpaid != null}">
         <p class="app-sub" th:text="#{common.roomN(${tenant.room.roomNumber})} + ' · ' + (${#lists.isEmpty(unpaid)} ? #{bills.nothingDue} : #{bills.unpaidCount(${#lists.size(unpaid)})})"></p>
 
-        <section class="card mb-3" th:each="v : ${unpaid}"
+        <section class="card mb-5" th:each="v : ${unpaid}"
                  th:with="overdue=${v.bill.dueDate != null and v.bill.dueDate.isBefore(today)}"
                  th:attr="aria-label=#{bills.billFor(${v.bill.billMonth})}">
             <div class="card-header">
@@ -67,7 +67,7 @@
                                 <input class="form-control" type="file" name="slip" accept="image/*" th:id="'slip' + ${v.bill.id}" required>
                                 <div class="form-text" th:text="#{bills.slipHelp}">AI จะตรวจสลิปและตัดยอดให้อัตโนมัติถ้ายอดตรง</div>
                             </div>
-                            <button class="btn btn-primary w-100" type="submit"><i data-lucide="upload"></i> <span th:text="#{bills.sendSlip}">ส่งสลิป</span></button>
+                            <button class="btn btn-primary w-100" type="submit"><span th:text="#{bills.sendSlip}">ส่งสลิป</span></button>
                         </div>
                     </form>
                 </th:block>
@@ -86,7 +86,7 @@
 
         <th:block th:if="${#lists.isEmpty(unpaid)}">
             <div class="card mb-3">
-                <div th:replace="~{fragments/ui :: emptyState('badge-check', #{bills.allPaid.title}, #{bills.allPaid.text}, null, null)}"></div>
+                <div th:replace="~{fragments/ui :: emptyState(#{bills.allPaid.title}, #{bills.allPaid.text}, null, null)}"></div>
             </div>
         </th:block>
 
@@ -104,7 +104,7 @@
                     </div>
                 </li>
             </ul>
-            <p class="text-muted small px-4 py-3 mb-0" th:if="${#lists.isEmpty(history)}" th:text="#{bills.noHistory}">ยังไม่มีประวัติ</p>
+            <p class="text-muted small mb-0" th:if="${#lists.isEmpty(history)}" th:text="#{bills.noHistory}">ยังไม่มีประวัติ</p>
         </section>
     </th:block>
 </main>

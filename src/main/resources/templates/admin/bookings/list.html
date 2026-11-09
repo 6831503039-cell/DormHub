@@ -7,7 +7,7 @@
             <h1 class="page-title" th:text="#{bookings.title}">คำขอจองห้อง</h1>
             <p class="page-sub" th:text="${pendingCount > 0} ? #{bookings.pendingN(${pendingCount})} : #{bookings.nonePending}"></p>
         </div>
-        <a class="btn btn-secondary" th:href="@{/explore}" target="_blank" rel="noopener"><i data-lucide="external-link"></i> <span th:text="#{bookings.openPage}">เปิดหน้าจองห้อง</span></a>
+        <a class="btn btn-secondary" th:href="@{/explore}" target="_blank" rel="noopener"><span th:text="#{bookings.openPage}">เปิดหน้าจองห้อง</span></a>
     </div>
     <p class="form-text d-flex gap-2 mb-3">
         <i data-lucide="info"></i>
@@ -16,7 +16,7 @@
 
     <th:block th:if="${#lists.isEmpty(bookings)}">
         <div class="card">
-            <div th:replace="~{fragments/ui :: emptyState('inbox', #{bookings.empty.title}, #{bookings.empty.text}, null, null)}"></div>
+            <div th:replace="~{fragments/ui :: emptyState(#{bookings.empty.title}, #{bookings.empty.text}, null, null)}"></div>
         </div>
     </th:block>
 
@@ -73,7 +73,7 @@
                                 <input type="hidden" name="status" value="CONFIRMED">
                                 <button class="btn btn-soft btn-sm" type="submit"
                                         th:attr="aria-label=#{bookings.confirmN(${b.fullName})},data-confirm=${b.applicant != null} ? #{bookings.confirm.linkConfirm(${b.fullName}, ${b.room.roomNumber})} : null,data-confirm-title=${b.applicant != null} ? #{bookings.confirm} : null,data-confirm-ok=${b.applicant != null} ? #{bookings.confirm} : null"
-                                        th:data-confirm-tone="${b.applicant != null} ? 'primary' : null"><i data-lucide="check"></i> <span th:text="#{bookings.confirm}">ยืนยัน</span></button>
+                                        th:data-confirm-tone="${b.applicant != null} ? 'primary' : null"><span th:text="#{bookings.confirm}">ยืนยัน</span></button>
                             </form>
                             <form class="d-inline" th:action="@{/admin/bookings/{id}/status(id=${b.id})}" method="post" th:if="${b.status.name() != 'CANCELLED'}">
                                 <input type="hidden" name="status" value="CANCELLED">
@@ -87,7 +87,7 @@
                 </table>
             </div>
             <div data-filter-empty="#bookingTable" hidden>
-                <div th:replace="~{fragments/ui :: emptyState('circle-check', #{bookings.noMatch}, #{common.noMatch.text}, null, null)}"></div>
+                <div th:replace="~{fragments/ui :: emptyState(#{bookings.noMatch}, #{common.noMatch.text}, null, null)}"></div>
             </div>
         </div>
     </th:block>

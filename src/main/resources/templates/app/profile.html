@@ -6,7 +6,7 @@
     <p class="app-sub" th:text="#{profile.sub}">แก้ชื่อ รูปโปรไฟล์ เบอร์โทร และรหัสผ่าน</p>
 
     <!-- name, phone and profile picture -->
-    <form class="card card-body mb-3" th:action="@{/app/profile}" method="post" enctype="multipart/form-data">
+    <form class="card card-body mb-5" th:action="@{/app/profile}" method="post" enctype="multipart/form-data">
         <div class="profile-head mb-3">
             <img class="profile-photo" th:if="${currentUser.hasAvatar()}" id="avatarPreview"
                  th:src="@{/app/profile/avatar(v=${currentUser.avatarVersion})}" th:alt="#{profile.photo}">
@@ -15,7 +15,7 @@
             </div>
             <div class="min-w-0">
                 <label class="btn btn-secondary btn-sm mb-1" for="avatar">
-                    <i data-lucide="camera"></i> <span th:text="#{profile.choosePhoto}">เลือกรูปโปรไฟล์</span>
+                    <span th:text="#{profile.choosePhoto}">เลือกรูปโปรไฟล์</span>
                 </label>
                 <input class="visually-hidden" type="file" id="avatar" name="avatar" accept="image/*">
                 <div class="form-text mt-0" th:text="#{profile.photoHelp}">ไฟล์รูปภาพ ไม่เกิน 2 MB</div>
@@ -38,11 +38,11 @@
             <label class="form-label" for="phone" th:text="#{profile.phone}">เบอร์โทรศัพท์</label>
             <input class="form-control num" type="tel" id="phone" name="phone" th:value="${tenant.phone}" maxlength="20" autocomplete="tel">
         </div>
-        <button class="btn btn-primary w-100" type="submit"><i data-lucide="check"></i> <span th:text="#{common.save}">บันทึก</span></button>
+        <button class="btn btn-primary w-100" type="submit"><span th:text="#{common.save}">บันทึก</span></button>
     </form>
 
     <!-- password -->
-    <form class="card card-body mb-4" th:action="@{/app/profile/password}" method="post">
+    <form class="card card-body mb-5" th:action="@{/app/profile/password}" method="post">
         <h2 class="section-title mt-0 mb-3" th:text="#{profile.password}">เปลี่ยนรหัสผ่าน</h2>
         <div class="mb-3">
             <label class="form-label" for="currentPassword" th:text="#{profile.currentPassword}">รหัสผ่านปัจจุบัน</label>
@@ -71,7 +71,7 @@
                 </button>
             </div>
         </div>
-        <button class="btn btn-secondary w-100" type="submit"><i data-lucide="key-round"></i> <span th:text="#{profile.changePassword}">เปลี่ยนรหัสผ่าน</span></button>
+        <button class="btn btn-secondary w-100" type="submit"><span th:text="#{profile.changePassword}">เปลี่ยนรหัสผ่าน</span></button>
     </form>
 
     <script th:src="@{/js/password-toggle.js}" defer></script>

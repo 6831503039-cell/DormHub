@@ -43,7 +43,7 @@
         </div>
 
         <div class="form-actions">
-            <button class="btn btn-primary" type="submit"><i data-lucide="send"></i> <span th:text="${announcement.id == null} ? #{announcements.post} : #{common.save}">ประกาศ</span></button>
+            <button class="btn btn-primary" type="submit"><span th:text="${announcement.id == null} ? #{announcements.post} : #{common.save}">ประกาศ</span></button>
             <a class="btn btn-secondary" th:href="@{/admin/announcements}" th:text="#{common.cancel}">ยกเลิก</a>
         </div>
     </form>

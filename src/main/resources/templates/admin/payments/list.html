@@ -11,14 +11,11 @@
                     : #{slips.noneToReview}">ไม่มีสลิปที่รอตรวจ</p>
         </div>
     </div>
-    <p class="form-text d-flex gap-2 mb-3">
-        <i data-lucide="sparkles"></i>
-        <span th:text="#{slips.hint}">AI อ่านสลิปและตัดยอดให้อัตโนมัติเมื่อยอดตรงและไม่พบความผิดปกติ รายการที่ไม่แน่ใจจะรอให้ตรวจที่นี่</span>
-    </p>
+    <p class="form-text mb-4"><span th:text="#{slips.hint}">AI อ่านสลิปและตัดยอดให้อัตโนมัติเมื่อยอดตรงและไม่พบความผิดปกติ รายการที่ไม่แน่ใจจะรอให้ตรวจที่นี่</span></p>
 
     <th:block th:if="${#lists.isEmpty(payments)}">
         <div class="card">
-            <div th:replace="~{fragments/ui :: emptyState('scan-line', #{slips.empty.title}, #{slips.empty.text}, null, null)}"></div>
+            <div th:replace="~{fragments/ui :: emptyState(#{slips.empty.title}, #{slips.empty.text}, null, null)}"></div>
         </div>
     </th:block>
 
@@ -91,7 +88,7 @@
                         <td class="td-actions">
                             <form class="d-inline" th:if="${p.status.name() != 'APPROVED'}" th:action="@{/admin/payments/{id}/approve(id=${p.id})}" method="post">
                                 <button class="btn btn-primary btn-sm" type="submit"
-                                        th:attr="aria-label=#{slips.approveN(${p.bill.room.roomNumber})}"><i data-lucide="check"></i> <span th:text="#{slips.approve}">อนุมัติ</span></button>
+                                        th:attr="aria-label=#{slips.approveN(${p.bill.room.roomNumber})}"><span th:text="#{slips.approve}">อนุมัติ</span></button>
                             </form>
                             <form class="d-inline" th:if="${review}" th:action="@{/admin/payments/{id}/reject(id=${p.id})}" method="post">
                                 <button class="btn btn-ghost-danger btn-sm" type="submit"
@@ -104,7 +101,7 @@
                 </table>
             </div>
             <div data-filter-empty="#slipTable" hidden>
-                <div th:replace="~{fragments/ui :: emptyState('circle-check', #{slips.noMatch.title}, #{slips.noMatch.text}, null, null)}"></div>
+                <div th:replace="~{fragments/ui :: emptyState(#{slips.noMatch.title}, #{slips.noMatch.text}, null, null)}"></div>
             </div>
         </div>
     </th:block>
