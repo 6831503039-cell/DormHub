@@ -27,7 +27,6 @@
                 <div class="hero-label mt-2" th:text="${myOutstanding > 0} ? #{home.amountDueShare} : #{home.amountDue}"></div>
                 <div class="amount" th:text="'฿' + ${#numbers.formatDecimal(myOutstanding, 1, 'COMMA', 2, 'POINT')}">฿0</div>
             </div>
-            <i class="hero-icon" th:data-lucide="${myOutstanding > 0} ? 'wallet' : 'badge-check'"></i>
         </div>
         <a class="btn mt-3" th:classappend="${myOutstanding > 0} ? 'btn-light' : 'btn-secondary'" th:href="@{/app/bills}">
             <i th:data-lucide="${myOutstanding > 0} ? 'scan-line' : 'receipt'"></i>
