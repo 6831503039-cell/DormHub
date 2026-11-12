@@ -22,16 +22,22 @@
         <span><span class="dot warning"></span><span th:text="#{roomStatus.MAINTENANCE}">ปิดซ่อม</span></span>
     </div>
 
-    <!-- the same rooms as a plain list, grouped by building and floor -->
-    <section th:each="building : ${buildings}" class="mb-4" th:attr="aria-label=#{common.buildingN(${building.key})}">
-        <h2 class="section-title" th:text="#{common.buildingN(${building.key})}"></h2>
-        <div class="card mb-3" th:each="floor : ${building.value}">
-            <div class="card-header">
-                <span th:text="#{common.floorN(${floor.key})}"></span>
-                <span class="card-link text-muted fw-normal"
+    <!-- the same rooms as a list: building > floor > rooms, each level folded until clicked -->
+    <details class="card fold mb-3" th:each="building : ${buildings}">
+        <summary class="fold-head">
+            <span class="fold-title" th:text="#{common.buildingN(${building.key})}"></span>
+            <span class="fold-meta"
+                  th:text="#{layout.floorsN(${#maps.size(building.value)})} + ' · ' + #{common.freeOf(${buildingFree[building.key]}, ${buildingTotal[building.key]})}"></span>
+            <i data-lucide="chevron-down" class="fold-chev"></i>
+        </summary>
+        <details class="fold fold-floor" th:each="floor : ${building.value}">
+            <summary class="fold-head">
+                <span class="fold-title" th:text="#{common.floorN(${floor.key})}"></span>
+                <span class="fold-meta"
                       th:text="#{common.freeOf(${#lists.size(floor.value.?[status.name() == 'AVAILABLE'])}, ${#lists.size(floor.value)})}"></span>
-            </div>
-            <div class="card-body">
+                <i data-lucide="chevron-down" class="fold-chev"></i>
+            </summary>
+            <div class="fold-body">
                 <div class="floor-row">
                     <a th:each="r : ${floor.value}" class="room-tile" th:classappend="${r.status.name()}" th:href="@{/admin/rooms/{id}(id=${r.id})}"
                        th:with="occ=${occupants.getOrDefault(r.id, 0L)}"
@@ -48,8 +54,8 @@
                     </a>
                 </div>
             </div>
-        </div>
-    </section>
+        </details>
+    </details>
 
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
