@@ -24,6 +24,7 @@ import th.mfu.TenantRepository;
 import th.mfu.config.Messages;
 import th.mfu.domain.Bill;
 import th.mfu.domain.Room;
+import th.mfu.domain.RoomStatus;
 import th.mfu.domain.Tenant;
 import th.mfu.service.RoomMapService;
 import th.mfu.service.RoomView;
@@ -72,7 +73,16 @@ public class RoomController {
             buildings.computeIfAbsent(building, b -> new TreeMap<>())
                     .computeIfAbsent(floor, f -> new java.util.ArrayList<>()).add(room);
         }
+        // free / total rooms per building, shown on each collapsed building row
+        Map<String, Integer> buildingFree = new TreeMap<>();
+        Map<String, Integer> buildingTotal = new TreeMap<>();
+        buildings.forEach((building, floors) -> floors.values().forEach(rooms -> rooms.forEach(room -> {
+            buildingTotal.merge(building, 1, Integer::sum);
+            buildingFree.merge(building, room.getStatus() == RoomStatus.AVAILABLE ? 1 : 0, Integer::sum);
+        })));
         model.addAttribute("buildings", buildings);
+        model.addAttribute("buildingFree", buildingFree);
+        model.addAttribute("buildingTotal", buildingTotal);
         model.addAttribute("occupants", occupantsByRoom());
         model.addAttribute("soonDays", RoomMapService.SOON_DAYS);
         Bill rates = new Bill();
