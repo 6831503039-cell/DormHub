@@ -21,8 +21,8 @@ steps:
    - 'managed'
    - '--port'
    - '8100'
-   # the database (H2) and login sessions live in memory, so every request must reach the same instance:
-   # a second instance would not know accounts registered or sessions started on the first one
+   # login sessions live in memory, so every request must reach the same instance:
+   # a second instance would not know sessions started on the first one
    - '--max-instances'
    - '1'
    - '--session-affinity'
