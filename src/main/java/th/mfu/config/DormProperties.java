@@ -65,6 +65,24 @@ public class DormProperties {
     public static class Gemini {
         private String apiKey;
         private String model;
+        // how much the model "thinks" before answering: low (fast, good for chat), medium (model default), high.
+        // Empty = leave it to the model's default. Gemini 3.8 Flash does not accept "minimal".
+        private String thinkingLevel = "low";
+        // the chat waits at most this long for Gemini before answering from the built-in fallback
+        private int timeoutSeconds = 25;
+
+        public String getThinkingLevel() {
+            return thinkingLevel;
+        }
+        public void setThinkingLevel(String thinkingLevel) {
+            this.thinkingLevel = thinkingLevel;
+        }
+        public int getTimeoutSeconds() {
+            return timeoutSeconds;
+        }
+        public void setTimeoutSeconds(int timeoutSeconds) {
+            this.timeoutSeconds = timeoutSeconds;
+        }
 
         public String getApiKey() {
             return apiKey;
