@@ -1,5 +1,6 @@
 package th.mfu.security;
 
+import java.util.Optional;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,8 +21,11 @@ public class AppUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) {
-        AppUser user = repository.findByEmailIgnoreCase(email.trim())
-                .orElseThrow(() -> new UsernameNotFoundException(email));
+        Optional<AppUser> optUser = repository.findByEmailIgnoreCase(email.trim());
+        if (!optUser.isPresent()) {
+            throw new UsernameNotFoundException(email);
+        }
+        AppUser user = optUser.get();
         return User.withUsername(user.getEmail())
                 .password(user.getPassword())
                 .roles(user.getRole().name())

@@ -66,8 +66,13 @@ public class RentController {
             return "redirect:/app/rent";
         }
         // one open request at a time; the admin confirms or cancels it first
-        if (bookingRepository.findByApplicantOrderByCreatedAtDesc(user).stream()
-                .anyMatch(b -> b.getStatus() == BookingStatus.PENDING)) {
+        boolean hasPending = false;
+        for (BookingRequest b : bookingRepository.findByApplicantOrderByCreatedAtDesc(user)) {
+            if (b.getStatus() == BookingStatus.PENDING) {
+                hasPending = true;
+            }
+        }
+        if (hasPending) {
             redirect.addFlashAttribute("error", messages.get("flash.rent.pending"));
             return "redirect:/app/rent";
         }

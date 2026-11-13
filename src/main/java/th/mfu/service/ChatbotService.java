@@ -131,7 +131,8 @@ public class ChatbotService {
 
         List<Room> rooms = roomRepository.findAllByOrderByRoomNumberAsc();
         p.append("- ค่าเช่าต่อห้องต่อเดือน (หารเท่ากันตามจำนวนคนในห้อง): ").append(rentByFloor(rooms)).append("\n");
-        Bill rates = latestBill(tenant).orElseGet(Bill::new);
+        Optional<Bill> latest = latestBill(tenant);
+        Bill rates = latest.isPresent() ? latest.get() : new Bill();
         p.append("- ค่าไฟหน่วยละ ").append(rate(rates.getElectricRate())).append(" บาท ค่าน้ำหน่วยละ ")
                 .append(rate(rates.getWaterRate())).append(" บาท จดมิเตอร์และออกบิลเดือนละครั้ง ")
                 .append("ค่าเช่า ค่าน้ำ ค่าไฟ หารเท่ากันทุกคนในห้อง ดูกราฟการใช้ไฟได้ที่เมนู \"การใช้ไฟฟ้า\"\n");
@@ -164,7 +165,10 @@ public class ChatbotService {
         Map<Integer, TreeSet<Double>> rents = new TreeMap<>();
         for (Room room : rooms) {
             if (room.getFloor() != null && room.getMonthlyRent() != null) {
-                rents.computeIfAbsent(room.getFloor(), f -> new TreeSet<>()).add(room.getMonthlyRent());
+                if (!rents.containsKey(room.getFloor())) {
+                    rents.put(room.getFloor(), new TreeSet<>());
+                }
+                rents.get(room.getFloor()).add(room.getMonthlyRent());
             }
         }
         if (rents.isEmpty()) {
@@ -246,14 +250,18 @@ public class ChatbotService {
             s.append("\n");
         }
         s.append("- ").append(roomSummary(tenant)).append("\n");
-        latestBill(tenant).ifPresent(bill -> s.append("- บิลล่าสุด เดือน ").append(bill.getBillMonth())
+        Optional<Bill> latest = latestBill(tenant);
+        if (latest.isPresent()) {
+            Bill bill = latest.get();
+            s.append("- บิลล่าสุด เดือน ").append(bill.getBillMonth())
                 .append(": ค่าเช่า ").append(money(bill.getRent()))
                 .append(" ค่าไฟ ").append(value(bill.getElectricUnits())).append(" หน่วย ").append(money(bill.getElectricCost()))
                 .append(" ค่าน้ำ ").append(value(bill.getWaterUnits())).append(" หน่วย ").append(money(bill.getWaterCost()))
                 .append(" รวม ").append(money(bill.getTotal())).append(" บาท (ส่วนของผู้ใช้ ")
                 .append(money(billingService.shareOf(bill))).append(" บาท)")
                 .append(bill.isPaid() ? " ชำระแล้ว" : " ยังไม่ชำระ")
-                .append(bill.getDueDate() != null ? " ครบกำหนด " + bill.getDueDate().format(DATE) : "").append("\n"));
+                .append(bill.getDueDate() != null ? " ครบกำหนด " + bill.getDueDate().format(DATE) : "").append("\n");
+        }
         s.append("- พัสดุรอรับ: ").append(parcelSummary(room)).append("\n");
         s.append("- งานซ่อมของห้อง: ").append(repairsDetail(room)).append("\n");
         return s.toString();
@@ -399,7 +407,11 @@ public class ChatbotService {
         if (tenant == null || tenant.getRoom() == null) {
             return Optional.empty();
         }
-        return billRepository.findByRoomOrderByBillMonthDesc(tenant.getRoom()).stream().findFirst();
+        List<Bill> bills = billRepository.findByRoomOrderByBillMonthDesc(tenant.getRoom());
+        if (bills.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(bills.get(0));
     }
 
     /** Available rooms by building (A, B, C...) then floor, both sorted. */
@@ -409,7 +421,14 @@ public class ChatbotService {
             if (room.getStatus() == RoomStatus.AVAILABLE) {
                 String building = StringUtils.hasText(room.getBuilding()) ? room.getBuilding() : "-";
                 int floor = room.getFloor() == null ? 0 : room.getFloor();
-                free.computeIfAbsent(building, b -> new TreeMap<>()).computeIfAbsent(floor, f -> new ArrayList<>()).add(room);
+                if (!free.containsKey(building)) {
+                    free.put(building, new TreeMap<>());
+                }
+                Map<Integer, List<Room>> floors = free.get(building);
+                if (!floors.containsKey(floor)) {
+                    floors.put(floor, new ArrayList<>());
+                }
+                floors.get(floor).add(room);
             }
         }
         return free;

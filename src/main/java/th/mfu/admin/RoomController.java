@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -59,8 +60,14 @@ public class RoomController {
         for (Room room : rooms) {
             String building = room.getBuilding() == null || room.getBuilding().isBlank() ? "-" : room.getBuilding();
             int floor = room.getFloor() == null ? 0 : room.getFloor();
-            groups.computeIfAbsent(building, b -> new TreeMap<>())
-                    .computeIfAbsent(floor, f -> new ArrayList<>()).add(room);
+            if (!groups.containsKey(building)) {
+                groups.put(building, new TreeMap<>());
+            }
+            Map<Integer, List<Room>> floors = groups.get(building);
+            if (!floors.containsKey(floor)) {
+                floors.put(floor, new ArrayList<>());
+            }
+            floors.get(floor).add(room);
         }
         model.addAttribute("roomGroups", groups);
         model.addAttribute("occupants", occupantsByRoom());
@@ -75,16 +82,32 @@ public class RoomController {
         for (Room room : repository.findAllByOrderByRoomNumberAsc()) {
             String building = room.getBuilding() == null || room.getBuilding().isBlank() ? "A" : room.getBuilding();
             int floor = room.getFloor() == null ? 0 : room.getFloor();
-            buildings.computeIfAbsent(building, b -> new TreeMap<>())
-                    .computeIfAbsent(floor, f -> new java.util.ArrayList<>()).add(room);
+            if (!buildings.containsKey(building)) {
+                buildings.put(building, new TreeMap<>());
+            }
+            Map<Integer, List<Room>> floors = buildings.get(building);
+            if (!floors.containsKey(floor)) {
+                floors.put(floor, new ArrayList<>());
+            }
+            floors.get(floor).add(room);
         }
         // free / total rooms per building, shown on each collapsed building row
         Map<String, Integer> buildingFree = new TreeMap<>();
         Map<String, Integer> buildingTotal = new TreeMap<>();
-        buildings.forEach((building, floors) -> floors.values().forEach(rooms -> rooms.forEach(room -> {
-            buildingTotal.merge(building, 1, Integer::sum);
-            buildingFree.merge(building, room.getStatus() == RoomStatus.AVAILABLE ? 1 : 0, Integer::sum);
-        })));
+        for (String building : buildings.keySet()) {
+            int total = 0;
+            int free = 0;
+            for (List<Room> floorRooms : buildings.get(building).values()) {
+                for (Room room : floorRooms) {
+                    total++;
+                    if (room.getStatus() == RoomStatus.AVAILABLE) {
+                        free++;
+                    }
+                }
+            }
+            buildingTotal.put(building, total);
+            buildingFree.put(building, free);
+        }
         model.addAttribute("buildings", buildings);
         model.addAttribute("buildingFree", buildingFree);
         model.addAttribute("buildingTotal", buildingTotal);
@@ -111,7 +134,11 @@ public class RoomController {
 
     @GetMapping("/rooms/{id}")
     public String editRoomForm(Model model, @PathVariable Long id) {
-        Room room = repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Optional<Room> optRoom = repository.findById(id);
+        if (!optRoom.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        Room room = optRoom.get();
         model.addAttribute("room", room);
         // tenants come straight from the @OneToMany relationship (Room.tenants)
         model.addAttribute("tenants", room.getTenants());
@@ -145,7 +172,8 @@ public class RoomController {
         Map<Long, Long> counts = new HashMap<>();
         for (Tenant t : tenantRepository.findAll()) {
             if (t.getRoom() != null) {
-                counts.merge(t.getRoom().getId(), 1L, Long::sum);
+                Long roomId = t.getRoom().getId();
+                counts.put(roomId, counts.getOrDefault(roomId, 0L) + 1);
             }
         }
         return counts;

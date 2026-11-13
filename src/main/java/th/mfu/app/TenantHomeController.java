@@ -101,8 +101,18 @@ public class TenantHomeController {
             List<Bill> bills = billRepository.findByRoomOrderByBillMonthDesc(tenant.get().getRoom());
             List<Bill> last12 = new ArrayList<>(bills.subList(0, Math.min(12, bills.size())));
             model.addAttribute("bills", last12);
-            model.addAttribute("maxUnits", last12.stream().mapToInt(Bill::getElectricUnits).max().orElse(0));
-            model.addAttribute("avgUnits", Math.round(last12.stream().mapToInt(Bill::getElectricUnits).average().orElse(0)));
+            int maxUnits = 0;
+            long totalUnits = 0;
+            for (int i = 0; i < last12.size(); i++) {
+                int units = last12.get(i).getElectricUnits();
+                if (i == 0 || units > maxUnits) {
+                    maxUnits = units;
+                }
+                totalUnits += units;
+            }
+            long avgUnits = last12.isEmpty() ? 0 : Math.round((double) totalUnits / last12.size());
+            model.addAttribute("maxUnits", maxUnits);
+            model.addAttribute("avgUnits", avgUnits);
         } else {
             model.addAttribute("bills", Collections.emptyList());
         }

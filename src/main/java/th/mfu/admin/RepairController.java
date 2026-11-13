@@ -1,5 +1,6 @@
 package th.mfu.admin;
 
+import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -43,8 +44,12 @@ public class RepairController {
 
     @GetMapping("/repairs/{id}")
     public String editRepairForm(Model model, @PathVariable Long id) {
-        return showForm(model, repository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND)));
+        Optional<RepairRequest> optRepairRequest = repository.findById(id);
+        if (!optRepairRequest.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        RepairRequest repair = optRepairRequest.get();
+        return showForm(model, repair);
     }
 
     @PostMapping("/repairs")
@@ -54,8 +59,11 @@ public class RepairController {
         } else {
             // updating: what was reported (room, date, subject, details, reporter) stays as sent;
             // the admin only changes the status and the work details
-            RepairRequest saved = repository.findById(repair.getId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+            Optional<RepairRequest> optRepairRequest = repository.findById(repair.getId());
+            if (!optRepairRequest.isPresent()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+            }
+            RepairRequest saved = optRepairRequest.get();
             saved.setStatus(repair.getStatus());
             saved.setAdminNote(repair.getAdminNote());
             repository.save(saved);

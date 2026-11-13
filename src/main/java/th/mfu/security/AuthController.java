@@ -2,6 +2,7 @@ package th.mfu.security;
 
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -35,7 +36,12 @@ public class AuthController {
     // "/" is the landing page after login: admins go to the dashboard, everyone else to the tenant app
     @GetMapping("/")
     public String home(Authentication auth) {
-        boolean admin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean admin = false;
+        for (GrantedAuthority a : auth.getAuthorities()) {
+            if (a.getAuthority().equals("ROLE_ADMIN")) {
+                admin = true;
+            }
+        }
         return admin ? "redirect:/admin" : "redirect:/app";
     }
 

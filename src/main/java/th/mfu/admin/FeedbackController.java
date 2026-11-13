@@ -1,5 +1,6 @@
 package th.mfu.admin;
 
+import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,7 +30,11 @@ public class FeedbackController {
 
     @GetMapping("/{id}/read")
     public String toggleRead(@PathVariable Long id) {
-        Feedback feedback = repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Optional<Feedback> optFeedback = repository.findById(id);
+        if (!optFeedback.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        Feedback feedback = optFeedback.get();
         feedback.setReadByOwner(!feedback.isReadByOwner());
         repository.save(feedback);
         return "redirect:/admin/feedback";

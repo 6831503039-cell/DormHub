@@ -46,7 +46,11 @@ public class AnalyticsController {
 
         Map<Season, Double> seasonAverages = analyticsService.seasonAverages();
         model.addAttribute("seasonAverages", seasonAverages);
-        model.addAttribute("seasonLabels", seasonAverages.keySet().stream().map(s -> messages.get(s.getKey())).toArray());
+        List<String> seasonLabels = new ArrayList<>();
+        for (Season s : seasonAverages.keySet()) {
+            seasonLabels.add(messages.get(s.getKey()));
+        }
+        model.addAttribute("seasonLabels", seasonLabels.toArray());
         model.addAttribute("seasonValues", seasonAverages.values());
         model.addAttribute("abnormal", analyticsService.abnormalRooms());
         return "admin/analytics";

@@ -3,6 +3,7 @@ package th.mfu.admin;
 import java.io.IOException;
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -101,7 +102,11 @@ public class ParcelController {
     }
 
     private Parcel find(Long id) {
-        return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Optional<Parcel> optParcel = repository.findById(id);
+        if (!optParcel.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        return optParcel.get();
     }
 
     private static String trimToNull(String s) {

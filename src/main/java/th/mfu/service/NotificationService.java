@@ -47,14 +47,23 @@ public class NotificationService {
         for (Bill bill : bills) {
             if (!bill.isPaid()) {
                 LocalDate due = bill.getDueDate() != null ? bill.getDueDate() : billingService.defaultDueDate(bill.getBillMonth());
-                paymentNotice(bill.getBillMonth(), due, BillingService.split(bill.getTotal(), occupants), today)
-                        .ifPresent(notices::add);
+                Optional<Notice> payment = paymentNotice(bill.getBillMonth(), due, BillingService.split(bill.getTotal(), occupants), today);
+                if (payment.isPresent()) {
+                    notices.add(payment.get());
+                }
             }
         }
-        electricityReminder(bills, today).ifPresent(notices::add);
-        analyticsService.abnormalUsage(room).ifPresent(a -> notices.add(new Notice("warning", "zap",
-                "notice.abnormal.title", "notice.abnormal.message",
-                a.getBillMonth(), String.valueOf(a.getUnits()), String.valueOf(a.getAverage()), String.valueOf(a.getPercentAbove()))));
+        Optional<Notice> electricity = electricityReminder(bills, today);
+        if (electricity.isPresent()) {
+            notices.add(electricity.get());
+        }
+        Optional<AbnormalUsage> abnormal = analyticsService.abnormalUsage(room);
+        if (abnormal.isPresent()) {
+            AbnormalUsage a = abnormal.get();
+            notices.add(new Notice("warning", "zap",
+                    "notice.abnormal.title", "notice.abnormal.message",
+                    a.getBillMonth(), String.valueOf(a.getUnits()), String.valueOf(a.getAverage()), String.valueOf(a.getPercentAbove())));
+        }
         return notices;
     }
 

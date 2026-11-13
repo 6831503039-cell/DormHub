@@ -3,6 +3,7 @@ package th.mfu.service;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -33,13 +34,22 @@ public class LaundryService {
 
     public long availableCount() {
         LocalDateTime now = now();
-        return machines().stream().filter(m -> m.isAvailableAt(now)).count();
+        long count = 0;
+        for (LaundryMachine m : machines()) {
+            if (m.isAvailableAt(now)) {
+                count++;
+            }
+        }
+        return count;
     }
 
     /** Returns false if the machine is already running. */
     public boolean start(Long id, String userName) {
-        LaundryMachine machine = repository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Optional<LaundryMachine> optMachine = repository.findById(id);
+        if (!optMachine.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        LaundryMachine machine = optMachine.get();
         if (!machine.isAvailableAt(now())) {
             return false;
         }

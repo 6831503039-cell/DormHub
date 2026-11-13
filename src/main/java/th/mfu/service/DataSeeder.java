@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.util.Optional;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -95,7 +96,8 @@ public class DataSeeder implements CommandLineRunner {
     /** The admin login is fixed by configuration (dormhub.admin.*) and always has the ADMIN role. */
     private void ensureAdminAccount() {
         String email = props.getAdmin().getEmail().trim().toLowerCase();
-        AppUser admin = users.findByEmailIgnoreCase(email).orElseGet(AppUser::new);
+        Optional<AppUser> existing = users.findByEmailIgnoreCase(email);
+        AppUser admin = existing.isPresent() ? existing.get() : new AppUser();
         admin.setEmail(email);
         admin.setFullName("ผู้ดูแลหอพัก");
         admin.setRole(Role.ADMIN);

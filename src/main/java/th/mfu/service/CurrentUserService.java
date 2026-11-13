@@ -24,8 +24,11 @@ public class CurrentUserService {
     }
 
     public AppUser user(Principal principal) {
-        return users.findByEmailIgnoreCase(principal.getName())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+        Optional<AppUser> user = users.findByEmailIgnoreCase(principal.getName());
+        if (!user.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        }
+        return user.get();
     }
 
     /** The tenant record whose email matches the account; empty until the admin adds it. */
@@ -35,6 +38,7 @@ public class CurrentUserService {
 
     /** True when the logged-in account is a tenant with a room (the full tenant menu is shown). */
     public boolean hasRoom(Principal principal) {
-        return tenants.findFirstByEmailIgnoreCase(principal.getName()).map(t -> t.getRoom() != null).orElse(false);
+        Optional<Tenant> tenant = tenants.findFirstByEmailIgnoreCase(principal.getName());
+        return tenant.isPresent() && tenant.get().getRoom() != null;
     }
 }

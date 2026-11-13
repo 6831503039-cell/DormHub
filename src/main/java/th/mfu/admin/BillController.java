@@ -2,6 +2,7 @@ package th.mfu.admin;
 
 import java.time.Clock;
 import java.time.YearMonth;
+import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -98,7 +99,10 @@ public class BillController {
     }
 
     private Bill findBill(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Optional<Bill> optBill = repository.findById(id);
+        if (!optBill.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        return optBill.get();
     }
 }

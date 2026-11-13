@@ -1,5 +1,6 @@
 package th.mfu.admin;
 
+import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -65,6 +66,10 @@ public class PaymentController {
     }
 
     private Payment find(Long id) {
-        return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Optional<Payment> optPayment = repository.findById(id);
+        if (!optPayment.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        return optPayment.get();
     }
 }

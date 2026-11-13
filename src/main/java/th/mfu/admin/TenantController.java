@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -25,6 +26,7 @@ import th.mfu.PaymentRepository;
 import th.mfu.RoomRepository;
 import th.mfu.TenantRepository;
 import th.mfu.config.Messages;
+import th.mfu.domain.AppUser;
 import th.mfu.domain.Payment;
 import th.mfu.domain.Room;
 import th.mfu.domain.RoomStatus;
@@ -59,21 +61,29 @@ public class TenantController {
         // building -> floor -> tenants ordered by room: a collapsible card per building with a part per floor;
         // "none" = no room yet (last, floor 0)
         Map<String, Map<Integer, List<Tenant>>> groups = new TreeMap<>(Comparator.comparing((String b) -> b.equals("none")).thenComparing(b -> b));
-        tenants.stream()
-                .sorted(Comparator.comparing((Tenant t) -> t.getRoom() == null ? "~" : t.getRoom().getRoomNumber())
-                        .thenComparing(Tenant::getFullName))
-                .forEach(t -> {
-                    Room room = t.getRoom();
-                    String building = room == null ? "none"
-                            : (room.getBuilding() == null || room.getBuilding().isBlank() ? "-" : room.getBuilding());
-                    int floor = room == null || room.getFloor() == null ? 0 : room.getFloor();
-                    groups.computeIfAbsent(building, b -> new TreeMap<>())
-                            .computeIfAbsent(floor, f -> new ArrayList<>()).add(t);
-                });
+        List<Tenant> sorted = new ArrayList<>(tenants);
+        sorted.sort(Comparator.comparing((Tenant t) -> t.getRoom() == null ? "~" : t.getRoom().getRoomNumber())
+                .thenComparing(Tenant::getFullName));
+        for (Tenant t : sorted) {
+            Room room = t.getRoom();
+            String building = room == null ? "none"
+                    : (room.getBuilding() == null || room.getBuilding().isBlank() ? "-" : room.getBuilding());
+            int floor = room == null || room.getFloor() == null ? 0 : room.getFloor();
+            if (!groups.containsKey(building)) {
+                groups.put(building, new TreeMap<>());
+            }
+            Map<Integer, List<Tenant>> floors = groups.get(building);
+            if (!floors.containsKey(floor)) {
+                floors.put(floor, new ArrayList<>());
+            }
+            floors.get(floor).add(t);
+        }
         model.addAttribute("tenantGroups", groups);
         // emails that already have a login, so the list can show which tenants use the app
         Set<String> accountEmails = new HashSet<>();
-        userRepository.findAll().forEach(u -> accountEmails.add(u.getEmail().toLowerCase()));
+        for (AppUser u : userRepository.findAll()) {
+            accountEmails.add(u.getEmail().toLowerCase());
+        }
         model.addAttribute("accountEmails", accountEmails);
         return "admin/tenants/list";
     }
@@ -140,8 +150,11 @@ public class TenantController {
     }
 
     private Tenant findTenant(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Optional<Tenant> optTenant = repository.findById(id);
+        if (!optTenant.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        return optTenant.get();
     }
 
     // a room is occupied while it has at least one tenant; rooms under maintenance are left alone

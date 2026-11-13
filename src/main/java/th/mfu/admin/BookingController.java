@@ -44,8 +44,11 @@ public class BookingController {
 
     @PostMapping("/bookings/{id}/status")
     public String updateStatus(@PathVariable Long id, @RequestParam BookingStatus status, RedirectAttributes redirect) {
-        BookingRequest booking = repository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Optional<BookingRequest> optBookingRequest = repository.findById(id);
+        if (!optBookingRequest.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        BookingRequest booking = optBookingRequest.get();
         booking.setStatus(status);
         repository.save(booking);
         String message = messages.get("flash.booking.status",

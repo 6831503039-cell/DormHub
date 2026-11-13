@@ -53,13 +53,18 @@ public class RoomMapService {
         Map<Long, List<Tenant>> tenantsByRoom = new HashMap<>();
         for (Tenant t : tenantRepository.findAllByOrderByFirstNameAsc()) {
             if (t.getRoom() != null) {
-                tenantsByRoom.computeIfAbsent(t.getRoom().getId(), id -> new ArrayList<>()).add(t);
+                Long roomId = t.getRoom().getId();
+                if (!tenantsByRoom.containsKey(roomId)) {
+                    tenantsByRoom.put(roomId, new ArrayList<>());
+                }
+                tenantsByRoom.get(roomId).add(t);
             }
         }
         Map<Long, Long> pendingByRoom = new HashMap<>();
         for (BookingRequest b : bookingRepository.findByStatus(BookingStatus.PENDING)) {
             if (b.getRoom() != null) {
-                pendingByRoom.merge(b.getRoom().getId(), 1L, Long::sum);
+                Long roomId = b.getRoom().getId();
+                pendingByRoom.put(roomId, pendingByRoom.getOrDefault(roomId, 0L) + 1);
             }
         }
 

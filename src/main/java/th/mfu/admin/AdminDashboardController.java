@@ -55,14 +55,26 @@ public class AdminDashboardController {
 
         List<Bill> unpaidBills = billRepository.findByPaidFalseOrderByBillMonthAsc();
         model.addAttribute("unpaidBills", unpaidBills);
-        model.addAttribute("unpaidTotal", unpaidBills.stream().mapToDouble(Bill::getTotal).sum());
+        double unpaidTotal = 0;
+        for (Bill bill : unpaidBills) {
+            unpaidTotal += bill.getTotal();
+        }
+        model.addAttribute("unpaidTotal", unpaidTotal);
 
         model.addAttribute("abnormal", analyticsService.abnormalRooms());
 
         List<Feedback> allFeedback = feedbackRepository.findAllByOrderByCreatedAtDesc();
         model.addAttribute("latestFeedback", feedbackRepository.findTop5ByOrderByCreatedAtDesc());
         model.addAttribute("unreadFeedback", feedbackRepository.countByReadByOwnerFalse());
-        model.addAttribute("averageRating", allFeedback.stream().mapToInt(Feedback::getRating).average().orElse(0));
+        double averageRating = 0;
+        if (!allFeedback.isEmpty()) {
+            int sum = 0;
+            for (Feedback feedback : allFeedback) {
+                sum += feedback.getRating();
+            }
+            averageRating = (double) sum / allFeedback.size();
+        }
+        model.addAttribute("averageRating", averageRating);
 
         model.addAttribute("machines", laundryService.machines());
         model.addAttribute("now", laundryService.now());

@@ -81,11 +81,18 @@ public class TenantBillController {
     @PostMapping("/app/bills/{id}/pay")
     public String pay(@PathVariable Long id, @RequestParam("slip") MultipartFile slip,
             Principal principal, RedirectAttributes redirect) throws IOException {
-        Tenant tenant = currentUser.tenant(currentUser.user(principal))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
-        Bill bill = billRepository.findById(id)
-                .filter(b -> tenant.getRoom() != null && b.getRoom().getId().equals(tenant.getRoom().getId()))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Optional<Tenant> optTenant = currentUser.tenant(currentUser.user(principal));
+        if (!optTenant.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+        Tenant tenant = optTenant.get();
+        Optional<Bill> optBill = billRepository.findById(id);
+        // only a bill of the tenant's own room
+        if (!optBill.isPresent() || tenant.getRoom() == null
+                || !optBill.get().getRoom().getId().equals(tenant.getRoom().getId())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        Bill bill = optBill.get();
 
         // the amount is fixed by the system: the tenant's share, or what is left if that is less
         double amount = amountDue(bill);

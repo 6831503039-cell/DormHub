@@ -3,6 +3,7 @@ package th.mfu.admin;
 import java.io.IOException;
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -96,6 +97,10 @@ public class AnnouncementController {
     }
 
     private Announcement find(Long id) {
-        return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Optional<Announcement> optAnnouncement = repository.findById(id);
+        if (!optAnnouncement.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        return optAnnouncement.get();
     }
 }

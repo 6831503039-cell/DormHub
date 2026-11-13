@@ -35,7 +35,10 @@ public class AnalyticsService {
     public Map<String, double[]> monthlyTotals(int months) {
         TreeMap<String, double[]> totals = new TreeMap<>();
         for (Bill b : billRepository.findAllByOrderByBillMonthAsc()) {
-            double[] t = totals.computeIfAbsent(b.getBillMonth(), k -> new double[3]);
+            if (!totals.containsKey(b.getBillMonth())) {
+                totals.put(b.getBillMonth(), new double[3]);
+            }
+            double[] t = totals.get(b.getBillMonth());
             t[0] += value(b.getElectricUnits());
             t[1] += b.getElectricCost();
             t[2] += b.getTotal();
@@ -55,7 +58,10 @@ public class AnalyticsService {
         Map<Season, double[]> sums = new EnumMap<>(Season.class);
         for (Bill b : bills) {
             Season season = Season.of(YearMonth.parse(b.getBillMonth()).getMonthValue());
-            double[] s = sums.computeIfAbsent(season, k -> new double[2]);
+            if (!sums.containsKey(season)) {
+                sums.put(season, new double[2]);
+            }
+            double[] s = sums.get(season);
             s[0] += value(b.getElectricUnits());
             s[1]++;
         }
@@ -70,7 +76,10 @@ public class AnalyticsService {
     public List<AbnormalUsage> abnormalRooms() {
         List<AbnormalUsage> result = new ArrayList<>();
         for (Room room : roomRepository.findAllByOrderByRoomNumberAsc()) {
-            abnormalUsage(room).ifPresent(result::add);
+            Optional<AbnormalUsage> usage = abnormalUsage(room);
+            if (usage.isPresent()) {
+                result.add(usage.get());
+            }
         }
         return result;
     }
@@ -87,7 +96,14 @@ public class AnalyticsService {
         }
         Bill latest = billsOldestFirst.get(n - 1);
         List<Bill> previous = billsOldestFirst.subList(Math.max(0, n - 4), n - 1);
-        double average = previous.stream().mapToDouble(b -> value(b.getElectricUnits())).average().orElse(0);
+        double average = 0;
+        if (!previous.isEmpty()) {
+            double sum = 0;
+            for (Bill b : previous) {
+                sum += value(b.getElectricUnits());
+            }
+            average = sum / previous.size();
+        }
         int units = (int) value(latest.getElectricUnits());
         if (average > 0 && units > average * ABNORMAL_RATIO) {
             return Optional.of(new AbnormalUsage(room, latest.getBillMonth(), units, Math.round(average * 10) / 10.0));

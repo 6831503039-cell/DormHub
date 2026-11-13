@@ -3,9 +3,9 @@ package th.mfu.app;
 import java.security.Principal;
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -59,8 +59,17 @@ public class TenantNewsController {
         model.addAttribute("tenant", tenant.orElse(null));
         if (tenant.isPresent() && tenant.get().getRoom() != null) {
             List<Parcel> parcels = parcelRepository.findByRoomOrderByArrivedAtDesc(tenant.get().getRoom());
-            model.addAttribute("waiting", parcels.stream().filter(Parcel::isWaiting).collect(Collectors.toList()));
-            model.addAttribute("pickedUp", parcels.stream().filter(p -> !p.isWaiting()).limit(10).collect(Collectors.toList()));
+            List<Parcel> waiting = new ArrayList<>();
+            List<Parcel> pickedUp = new ArrayList<>();
+            for (Parcel parcel : parcels) {
+                if (parcel.isWaiting()) {
+                    waiting.add(parcel);
+                } else if (pickedUp.size() < 10) { // only the latest 10
+                    pickedUp.add(parcel);
+                }
+            }
+            model.addAttribute("waiting", waiting);
+            model.addAttribute("pickedUp", pickedUp);
         }
         return "app/parcels";
     }
@@ -69,9 +78,11 @@ public class TenantNewsController {
     @PostMapping("/app/parcels/{id}/picked-up")
     public String pickedUp(@PathVariable Long id, Principal principal, RedirectAttributes redirect) {
         AppUser user = currentUser.user(principal);
-        Parcel parcel = parcelRepository.findById(id)
-                .filter(p -> isOwnRoom(user, p))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Optional<Parcel> optParcel = parcelRepository.findById(id);
+        if (!optParcel.isPresent() || !isOwnRoom(user, optParcel.get())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        Parcel parcel = optParcel.get();
         if (parcel.isWaiting()) {
             parcel.setPickedUpAt(LocalDateTime.now(clock));
             parcel.setPickedUpBy(user.getFullName());
@@ -82,22 +93,33 @@ public class TenantNewsController {
     }
 
     private boolean isOwnRoom(AppUser user, Parcel parcel) {
-        return currentUser.tenant(user)
-                .map(t -> t.getRoom() != null && t.getRoom().getId().equals(parcel.getRoom().getId()))
-                .orElse(false);
+        Optional<Tenant> tenant = currentUser.tenant(user);
+        if (!tenant.isPresent()) {
+            return false;
+        }
+        Tenant t = tenant.get();
+        return t.getRoom() != null && t.getRoom().getId().equals(parcel.getRoom().getId());
     }
 
     // pictures: an announcement's for any logged-in user; a parcel photo only for the admin and that room's tenants
 
     @GetMapping("/announcements/{id}/image")
     public ResponseEntity<byte[]> announcementImage(@PathVariable Long id) {
-        Announcement a = announcementRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Optional<Announcement> optAnnouncement = announcementRepository.findById(id);
+        if (!optAnnouncement.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        Announcement a = optAnnouncement.get();
         return Images.response(a.getImage(), a.getImageContentType());
     }
 
     @GetMapping("/parcels/{id}/photo")
     public ResponseEntity<byte[]> parcelPhoto(@PathVariable Long id, Principal principal) {
-        Parcel parcel = parcelRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Optional<Parcel> photoParcel = parcelRepository.findById(id);
+        if (!photoParcel.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        Parcel parcel = photoParcel.get();
         AppUser user = currentUser.user(principal);
         if (!user.isAdmin() && !isOwnRoom(user, parcel)) {
             // same answer as a missing parcel, so other rooms' parcels cannot be discovered

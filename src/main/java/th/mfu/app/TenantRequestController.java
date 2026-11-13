@@ -85,7 +85,10 @@ public class TenantRequestController {
         AppUser user = currentUser.user(principal);
         Feedback feedback = new Feedback();
         feedback.setAuthor(user);
-        feedback.setRoom(currentUser.tenant(user).map(Tenant::getRoom).orElse(null));
+        Optional<Tenant> tenant = currentUser.tenant(user);
+        if (tenant.isPresent()) {
+            feedback.setRoom(tenant.get().getRoom());
+        }
         feedback.setCategory(category);
         feedback.setRating(Math.max(1, Math.min(5, rating)));
         feedback.setMessage(message.trim());
