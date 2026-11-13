@@ -8,6 +8,7 @@ import java.time.YearMonth;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import th.mfu.AnnouncementRepository;
 import th.mfu.AppUserRepository;
@@ -78,7 +79,12 @@ public class DataSeeder implements CommandLineRunner {
         this.clock = clock;
     }
 
+    /**
+     * One transaction for the whole seed: if the app is stopped halfway (seeding a remote Cloud SQL database takes
+     * minutes), nothing is committed and the next start seeds again from scratch, instead of leaving half the demo data.
+     */
     @Override
+    @Transactional
     public void run(String... args) {
         ensureAdminAccount();
         if (rooms.count() == 0) {
