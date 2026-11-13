@@ -316,6 +316,17 @@ public class DormHubApplicationTest {
     }
 
     @Test
+    public void chatbotListsFreeRoomsWithoutGemini() throws Exception {
+        // demo data: A103 is free
+        mvc.perform(post("/app/chat/send").with(tenant()).with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"message\":\"ห้องบนว่างไหมครับ ผมอยากย้ายห้อง\",\"history\":[]}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.source").value("fallback"))
+                .andExpect(jsonPath("$.reply", containsString("A103")));
+    }
+
+    @Test
     public void laundryMachineCanBeStartedOnce() throws Exception {
         mvc.perform(post("/app/laundry/1/start").with(tenant()).with(csrf())).andExpect(redirectedUrl("/app/laundry"));
         mvc.perform(get("/app/laundry").with(tenant())).andExpect(content().string(containsString("ห้อง A101")));
