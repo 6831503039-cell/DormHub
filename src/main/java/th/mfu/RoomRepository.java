@@ -15,4 +15,9 @@ public interface RoomRepository extends CrudRepository<Room, Long> {
     Optional<Room> findByRoomNumber(String roomNumber);
 
     long countByStatus(RoomStatus status);
+
+    // search on the database (Spring Data derived query): Spring builds
+    // "WHERE LOWER(roomNumber) LIKE %q% OR LOWER(roomType) LIKE %q% ORDER BY roomNumber" from the method name
+    List<Room> findByRoomNumberContainingIgnoreCaseOrRoomTypeContainingIgnoreCaseOrderByRoomNumberAsc(
+            String roomNumber, String roomType);
 }

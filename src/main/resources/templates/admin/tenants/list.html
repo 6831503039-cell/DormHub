@@ -13,19 +13,21 @@
         <a class="btn btn-primary" th:href="@{/admin/tenants/new}"><i data-lucide="user-plus"></i> <span th:text="#{tenants.add}">เพิ่มผู้เช่า</span></a>
     </div>
 
-    <th:block th:if="${#lists.isEmpty(tenants)}">
+    <th:block th:if="${#lists.isEmpty(tenants) and #strings.isEmpty(q)}">
         <div class="card">
             <div th:replace="~{fragments/ui :: emptyState('users', #{tenants.empty.title}, #{tenants.empty.text}, @{/admin/tenants/new}, #{tenants.add})}"></div>
         </div>
     </th:block>
 
-    <th:block th:unless="${#lists.isEmpty(tenants)}">
-        <div class="list-toolbar" role="search">
-            <label class="search-input">
-                <span class="visually-hidden" th:text="#{tenants.search}">ค้นหาผู้เช่า</span>
+    <th:block th:unless="${#lists.isEmpty(tenants) and #strings.isEmpty(q)}">
+        <div class="list-toolbar">
+            <!-- search on the database: Enter sends GET /admin/tenants?q=... (see TenantRepository) -->
+            <form class="search-input" role="search" method="get" th:action="@{/admin/tenants}">
+                <label class="visually-hidden" for="searchQ" th:text="#{tenants.search}"></label>
                 <i data-lucide="search"></i>
-                <input class="form-control" type="search" th:placeholder="#{tenants.search.placeholder}" data-filter-target="#tenantTable" autocomplete="off">
-            </label>
+                <input class="form-control" type="search" id="searchQ" name="q" th:value="${q}" th:placeholder="#{tenants.search.placeholder}" autocomplete="off">
+            </form>
+            <a class="btn btn-secondary" th:if="${!#strings.isEmpty(q)}" th:href="@{/admin/tenants}" th:text="#{common.search.clear}">ล้างการค้นหา</a>
             <label class="visually-hidden" for="filterBuilding" th:text="#{common.building}">ตึก</label>
             <select class="form-select" id="filterBuilding" data-filter-target="#tenantTable" data-filter-key="building">
                 <option value="" th:text="#{common.allBuildings}">ทุกตึก</option>
@@ -53,7 +55,7 @@
 
         <!-- one card per building, closed until clicked (or opened by a search); tenants without a room come last -->
         <div id="tenantTable" class="group-list">
-            <details class="card group-card" data-group th:each="g : ${tenantGroups}"
+            <details th:open="${!#strings.isEmpty(q)}" class="card group-card" data-group th:each="g : ${tenantGroups}"
                      th:with="total=${#aggregates.sum(g.value.values().![size()])}">
                 <summary class="group-head">
                     <span class="group-badge" th:text="${g.key == 'none'} ? '-' : ${g.key}">A</span>
@@ -63,7 +65,7 @@
                 </summary>
                 <!-- inside a building: one collapsible part per floor (tenants without a room have no floors) -->
                 <div class="floor-list">
-                    <details class="floor-group" data-group th:each="fl : ${g.value}">
+                    <details th:open="${!#strings.isEmpty(q)}" class="floor-group" data-group th:each="fl : ${g.value}">
                         <summary class="floor-head">
                             <span class="floor-title" th:text="${fl.key > 0} ? #{common.floorN(${fl.key})} : #{common.noRoom}">ชั้น 1</span>
                             <span class="group-meta" th:text="#{tenants.groupMeta(${#lists.size(fl.value)})}">20 คน</span>
@@ -130,6 +132,10 @@
                     </details>
                 </div>
             </details>
+        </div>
+        <!-- the database search found nothing -->
+        <div class="card" th:if="${#lists.isEmpty(tenants)}">
+            <div th:replace="~{fragments/ui :: emptyState('search-x', #{tenants.noMatch}, #{common.noMatch.text}, null, null)}"></div>
         </div>
         <div class="card" data-filter-empty="#tenantTable" hidden>
             <div th:replace="~{fragments/ui :: emptyState('search-x', #{tenants.noMatch}, #{common.noMatch.text}, null, null)}"></div>
