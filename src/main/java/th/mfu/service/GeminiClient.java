@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.HttpTimeoutException;
 import java.time.Duration;
 import java.util.Base64;
 import java.util.LinkedHashMap;
@@ -54,25 +55,33 @@ public class GeminiClient {
         if (!isConfigured()) {
             return Optional.empty();
         }
+        String model = props.getGemini().getModel();
+        String thinkingLevel = props.getGemini().getThinkingLevel();
+        long start = System.nanoTime();
         try {
-            Map<String, Object> body = new LinkedHashMap<>();
-            body.put("system_instruction", Map.of("parts", List.of(textPart(systemPrompt))));
-            body.put("contents", contents);
-            if (json) {
-                body.put("generationConfig", Map.of("responseMimeType", "application/json"));
+            HttpResponse<String> response = send(model, requestBody(systemPrompt, contents, json, thinkingLevel));
+            if (response.statusCode() == 400 && StringUtils.hasText(thinkingLevel) && mentionsThinking(response.body())) {
+                // another model (GEMINI_MODEL) may not accept this thinking level: ask once more with the model's default
+                log.warn("Gemini model {} rejected thinkingLevel={}, retrying without it: {}", model, thinkingLevel,
+                        abbreviate(response.body()));
+                response = send(model, requestBody(systemPrompt, contents, json, null));
             }
-            HttpRequest request = HttpRequest.newBuilder(URI.create(BASE_URL + props.getGemini().getModel() + ":generateContent"))
-                    .timeout(Duration.ofSeconds(40))
-                    .header("Content-Type", "application/json")
-                    .header("x-goog-api-key", props.getGemini().getApiKey())
-                    .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(body)))
-                    .build();
-            HttpResponse<String> response = http.send(request, HttpResponse.BodyHandlers.ofString());
+            long ms = (System.nanoTime() - start) / 1_000_000;
             if (response.statusCode() != 200) {
-                log.warn("Gemini API returned HTTP {}: {}", response.statusCode(), abbreviate(response.body()));
+                log.warn("Gemini API ({}) returned HTTP {} after {} ms: {}", model, response.statusCode(), ms,
+                        abbreviate(response.body()));
                 return Optional.empty();
             }
-            return extractText(mapper.readTree(response.body()));
+            Optional<String> text = extractText(mapper.readTree(response.body()));
+            if (text.isPresent()) {
+                log.info("Gemini API ({}, thinking {}) answered in {} ms", model, thinkingLevel, ms);
+            } else {
+                log.warn("Gemini API ({}) returned no text after {} ms: {}", model, ms, abbreviate(response.body()));
+            }
+            return text;
+        } catch (HttpTimeoutException e) {
+            log.warn("Gemini API ({}) did not answer within {} s", model, props.getGemini().getTimeoutSeconds());
+            return Optional.empty();
         } catch (IOException e) {
             log.warn("Gemini API call failed: {}", e.getMessage());
             return Optional.empty();
@@ -80,6 +89,39 @@ public class GeminiClient {
             Thread.currentThread().interrupt();
             return Optional.empty();
         }
+    }
+
+    private Map<String, Object> requestBody(String systemPrompt, List<Map<String, Object>> contents, boolean json,
+            String thinkingLevel) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("system_instruction", Map.of("parts", List.of(textPart(systemPrompt))));
+        body.put("contents", contents);
+        Map<String, Object> generationConfig = new LinkedHashMap<>();
+        if (StringUtils.hasText(thinkingLevel)) {
+            // Gemini 3 "thinks" before answering; its default level (medium) made even "hello" take many seconds
+            generationConfig.put("thinkingConfig", Map.of("thinkingLevel", thinkingLevel.trim().toLowerCase()));
+        }
+        if (json) {
+            generationConfig.put("responseMimeType", "application/json");
+        }
+        if (!generationConfig.isEmpty()) {
+            body.put("generationConfig", generationConfig);
+        }
+        return body;
+    }
+
+    private HttpResponse<String> send(String model, Map<String, Object> body) throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder(URI.create(BASE_URL + model + ":generateContent"))
+                .timeout(Duration.ofSeconds(Math.max(5, props.getGemini().getTimeoutSeconds())))
+                .header("Content-Type", "application/json")
+                .header("x-goog-api-key", props.getGemini().getApiKey())
+                .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(body)))
+                .build();
+        return http.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private static boolean mentionsThinking(String responseBody) {
+        return responseBody != null && responseBody.toLowerCase().contains("thinking");
     }
 
     private static Optional<String> extractText(JsonNode root) {
