@@ -4,6 +4,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,6 +26,8 @@ public class SecurityConfig {
                 // public 3D room map and booking requests (no login needed)
                 .antMatchers("/explore", "/explore/**").permitAll()
                 .antMatchers("/admin/**").hasRole("ADMIN")
+                // REST API (th.mfu.api): admin only
+                .antMatchers("/api/**").hasRole("ADMIN")
                 .antMatchers("/app/**").hasRole("TENANT")
                 .anyRequest().authenticated())
             // one login page for everyone; "/" then sends each role to its own area
@@ -33,6 +36,10 @@ public class SecurityConfig {
                 .usernameParameter("email")
                 .defaultSuccessUrl("/", true)
                 .permitAll())
+            // the REST API can also be called from Postman with Basic Auth (admin email + password);
+            // API calls send JSON, not a web form, so they skip the CSRF token
+            .httpBasic(Customizer.withDefaults())
+            .csrf(csrf -> csrf.ignoringAntMatchers("/api/**"))
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/login?logout"))
