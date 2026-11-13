@@ -58,11 +58,17 @@ public class GeminiClient {
             Map<String, Object> body = new LinkedHashMap<>();
             body.put("system_instruction", Map.of("parts", List.of(textPart(systemPrompt))));
             body.put("contents", contents);
+            Map<String, Object> generationConfig = new LinkedHashMap<>();
+            // Gemini 3.x "thinks" before answering by default, which is what made replies slow here.
+            // thinkingBudget: 0 turns that off so the chatbot answers right away.
+            generationConfig.put("thinkingConfig", Map.of("thinkingBudget", 0));
+            generationConfig.put("maxOutputTokens", 1024);
             if (json) {
-                body.put("generationConfig", Map.of("responseMimeType", "application/json"));
+                generationConfig.put("responseMimeType", "application/json");
             }
+            body.put("generationConfig", generationConfig);
             HttpRequest request = HttpRequest.newBuilder(URI.create(BASE_URL + props.getGemini().getModel() + ":generateContent"))
-                    .timeout(Duration.ofSeconds(40))
+                    .timeout(Duration.ofSeconds(20))
                     .header("Content-Type", "application/json")
                     .header("x-goog-api-key", props.getGemini().getApiKey())
                     .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(body)))
