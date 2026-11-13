@@ -12,11 +12,11 @@ DormHub เป็นเว็บแอปจัดการหอพักที
 
 | # | รหัสนักศึกษา | ชื่อ - นามสกุล | หน้าที่ |
 |---|---|---|---|
-| 1 | 6831503039 | | |
-| 2 | 6831503037 | | |
-| 3 | 6831503098 | | |
-| 4 | 6831503034 |Kanticha Sriruang | |
-| 5 | | | |
+| 1 | 6831503034 |Kanticha Sriruang | |
+| 2 | 6831503037 |Chawintorn Thanapreechanan | |
+| 3 | 6831503039 |Yanavut Thidnongwaeng | |
+| 4 | 6831503052 |Tawanrat Prasong | |
+| 5 | 6831503098 |Nithit Panthavongdecha | |
 
 ## Tech Stack
 
