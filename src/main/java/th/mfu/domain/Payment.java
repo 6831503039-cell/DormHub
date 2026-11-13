@@ -15,6 +15,7 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /** A transfer slip a tenant uploaded for (part of) a bill. */
 @Entity
@@ -36,6 +37,7 @@ public class Payment {
 
     @Lob
     @Basic(fetch = FetchType.LAZY)
+    @JsonIgnore // the slip image is not sent in the REST API
     private byte[] slip;
     private String slipContentType;
 
