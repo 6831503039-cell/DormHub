@@ -69,7 +69,40 @@ DormHub เป็นเว็บแอปจัดการหอพักที
 | Creating | เพิ่มห้อง ผู้เช่า บิล งานซ่อม พัสดุ และประกาศ |
 | Updating | แก้ไขข้อมูลห้อง ผู้เช่า บิล และงานซ่อม, อนุมัติสลิป, เปลี่ยนสถานะการจอง |
 | Deleting | ลบห้อง ผู้เช่า บิล งานซ่อม พัสดุ และประกาศ |
-| Managing related entities | เลือกห้องให้ผู้เช่า/บิล/พัสดุ, บิล → การชำระเงิน, ห้อง → รายชื่อผู้เช่า |
+| Managing related entities | เลือกห้องให้ผู้เช่า/บิล/พัสดุ, บิล → การชำระเงิน, ห้อง → รายชื่อผู้เช่า, REST `POST /api/rooms/{roomId}/tenants` |
+
+## REST API (`th.mfu.api`)
+
+เขียนแบบเดียวกับ `CustomerController` / `SaleOrderController` ใน lab (`@RestController` + `ResponseEntity`) ใช้ได้เฉพาะแอดมิน
+ทดสอบใน Postman: Authorization → **Basic Auth** ใช้อีเมล `sjdadmin@gmail.com` รหัส `dormhub123` และส่ง body เป็น JSON
+
+| Method | URL | ทำอะไร | สถานะที่ตอบกลับ |
+|---|---|---|---|
+| GET | `/api/rooms` , `/api/rooms?q=A1` | ดูห้องทั้งหมด / ค้นหา | 200 |
+| GET | `/api/rooms/{id}` | ดูห้องเดียว | 200, 404 |
+| POST | `/api/rooms` | เพิ่มห้อง | 201, 409 (เลขห้องซ้ำ) |
+| PUT | `/api/rooms/{id}` | แก้ไขห้อง | 200, 404 |
+| DELETE | `/api/rooms/{id}` | ลบห้อง | 204, 404, 409 (ห้องยังมีผู้เช่า/บิล) |
+| GET | `/api/rooms/{roomId}/tenants` | ผู้เช่าในห้องนี้ | 200, 404 |
+| POST | `/api/rooms/{roomId}/tenants` | เพิ่มผู้เช่าเข้าห้องนี้ | 201, 404, 409 (ห้องเต็ม) |
+| GET | `/api/tenants` , `/api/tenants?q=somchai` | ดูผู้เช่าทั้งหมด / ค้นหา | 200 |
+| GET | `/api/tenants/{id}` | ดูผู้เช่าคนเดียว | 200, 404 |
+| PUT | `/api/tenants/{id}` | แก้ไขข้อมูลผู้เช่า | 200, 404 |
+| DELETE | `/api/tenants/{id}` | ลบผู้เช่า | 204, 404 |
+
+ตัวอย่าง body สำหรับ `POST /api/rooms`:
+```json
+{ "roomNumber": "D101", "building": "D", "floor": 1, "roomType": "ห้องพัดลม", "monthlyRent": 3500, "capacity": 2 }
+```
+
+## Tests
+
+```bash
+./mvnw test
+```
+- `RoomRepositoryTest`, `TenantRepositoryTest`: `@DataJpaTest` แบบ `SaleOrderRepositoryTest` ใน lab ทดสอบความสัมพันธ์ห้อง-ผู้เช่าและการค้นหา
+- `RoomApiControllerTest`: เรียก REST API ด้วย JSON + Basic Auth
+- `DormHubApplicationTest`: ทดสอบหน้าเว็บทั้งระบบ
 
 ## วิธีรันในเครื่อง
 
@@ -114,6 +147,7 @@ src/main/java/th/mfu/
 ├── domain/     Entity classes (@Entity) และ enum
 ├── *Repository.java   Spring Data JPA repositories
 ├── admin/      Controller ฝั่งเจ้าของหอ (/admin)
+├── api/        REST API (@RestController, /api/**)
 ├── app/        Controller ฝั่งผู้เช่า (/app)
 ├── explore/    หน้าสาธารณะสำหรับดูห้องว่าง (/explore)
 ├── service/    Business logic (บิล, การชำระเงิน, แชตบอต, analytics)
