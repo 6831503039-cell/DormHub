@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -49,9 +50,12 @@ public class TenantController {
     }
 
     @GetMapping("/tenants")
-    public String listTenants(Model model) {
-        List<Tenant> tenants = repository.findAllByOrderByFirstNameAsc();
+    public String listTenants(@RequestParam(required = false) String q, Model model) {
+        // /admin/tenants?q=somchai searches on the database; without q every tenant is listed
+        String keyword = q == null ? "" : q.trim();
+        List<Tenant> tenants = keyword.isEmpty() ? repository.findAllByOrderByFirstNameAsc() : repository.search(keyword);
         model.addAttribute("tenants", tenants);
+        model.addAttribute("q", keyword);
         // building -> floor -> tenants ordered by room: a collapsible card per building with a part per floor;
         // "none" = no room yet (last, floor 0)
         Map<String, Map<Integer, List<Tenant>>> groups = new TreeMap<>(Comparator.comparing((String b) -> b.equals("none")).thenComparing(b -> b));
