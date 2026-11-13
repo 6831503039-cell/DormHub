@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -46,9 +47,13 @@ public class RoomController {
     }
 
     @GetMapping("/rooms")
-    public String listRooms(Model model) {
-        List<Room> rooms = repository.findAllByOrderByRoomNumberAsc();
+    public String listRooms(@RequestParam(required = false) String q, Model model) {
+        // /admin/rooms?q=A1 searches on the database; without q every room is listed
+        String keyword = q == null ? "" : q.trim();
+        List<Room> rooms = keyword.isEmpty() ? repository.findAllByOrderByRoomNumberAsc()
+                : repository.findByRoomNumberContainingIgnoreCaseOrRoomTypeContainingIgnoreCaseOrderByRoomNumberAsc(keyword, keyword);
         model.addAttribute("rooms", rooms);
+        model.addAttribute("q", keyword);
         // building -> floor -> rooms: a collapsible card per building with a collapsible part per floor
         Map<String, Map<Integer, List<Room>>> groups = new TreeMap<>();
         for (Room room : rooms) {
