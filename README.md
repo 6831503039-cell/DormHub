@@ -1,52 +1,155 @@
-# DormHub — ระบบจัดการหอพัก
+# DormHub — ระบบจัดการหอพัก (Dormitory Management System)
 
-DormHub เป็นเว็บแอปจัดการหอพักที่ใช้ได้ทั้งเจ้าของหอและผู้เช่า
-เจ้าของหอใช้จัดการห้อง ผู้เช่า บิลค่าเช่า ค่าน้ำ ค่าไฟ การชำระเงิน งานซ่อม พัสดุ และประกาศ ส่วนผู้เช่าใช้ดูบิล ส่งสลิป แจ้งซ่อม รับพัสดุ จองเครื่องซักผ้า และถามแชตบอท
+**TH:** DormHub เป็นเว็บแอปจัดการหอพัก (SJD แมนชั่น) ที่ใช้ได้ทั้งเจ้าของหอและผู้เช่า เจ้าของหอใช้จัดการห้องพัก ผู้เช่า บิลค่าเช่า ค่าน้ำ ค่าไฟ การชำระเงิน งานแจ้งซ่อม พัสดุ และประกาศ ส่วนผู้เช่าใช้ดูบิลและจ่ายเงินผ่าน PromptPay พร้อมอัปโหลดสลิป แจ้งซ่อม รับพัสดุ จองเครื่องซักผ้า จองห้องว่าง และถามคำถามกับแชตบอต พัฒนาด้วย Spring Boot, Spring Data JPA และ Thymeleaf เป็นโปรเจกต์ร่วมของวิชา Web Application Development, Database Systems และ Software Requirement Analysis and Specification
 
-- **เว็บที่ deploy แล้ว (Google Cloud Run):** https://dormhub-621353901508.us-central1.run.app
+**EN:** DormHub is a web application for managing a dormitory (SJD Mansion), used by both the dorm owner and the tenants. The owner manages rooms, tenants, monthly bills (rent, water and electricity), payments, repair requests, parcels and announcements. Tenants view and pay their bills with a PromptPay QR code and upload the payment slip, report repairs, pick up parcels, use the laundry machines, book a vacant room and ask questions to a chatbot. It is built with Spring Boot, Spring Data JPA and Thymeleaf as a joint project for Web Application Development, Database Systems, and Software Requirement Analysis and Specification.
+
+- **Live demo (Google Cloud Run):** https://dormhub-621353901508.us-central1.run.app
 - **Repository:** https://github.com/6831503039-cell/DormHub
 
-## Group Members
+---
 
-| # | รหัสนักศึกษา | ชื่อ - นามสกุล |
+## Group Members / สมาชิกกลุ่ม
+
+```
+6831503034  Kanticha Sriruang
+6831503037  Chawintorn Thanapreechanan
+6831503039  Yanavut Thidnongwaeng
+6831503052  Tawanrat Prasong
+6831503098  Nithit Panthavongdecha
+```
+
+---
+
+## How to Run / วิธีรันโปรเจกต์
+
+### Requirements / สิ่งที่ต้องมี
+
+- **Java JDK 17** (or newer / หรือใหม่กว่า) — check with / ตรวจสอบด้วย `java -version`
+- **Git** (to clone the repository / สำหรับ clone โปรเจกต์)
+- Internet on the first run (to download dependencies) / ต้องต่ออินเทอร์เน็ตตอนรันครั้งแรก เพื่อดาวน์โหลด dependencies
+- **Maven is optional** — the project includes the Maven Wrapper (`mvnw`, `mvnw.cmd`) / **ไม่ต้องลง Maven ก็ได้** เพราะโปรเจกต์มี Maven Wrapper มาให้แล้ว
+
+### Step 1 — Clone the project / ดาวน์โหลดโปรเจกต์
+
+```bash
+git clone https://github.com/6831503039-cell/DormHub.git
+cd DormHub
+```
+
+### Step 2 — Run (choose ONE way) / รันโปรเจกต์ (เลือกวิธีใดวิธีหนึ่ง)
+
+**TH:** รันได้ 2 แบบ แบบที่ 1 สำหรับเครื่องที่**ไม่ได้ลง Maven** และแบบที่ 2 สำหรับเครื่องที่**ลง Maven แล้ว** ทั้งสองแบบได้ผลเหมือนกัน
+**EN:** There are 2 ways to run it: Option A if Maven is **not installed**, Option B if Maven **is installed**. Both give the same result.
+
+#### Option A — Without Maven (Maven Wrapper) / แบบที่ 1: ไม่ได้ลง Maven
+
+The wrapper downloads Maven automatically on the first run. / Wrapper จะดาวน์โหลด Maven ให้อัตโนมัติในการรันครั้งแรก
+
+macOS / Linux:
+```bash
+./mvnw spring-boot:run
+```
+> If you get `Permission denied`, run `chmod +x mvnw` first. / ถ้าขึ้น `Permission denied` ให้รัน `chmod +x mvnw` ก่อน
+
+Windows (Command Prompt):
+```bat
+mvnw.cmd spring-boot:run
+```
+
+Windows (PowerShell):
+```powershell
+.\mvnw.cmd spring-boot:run
+```
+
+#### Option B — With Maven installed / แบบที่ 2: ลง Maven แล้ว
+
+Check with / ตรวจสอบด้วย `mvn -v`, then run / จากนั้นรัน:
+```bash
+mvn spring-boot:run
+```
+
+### Step 3 — Open the website / เปิดเว็บ
+
+When the console shows `Started App`, open / เมื่อหน้าจอขึ้นว่า `Started App` ให้เปิด:
+
+**http://localhost:8100**
+
+- Port: **8100**
+- To stop the server press / หยุดเซิร์ฟเวอร์ด้วย `Ctrl + C`
+
+**TH:** เมื่อรันในเครื่องโดยไม่ได้ตั้งค่าอะไรเพิ่ม ระบบจะใช้ฐานข้อมูล **H2 in-memory** และสร้างข้อมูลตัวอย่าง (ห้อง ผู้เช่า บิล) ให้อัตโนมัติ ไม่ต้องติดตั้งฐานข้อมูลเอง (ข้อมูลจะหายเมื่อปิดโปรแกรม)
+**EN:** When run locally with no extra settings, the app uses an **H2 in-memory database** and creates sample data (rooms, tenants, bills) automatically, so no database installation is needed (data is reset when the app stops).
+
+### Test Login / บัญชีสำหรับทดสอบ
+
+**TH:** ทุกคนเข้าสู่ระบบที่หน้า `/login` หน้าเดียว ระบบจะพาเจ้าของหอไปที่ `/admin` และผู้เช่าไปที่ `/app` ให้เอง
+**EN:** Everyone logs in at the same page, `/login`. The owner is sent to `/admin` and tenants to `/app` automatically.
+
+| Role / บทบาท | Email / อีเมล | Password / รหัสผ่าน |
 |---|---|---|
-| 1 | 6831503034 |Kanticha Sriruang 
-| 2 | 6831503037 |Chawintorn Thanapreechanan 
-| 3 | 6831503039 |Yanavut Thidnongwaeng 
-| 4 | 6831503052 |Tawanrat Prasong 
-| 5 | 6831503098 |Nithit Panthavongdecha 
+| Admin (dorm owner) / แอดมิน (เจ้าของหอ) | `sjdadmin@gmail.com` | `dormhub123` |
+| Tenant / ผู้เช่า | `somchai@example.com` | `tenant123` |
+| Tenant / ผู้เช่า | `suda@example.com` | `tenant123` |
+| Tenant / ผู้เช่า | `manee@example.com` | `tenant123` |
 
-## Tech Stack
+These are demo accounts created by the sample data. / บัญชีเหล่านี้เป็นบัญชีตัวอย่างที่ระบบสร้างให้ตอนเริ่มโปรแกรม
 
-| ส่วน | เทคโนโลยี |
+### Optional settings / การตั้งค่าเพิ่มเติม (ไม่บังคับ)
+
+**TH:** ไม่ต้องตั้งค่าก็รันได้ ถ้าต้องการใช้ MySQL หรือแชตบอต AI ให้ตั้ง environment variables ต่อไปนี้ก่อนรัน
+**EN:** The app runs without these. Set the following environment variables only if you want MySQL or the AI chatbot.
+
+| Variable / ตัวแปร | Purpose / ใช้ทำอะไร |
 |---|---|
-| Backend | Java 17, **Spring Boot 2.7**, Spring MVC, **Spring Data JPA** (Hibernate), Spring Security |
-| Database | **MySQL บน Google Cloud SQL** (production) / **H2 in-memory** (ตอนรันในเครื่อง) |
-| Front-end | Thymeleaf, Bootstrap 5, CSS ของกลุ่มเอง (`static/css/app.css`), Lucide icons, ภาษาไทย/อังกฤษ |
-| AI | Google Gemini API: แชตบอตผู้เช่าและตรวจสลิปโอนเงิน |
-| Deployment | Docker, Google Cloud Build, **Google Cloud Run**, Cloud SQL |
+| `DB_URL`, `DB_USER`, `DB_PASSWORD` | Connect to MySQL instead of H2 / เชื่อม MySQL แทน H2 |
+| `GEMINI_API_KEY` | Enable the AI chatbot and AI slip check / เปิดใช้แชตบอตและการตรวจสลิปด้วย AI |
 
-## ฟีเจอร์หลัก
+Without `GEMINI_API_KEY`, every other feature still works. / ถ้าไม่ได้ตั้ง `GEMINI_API_KEY` ฟีเจอร์อื่นทั้งหมดยังใช้งานได้ตามปกติ
 
-**ฝั่งเจ้าของหอ (`/admin`)**
-- Dashboard สรุปห้องว่าง รายได้ บิลค้าง และงานที่รอดำเนินการ
-- จัดการห้องพักแบบแยกตึก/ชั้น พร้อมแผนผังห้อง
-- จัดการผู้เช่า ผูกผู้เช่ากับห้อง และดูวันหมดสัญญา
-- ออกบิลรายเดือน คิดค่าน้ำ/ไฟตามหน่วย และอนุมัติหรือปฏิเสธสลิปที่ผู้เช่าส่งมา
-- รับคำขอจองห้อง งานแจ้งซ่อม พัสดุ (ถ่ายรูปได้) ประกาศ และ feedback
-- หน้า Analytics ดูรายได้และการใช้น้ำ/ไฟที่ผิดปกติ
+> No passwords, API keys or tokens are committed in this repository; they are passed as environment variables. / ไม่มีรหัสผ่าน database, API key หรือ token อยู่ใน repository ค่าเหล่านี้ส่งผ่าน environment variables เท่านั้น
 
-**ฝั่งผู้เช่า (`/app`)**
-- ดูบิลและจ่ายผ่าน PromptPay QR พร้อมอัปโหลดสลิป
-- แจ้งซ่อม ส่ง feedback ดูประกาศ และกดรับพัสดุ
-- ดูสถานะเครื่องซักผ้าและเริ่มใช้งาน
-- ดูประวัติการใช้น้ำ/ไฟ
-- แชตบอตตอบคำถามเรื่องหอ
-- จองห้องว่าง (`/explore` และ `/app/rent`)
+### Troubleshooting / แก้ปัญหาเบื้องต้น
 
-## Entity และความสัมพันธ์ (Spring Data JPA)
+| Problem / ปัญหา | Fix / วิธีแก้ |
+|---|---|
+| `JAVA_HOME is not set` / `java: command not found` | Install JDK 17 and set `JAVA_HOME` / ติดตั้ง JDK 17 และตั้งค่า `JAVA_HOME` |
+| `Port 8100 was already in use` | Close the program using port 8100, or run with another port: `./mvnw spring-boot:run -Dspring-boot.run.arguments=--server.port=8200` / ปิดโปรแกรมที่ใช้พอร์ต 8100 หรือรันด้วยพอร์ตอื่นตามคำสั่งนี้ |
+| `mvn: command not found` | Maven is not installed — use Option A (`mvnw`) / ยังไม่ได้ลง Maven ให้ใช้แบบที่ 1 (`mvnw`) |
 
-| Entity | ความสัมพันธ์ |
+---
+
+## Tech Stack / เทคโนโลยีที่ใช้
+
+| Part / ส่วน | Technology / เทคโนโลยี |
+|---|---|
+| Backend | Java 17, Spring Boot 2.7, Spring MVC, Spring Data JPA (Hibernate), Spring Security |
+| Database | H2 in-memory (local) / MySQL on Google Cloud SQL (production) |
+| Front-end | Thymeleaf, Bootstrap 5, custom CSS, Lucide icons, Thai/English UI |
+| AI | Google Gemini API (tenant chatbot, payment slip check) |
+| Deployment | Docker, Google Cloud Build, Google Cloud Run, Cloud SQL |
+
+## Main Features / ฟีเจอร์หลัก
+
+**Dorm owner / เจ้าของหอ (`/admin`)**
+- Dashboard: vacant rooms, income, unpaid bills, pending tasks / สรุปห้องว่าง รายได้ บิลค้าง งานที่รอดำเนินการ
+- Rooms by building and floor with a floor plan / จัดการห้องแยกตึก/ชั้น พร้อมแผนผังห้อง
+- Tenants: assign to rooms, contract end dates / จัดการผู้เช่า ผูกกับห้อง ดูวันหมดสัญญา
+- Monthly bills with water/electricity meter units; approve or reject slips / ออกบิลรายเดือน คิดค่าน้ำ/ไฟตามหน่วย อนุมัติหรือปฏิเสธสลิป
+- Booking requests, repairs, parcels (with photo), announcements, feedback / คำขอจองห้อง งานซ่อม พัสดุ (ถ่ายรูปได้) ประกาศ feedback
+- Analytics: income and unusual water/electricity usage / ดูรายได้และการใช้น้ำ/ไฟที่ผิดปกติ
+
+**Tenant / ผู้เช่า (`/app`)**
+- View bills, pay with PromptPay QR, upload slip / ดูบิล จ่ายผ่าน PromptPay QR และอัปโหลดสลิป
+- Report repairs, send feedback, read announcements, confirm parcels / แจ้งซ่อม ส่ง feedback ดูประกาศ กดรับพัสดุ
+- Laundry machine status / ดูสถานะและเริ่มใช้เครื่องซักผ้า
+- Water/electricity usage history / ดูประวัติการใช้น้ำ/ไฟ
+- Chatbot for dorm questions / แชตบอตตอบคำถามเรื่องหอ
+- Browse and book vacant rooms (`/explore`, `/app/rent`) / ดูและจองห้องว่าง
+
+## Entities and Relationships / Entity และความสัมพันธ์ (Spring Data JPA)
+
+| Entity | Relationship / ความสัมพันธ์ |
 |---|---|
 | `Room` | `@OneToMany` → `Tenant`, `Bill`, `BookingRequest` |
 | `Tenant` | `@ManyToOne` → `Room` |
@@ -56,69 +159,44 @@ DormHub เป็นเว็บแอปจัดการหอพักที
 | `RepairRequest` | `@ManyToOne` → `Room` |
 | `Parcel` | `@ManyToOne` → `Room` |
 | `Feedback` | `@ManyToOne` → `AppUser`, `Room` |
-| `AppUser` | บัญชีผู้ใช้สำหรับเข้าสู่ระบบ (ADMIN / TENANT) |
-| `Announcement`, `LaundryMachine` | ประกาศของหอ และเครื่องซักผ้า |
+| `AppUser` | Login account (ADMIN / TENANT) / บัญชีผู้ใช้สำหรับเข้าสู่ระบบ |
+| `Announcement`, `LaundryMachine` | Announcements and laundry machines / ประกาศและเครื่องซักผ้า |
 
-## CRUD (Controls)
+## CRUD
 
-| ความสามารถ | ตัวอย่างในระบบ |
+| Function / ความสามารถ | Example / ตัวอย่างในระบบ |
 |---|---|
-| Listing / Searching | `/admin/rooms?q=...` และ `/admin/tenants?q=...` ค้นหาผ่าน database ด้วย Spring Data JPA (`RoomRepository`, `TenantRepository`) และมีตัวกรองตึก/สถานะ |
-| Creating | เพิ่มห้อง ผู้เช่า บิล งานซ่อม พัสดุ และประกาศ |
-| Updating | แก้ไขข้อมูลห้อง ผู้เช่า บิล และงานซ่อม, อนุมัติสลิป, เปลี่ยนสถานะการจอง |
-| Deleting | ลบห้อง ผู้เช่า บิล งานซ่อม พัสดุ และประกาศ |
-| Managing related entities | เลือกห้องให้ผู้เช่า/บิล/พัสดุ, บิล → การชำระเงิน, ห้อง → รายชื่อผู้เช่า |
+| Listing / Searching | `/admin/rooms?q=...`, `/admin/tenants?q=...` (Spring Data JPA: `RoomRepository`, `TenantRepository`) with building/status filters / พร้อมตัวกรองตึกและสถานะ |
+| Creating | Add rooms, tenants, bills, repairs, parcels, announcements / เพิ่มห้อง ผู้เช่า บิล งานซ่อม พัสดุ ประกาศ |
+| Updating | Edit rooms, tenants, bills, repairs; approve slips; change booking status / แก้ไขข้อมูล อนุมัติสลิป เปลี่ยนสถานะการจอง |
+| Deleting | Delete rooms, tenants, bills, repairs, parcels, announcements / ลบข้อมูลต่าง ๆ |
+| Related entities | Room for a tenant/bill/parcel, bill → payments, room → tenants / เลือกห้องให้ผู้เช่า/บิล/พัสดุ, บิล → การชำระเงิน, ห้อง → ผู้เช่า |
 
-## วิธีรันในเครื่อง
-
-ต้องมี Java 17 (Maven Wrapper มากับโปรเจกต์แล้ว)
-
-```bash
-./mvnw spring-boot:run        # Windows: mvnw.cmd spring-boot:run
-```
-
-เปิด http://localhost:8100 ถ้าไม่ได้ตั้ง `DB_URL` ระบบจะใช้ H2 in-memory และสร้างข้อมูลตัวอย่างให้ (`DataSeeder`)
-
-### Environment variables
-
-| ตัวแปร | ใช้ทำอะไร |
-|---|---|
-| `DB_URL`, `DB_USER`, `DB_PASSWORD` | เชื่อม MySQL บน Cloud SQL (ไม่ตั้ง = ใช้ H2) |
-| `GEMINI_API_KEY` | เปิดใช้แชตบอตและการตรวจสลิปด้วย AI |
-
-ห้าม commit รหัสผ่าน database หรือ API key ลง repository
-
-## การ Deploy บน Google Cloud
-
-1. Cloud Build อ่าน `cloudbuild.yaml` แล้ว build Docker image ตาม `Dockerfile`
-2. Push image ขึ้น Artifact Registry (`us-central1-docker.pkg.dev/dormhub-512309/dormhub-dockers`)
-3. Deploy เป็น Cloud Run service ชื่อ `dormhub` (region `us-central1`, port 8100)
-4. Cloud Run เชื่อม Cloud SQL (MySQL) ผ่าน Cloud SQL Socket Factory โดยตั้ง `DB_URL` เป็น
-   `jdbc:mysql:///dormhub?cloudSqlInstance=dormhub-512309:us-central1:free-trial-first-dormhub&socketFactory=com.google.cloud.sql.mysql.SocketFactory`
-
-## บัญชีสำหรับทดสอบ
-
-ทุกคนเข้าสู่ระบบที่ `/login` หน้าเดียว ระบบจะพาเจ้าของหอไปที่ `/admin` และพาผู้เช่าไปที่ `/app` ให้เอง
-
-| บัญชี | อีเมล | รหัสผ่าน | หมายเหตุ |
-|---|---|---|---|
-| แอดมินหอ | `sjdadmin@gmail.com` | `dormhub123` | ล็อกไว้เป็นแอดมินเท่านั้น สมัครด้วยอีเมลนี้ไม่ได้ |
-| ผู้เช่าตัวอย่าง | `somchai@example.com`, `suda@example.com`, `manee@example.com` | `tenant123` | ข้อมูลตัวอย่าง |
-
-## โครงสร้างโปรเจกต์
+## Project Structure / โครงสร้างโปรเจกต์
 
 ```
+pom.xml                Maven project file (root) / ไฟล์ Maven
+mvnw, mvnw.cmd         Maven Wrapper (run without installing Maven) / รันได้โดยไม่ต้องลง Maven
 src/main/java/th/mfu/
-├── domain/     Entity classes (@Entity) และ enum
+├── App.java           Main class (Spring Boot)
+├── domain/            Entity classes (@Entity) and enums
 ├── *Repository.java   Spring Data JPA repositories
-├── admin/      Controller ฝั่งเจ้าของหอ (/admin)
-├── app/        Controller ฝั่งผู้เช่า (/app)
-├── explore/    หน้าสาธารณะสำหรับดูห้องว่าง (/explore)
-├── service/    Business logic (บิล, การชำระเงิน, แชตบอต, analytics)
-├── security/   Login / Register (Spring Security)
-└── config/     การตั้งค่าแอป
+├── admin/             Owner controllers (/admin) / Controller ฝั่งเจ้าของหอ
+├── app/               Tenant controllers (/app) / Controller ฝั่งผู้เช่า
+├── explore/           Public vacant-room pages (/explore) / หน้าดูห้องว่าง
+├── service/           Business logic (bills, payments, chatbot, analytics, sample data)
+├── security/          Login / Register (Spring Security)
+└── config/            App configuration / การตั้งค่าแอป
 src/main/resources/
-├── templates/  หน้าเว็บ Thymeleaf
-├── static/     CSS, JavaScript, รูปภาพ
-└── messages*.properties   ข้อความภาษาไทย/อังกฤษ
+├── templates/         Thymeleaf pages / หน้าเว็บ
+├── static/            CSS, JavaScript, images / รูปภาพ
+├── application.properties
+└── messages*.properties   Thai/English texts / ข้อความภาษาไทย/อังกฤษ
 ```
+
+## Deployment (Google Cloud) / การ Deploy
+
+1. Cloud Build reads `cloudbuild.yaml` and builds a Docker image from `Dockerfile` / Cloud Build อ่าน `cloudbuild.yaml` แล้ว build Docker image จาก `Dockerfile`
+2. The image is pushed to Artifact Registry / Push image ขึ้น Artifact Registry
+3. Deployed as the Cloud Run service `dormhub` (region `us-central1`, port 8100) / Deploy เป็น Cloud Run service ชื่อ `dormhub`
+4. Cloud Run connects to Cloud SQL (MySQL) using `DB_URL`, `DB_USER`, `DB_PASSWORD` set in Cloud Run, not in the code / Cloud Run เชื่อม Cloud SQL ผ่าน environment variables ที่ตั้งใน Cloud Run ไม่ได้อยู่ในโค้ด
