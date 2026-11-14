@@ -40,6 +40,7 @@ cd DormHub
 ### Step 2 — Run (choose ONE way) / รันโปรเจกต์ (เลือกวิธีใดวิธีหนึ่ง)
 
 **TH:** รันได้ 2 แบบ แบบที่ 1 สำหรับเครื่องที่**ไม่ได้ลง Maven** และแบบที่ 2 สำหรับเครื่องที่**ลง Maven แล้ว** ทั้งสองแบบได้ผลเหมือนกัน
+
 **EN:** There are 2 ways to run it: Option A if Maven is **not installed**, Option B if Maven **is installed**. Both give the same result.
 
 #### Option A — Without Maven (Maven Wrapper) / แบบที่ 1: ไม่ได้ลง Maven
@@ -79,11 +80,39 @@ When the console shows `Started App`, open / เมื่อหน้าจอ�
 - To stop the server press / หยุดเซิร์ฟเวอร์ด้วย `Ctrl + C`
 
 **TH:** เมื่อรันในเครื่องโดยไม่ได้ตั้งค่าอะไรเพิ่ม ระบบจะใช้ฐานข้อมูล **H2 in-memory** และสร้างข้อมูลตัวอย่าง (ห้อง ผู้เช่า บิล) ให้อัตโนมัติ ไม่ต้องติดตั้งฐานข้อมูลเอง (ข้อมูลจะหายเมื่อปิดโปรแกรม)
+
 **EN:** When run locally with no extra settings, the app uses an **H2 in-memory database** and creates sample data (rooms, tenants, bills) automatically, so no database installation is needed (data is reset when the app stops).
+
+> ⚠️ **AI Chatbot / แชตบอต AI**
+>
+> **TH:** ถ้ารันในเครื่องตัวเอง **ต้องใส่ Gemini API key** (environment variable `GEMINI_API_KEY`) ก่อนรัน ไม่อย่างนั้น**แชตบอตและการตรวจสลิปด้วย AI จะใช้งานไม่ได้** (ฟีเจอร์อื่นยังใช้ได้ปกติ) ถ้าต้องการทดลองแชตบอตโดยไม่ต้องใส่ key ให้ใช้เว็บที่ deploy แล้ว: https://dormhub-621353901508.us-central1.run.app
+>
+> **EN:** When running locally you **must provide a Gemini API key** (environment variable `GEMINI_API_KEY`) before starting, otherwise **the chatbot and the AI slip check will not work** (all other features still work). To try the chatbot without a key, use the deployed site: https://dormhub-621353901508.us-central1.run.app
+>
+> Set the key, then run / ตั้งค่า key แล้วค่อยรัน (replace `your-key` with your own key / เปลี่ยน `your-key` เป็น key ของตัวเอง):
+>
+> ```bash
+> # macOS / Linux
+> export GEMINI_API_KEY=your-key
+> ./mvnw spring-boot:run
+> ```
+> ```bat
+> :: Windows (Command Prompt)
+> set GEMINI_API_KEY=your-key
+> mvnw.cmd spring-boot:run
+> ```
+> ```powershell
+> # Windows (PowerShell)
+> $env:GEMINI_API_KEY="your-key"
+> .\mvnw.cmd spring-boot:run
+> ```
+>
+> Get a free key at / ขอ key ได้ฟรีที่ https://aistudio.google.com/apikey — never commit the key to the repository / ห้าม commit key ลง repository
 
 ### Test Login / บัญชีสำหรับทดสอบ
 
 **TH:** ทุกคนเข้าสู่ระบบที่หน้า `/login` หน้าเดียว ระบบจะพาเจ้าของหอไปที่ `/admin` และผู้เช่าไปที่ `/app` ให้เอง
+
 **EN:** Everyone logs in at the same page, `/login`. The owner is sent to `/admin` and tenants to `/app` automatically.
 
 | Role / บทบาท | Email / อีเมล | Password / รหัสผ่าน |
@@ -97,15 +126,16 @@ These are demo accounts created by the sample data. / บัญชีเหล�
 
 ### Optional settings / การตั้งค่าเพิ่มเติม (ไม่บังคับ)
 
-**TH:** ไม่ต้องตั้งค่าก็รันได้ ถ้าต้องการใช้ MySQL หรือแชตบอต AI ให้ตั้ง environment variables ต่อไปนี้ก่อนรัน
-**EN:** The app runs without these. Set the following environment variables only if you want MySQL or the AI chatbot.
+**TH:** ไม่ตั้งค่าก็เปิดเว็บได้ แต่ต้องตั้ง `GEMINI_API_KEY` ถ้าจะใช้แชตบอต AI ส่วน `DB_*` ตั้งเฉพาะเมื่อต้องการใช้ MySQL
+
+**EN:** The app starts without these. `GEMINI_API_KEY` is needed for the AI chatbot; the `DB_*` variables only if you want MySQL.
 
 | Variable / ตัวแปร | Purpose / ใช้ทำอะไร |
 |---|---|
 | `DB_URL`, `DB_USER`, `DB_PASSWORD` | Connect to MySQL instead of H2 / เชื่อม MySQL แทน H2 |
 | `GEMINI_API_KEY` | Enable the AI chatbot and AI slip check / เปิดใช้แชตบอตและการตรวจสลิปด้วย AI |
 
-Without `GEMINI_API_KEY`, every other feature still works. / ถ้าไม่ได้ตั้ง `GEMINI_API_KEY` ฟีเจอร์อื่นทั้งหมดยังใช้งานได้ตามปกติ
+Without `GEMINI_API_KEY` the chatbot does not work locally (see the AI Chatbot note above); every other feature still works. / ถ้าไม่ได้ตั้ง `GEMINI_API_KEY` แชตบอตจะใช้ไม่ได้ในเครื่อง (ดูหมายเหตุแชตบอต AI ด้านบน) แต่ฟีเจอร์อื่นยังใช้งานได้ตามปกติ
 
 > No passwords, API keys or tokens are committed in this repository; they are passed as environment variables. / ไม่มีรหัสผ่าน database, API key หรือ token อยู่ใน repository ค่าเหล่านี้ส่งผ่าน environment variables เท่านั้น
 
