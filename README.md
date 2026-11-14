@@ -39,11 +39,18 @@ cd DormHub
 
 ### Step 2 — Run (choose ONE way) / รันโปรเจกต์ (เลือกวิธีใดวิธีหนึ่ง)
 
-**TH:** รันได้ 2 แบบ แบบที่ 1 สำหรับเครื่องที่**ไม่ได้ลง Maven** และแบบที่ 2 สำหรับเครื่องที่**ลง Maven แล้ว** ทั้งสองแบบได้ผลเหมือนกัน
+**TH:** รันได้ 2 แบบ แบบที่ 1 สำหรับเครื่องที่**ลง Maven แล้ว** และแบบที่ 2 สำหรับเครื่องที่**ไม่ได้ลง Maven** ทั้งสองแบบได้ผลเหมือนกัน
 
-**EN:** There are 2 ways to run it: Option A if Maven is **not installed**, Option B if Maven **is installed**. Both give the same result.
+**EN:** There are 2 ways to run it: Option A if Maven **is installed**, Option B if Maven is **not installed**. Both give the same result.
 
-#### Option A — Without Maven (Maven Wrapper) / แบบที่ 1: ไม่ได้ลง Maven
+#### Option A — With Maven installed / แบบที่ 1: ลง Maven แล้ว
+
+Check with / ตรวจสอบด้วย `mvn -v`, then run / จากนั้นรัน:
+```bash
+mvn spring-boot:run
+```
+
+#### Option B — Without Maven (Maven Wrapper) / แบบที่ 2: ไม่ได้ลง Maven
 
 The wrapper downloads Maven automatically on the first run. / Wrapper จะดาวน์โหลด Maven ให้อัตโนมัติในการรันครั้งแรก
 
@@ -61,13 +68,6 @@ mvnw.cmd spring-boot:run
 Windows (PowerShell):
 ```powershell
 .\mvnw.cmd spring-boot:run
-```
-
-#### Option B — With Maven installed / แบบที่ 2: ลง Maven แล้ว
-
-Check with / ตรวจสอบด้วย `mvn -v`, then run / จากนั้นรัน:
-```bash
-mvn spring-boot:run
 ```
 
 ### Step 3 — Open the website / เปิดเว็บ
@@ -112,7 +112,7 @@ These are demo accounts created by the sample data. / บัญชีเหล�
 |---|---|
 | `JAVA_HOME is not set` / `java: command not found` | Install JDK 17 and set `JAVA_HOME` / ติดตั้ง JDK 17 และตั้งค่า `JAVA_HOME` |
 | `Port 8100 was already in use` | Close the program using port 8100, or run with another port: `./mvnw spring-boot:run -Dspring-boot.run.arguments=--server.port=8200` / ปิดโปรแกรมที่ใช้พอร์ต 8100 หรือรันด้วยพอร์ตอื่นตามคำสั่งนี้ |
-| `mvn: command not found` | Maven is not installed — use Option A (`mvnw`) / ยังไม่ได้ลง Maven ให้ใช้แบบที่ 1 (`mvnw`) |
+| `mvn: command not found` | Maven is not installed — use Option B (`mvnw`) / ยังไม่ได้ลง Maven ให้ใช้แบบที่ 2 (`mvnw`) |
 
 ---
 
