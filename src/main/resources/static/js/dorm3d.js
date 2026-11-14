@@ -145,12 +145,16 @@
         var labels = [];
 
         // ---------- data ----------
-        fetch(opts.dataUrl, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
-            .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-            .then(function (data) { build(data); loading.remove(); start(); })
-            .catch(function () {
+        // AJAX call to the room web service (GET /explore/rooms or /admin/layout/rooms), returns JSON
+        $.ajax({
+            url: opts.dataUrl,
+            method: 'GET',
+            dataType: 'json',
+            success: function (data) { build(data); loading.remove(); start(); },
+            error: function () {
                 loading.innerHTML = dhT('โหลดข้อมูลห้องไม่สำเร็จ', 'Couldn\'t load the rooms.') + ' <a href="">' + dhT('ลองใหม่', 'Try again') + '</a>';
-            });
+            }
+        });
 
         function statusColor(s) {
             if (s === 'OCCUPIED' && !isAdmin) return COLORS.OCCUPIED_PUBLIC;

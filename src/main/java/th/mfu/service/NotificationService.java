@@ -91,8 +91,13 @@ public class NotificationService {
             return Optional.empty();
         }
         int n = billsOldestFirst.size();
-        double estimate = billsOldestFirst.subList(Math.max(0, n - 3), n).stream()
-                .mapToDouble(Bill::getElectricCost).average().orElse(0);
+        // average electricity cost of the last 3 bills
+        List<Bill> lastThree = billsOldestFirst.subList(Math.max(0, n - 3), n);
+        double sum = 0;
+        for (Bill bill : lastThree) {
+            sum += bill.getElectricCost();
+        }
+        double estimate = sum / lastThree.size();
         String amount = String.format("%,.2f", estimate);
         return Optional.of(days == 0
                 ? new Notice("info", "plug-zap", "notice.electric.title", "notice.electricToday.message", amount)

@@ -10,6 +10,7 @@ import th.mfu.PaymentRepository;
 import th.mfu.TenantRepository;
 import th.mfu.config.DormProperties;
 import th.mfu.domain.Bill;
+import th.mfu.domain.Payment;
 import th.mfu.domain.PaymentStatus;
 import th.mfu.domain.Room;
 
@@ -40,10 +41,13 @@ public class BillingService {
     }
 
     public double approvedAmount(Bill bill) {
-        return paymentRepository.findByBillOrderBySubmittedAtDesc(bill).stream()
-                .filter(p -> p.getStatus() == PaymentStatus.APPROVED)
-                .mapToDouble(p -> p.getAmount() == null ? 0 : p.getAmount())
-                .sum();
+        double total = 0;
+        for (Payment p : paymentRepository.findByBillOrderBySubmittedAtDesc(bill)) {
+            if (p.getStatus() == PaymentStatus.APPROVED && p.getAmount() != null) {
+                total += p.getAmount();
+            }
+        }
+        return total;
     }
 
     public double outstanding(Bill bill) {

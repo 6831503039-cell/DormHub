@@ -24,65 +24,77 @@
         <button class="btn btn-primary btn-icon" id="chatSend" type="submit" th:aria-label="#{chat.send}"><i data-lucide="send"></i></button>
     </form>
 
+    <!-- jQuery for the AJAX call to the chat web service (POST /app/chat/send), as in the FullStack lab -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script th:inline="javascript">
-        (function () {
-            const box = document.getElementById('chatBox');
-            const form = document.getElementById('chatForm');
-            const input = document.getElementById('chatInput');
-            const sendButton = document.getElementById('chatSend');
-            const chips = document.querySelectorAll('.chip');
-            const token = document.querySelector('meta[name="_csrf"]').content;
-            const header = document.querySelector('meta[name="_csrf_header"]').content;
-            const history = [];
+        $(document).ready(function () {
+            var token = $('meta[name="_csrf"]').attr('content');
+            var header = $('meta[name="_csrf_header"]').attr('content');
+            var history = [];
 
+            // add one chat bubble to the box and scroll down
             function add(text, who) {
-                const div = document.createElement('div');
-                div.className = 'bubble ' + who;
-                div.textContent = text;
-                box.appendChild(div);
-                box.scrollTop = box.scrollHeight;
-                return div;
+                var bubble = $('<div></div>').addClass('bubble ' + who).text(text);
+                $('#chatBox').append(bubble);
+                $('#chatBox').scrollTop($('#chatBox')[0].scrollHeight);
+                return bubble;
             }
 
+            // disable the send button and the question chips while waiting for the answer
             function busy(on) {
-                sendButton.disabled = on;
-                chips.forEach(c => c.disabled = on);
+                $('#chatSend').prop('disabled', on);
+                $('.chip').prop('disabled', on);
             }
 
-            async function send(text) {
-                if (!text.trim() || sendButton.disabled) return;
-                add(text, 'user');
-                input.value = '';
-                busy(true);
-                const typing = add(/*[[#{chat.typing}]]*/ 'กำลังพิมพ์...', 'bot typing');
-                try {
-                    const res = await fetch('/app/chat/send', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', [header]: token },
-                        body: JSON.stringify({ message: text, history: history })
-                    });
-                    if (res.status === 401 || res.redirected) {
-                        // session ended (e.g. the server restarted): log in again
-                        window.location.href = '/login?expired';
-                        return;
-                    }
-                    if (!res.ok) throw new Error(res.status);
-                    const data = await res.json();
-                    typing.remove();
-                    add(data.reply, 'bot');
-                    history.push({ role: 'user', text: text }, { role: 'bot', text: data.reply });
-                } catch (e) {
-                    typing.remove();
-                    add(/*[[#{chat.error}]]*/ 'ขออภัย เชื่อมต่อไม่สำเร็จ ลองใหม่อีกครั้ง', 'bot');
-                } finally {
-                    busy(false);
-                    input.focus();
+            function send(text) {
+                if (!text.trim() || $('#chatSend').prop('disabled')) {
+                    return;
                 }
+                add(text, 'user');
+                $('#chatInput').val('');
+                busy(true);
+                var typing = add(/*[[#{chat.typing}]]*/ 'กำลังพิมพ์...', 'bot typing');
+
+                var headers = {};
+                headers[header] = token; // Spring Security needs the CSRF token on every POST
+
+                $.ajax({
+                    url: '/app/chat/send',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    dataType: 'json',
+                    headers: headers,
+                    data: JSON.stringify({ message: text, history: history }),
+                    success: function (data) {
+                        typing.remove();
+                        add(data.reply, 'bot');
+                        history.push({ role: 'user', text: text }, { role: 'bot', text: data.reply });
+                    },
+                    error: function (xhr, status, error) {
+                        // 401, or the login page came back instead of JSON:
+                        // the session ended (e.g. the server restarted), so log in again
+                        if (xhr.status === 401 || status === 'parsererror') {
+                            window.location.href = '/login?expired';
+                            return;
+                        }
+                        typing.remove();
+                        add(/*[[#{chat.error}]]*/ 'ขออภัย เชื่อมต่อไม่สำเร็จ ลองใหม่อีกครั้ง', 'bot');
+                    },
+                    complete: function () {
+                        busy(false);
+                        $('#chatInput').focus();
+                    }
+                });
             }
 
-            form.addEventListener('submit', e => { e.preventDefault(); send(input.value); });
-            chips.forEach(c => c.addEventListener('click', () => send(c.textContent)));
-        })();
+            $('#chatForm').submit(function (e) {
+                e.preventDefault();
+                send($('#chatInput').val());
+            });
+            $('.chip').click(function () {
+                send($(this).text());
+            });
+        });
     </script>
 </main>
 </body>

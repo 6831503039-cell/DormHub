@@ -2,13 +2,14 @@ package th.mfu.app;
 
 import java.security.Principal;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import th.mfu.config.Messages;
 import th.mfu.domain.AppUser;
@@ -40,17 +41,18 @@ public class ChatController {
         return "app/chat";
     }
 
+    // web service called by $.ajax in app/chat.html: JSON in (@RequestBody), JSON out
     @PostMapping("/app/chat/send")
-    @ResponseBody
-    public ChatReply send(@RequestBody ChatRequest request, Principal principal) {
+    public ResponseEntity<ChatReply> send(@RequestBody ChatRequest request, Principal principal) {
         if (!StringUtils.hasText(request.getMessage())) {
-            return new ChatReply(messages.get("chat.reply.empty"), "fallback");
+            return new ResponseEntity<ChatReply>(new ChatReply(messages.get("chat.reply.empty"), "fallback"), HttpStatus.OK);
         }
         String message = request.getMessage().trim();
         if (message.length() > MAX_MESSAGE_LENGTH) {
             message = message.substring(0, MAX_MESSAGE_LENGTH);
         }
         AppUser user = currentUser.user(principal);
-        return chatbot.reply(user, currentUser.tenant(user).orElse(null), message, request.getHistory());
+        ChatReply reply = chatbot.reply(user, currentUser.tenant(user).orElse(null), message, request.getHistory());
+        return new ResponseEntity<ChatReply>(reply, HttpStatus.OK);
     }
 }

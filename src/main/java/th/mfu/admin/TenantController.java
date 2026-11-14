@@ -60,10 +60,29 @@ public class TenantController {
         model.addAttribute("q", keyword);
         // building -> floor -> tenants ordered by room: a collapsible card per building with a part per floor;
         // "none" = no room yet (last, floor 0)
-        Map<String, Map<Integer, List<Tenant>>> groups = new TreeMap<>(Comparator.comparing((String b) -> b.equals("none")).thenComparing(b -> b));
+        Map<String, Map<Integer, List<Tenant>>> groups = new TreeMap<>(new Comparator<String>() {
+            @Override
+            public int compare(String a, String b) {
+                // buildings A, B, C ... in order, "none" always last
+                if (a.equals("none") != b.equals("none")) {
+                    return a.equals("none") ? 1 : -1;
+                }
+                return a.compareTo(b);
+            }
+        });
         List<Tenant> sorted = new ArrayList<>(tenants);
-        sorted.sort(Comparator.comparing((Tenant t) -> t.getRoom() == null ? "~" : t.getRoom().getRoomNumber())
-                .thenComparing(Tenant::getFullName));
+        sorted.sort(new Comparator<Tenant>() {
+            @Override
+            public int compare(Tenant a, Tenant b) {
+                // by room number (no room = last), then by name
+                String roomA = a.getRoom() == null ? "~" : a.getRoom().getRoomNumber();
+                String roomB = b.getRoom() == null ? "~" : b.getRoom().getRoomNumber();
+                if (!roomA.equals(roomB)) {
+                    return roomA.compareTo(roomB);
+                }
+                return a.getFullName().compareTo(b.getFullName());
+            }
+        });
         for (Tenant t : sorted) {
             Room room = t.getRoom();
             String building = room == null ? "none"
