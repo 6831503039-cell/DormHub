@@ -79,8 +79,6 @@ When the console shows `Started App`, open / เมื่อหน้าจอ�
 
 > ⚠️ **AI Chatbot and Database / แชตบอต AI และฐานข้อมูล**
 >
-> **TH:** การรันในเครื่องเหมาะสำหรับทดลองฟีเจอร์ทั่วไปเท่านั้น ถ้าต้องการให้**แชตบอต AI ทำงาน** และใช้**ฐานข้อมูลจริง (MySQL บน Google Cloud SQL)** ต้องใช้งานผ่านเว็บที่ deploy แล้ว: https://dormhub-621353901508.us-central1.run.app
->
 > **EN:** Running locally is for trying the general features only. For the **AI chatbot to work** and to use the **real database (MySQL on Google Cloud SQL)**, use the deployed website: https://dormhub-621353901508.us-central1.run.app
 
 ### Test Login / บัญชีสำหรับทดสอบ
@@ -136,7 +134,7 @@ These are demo accounts created by the sample data. / บัญชีเหล�
 - Laundry machine status / ดูสถานะและเริ่มใช้เครื่องซักผ้า
 - Water/electricity usage history / ดูประวัติการใช้น้ำ/ไฟ
 - Chatbot for dorm questions / แชตบอตตอบคำถามเรื่องหอ
-- Browse and book vacant rooms (`/explore`, `/app/rent`) / ดูและจองห้องว่าง
+- For people without a room yet: browse and book vacant rooms — /explore (no login needed) and /app/rent (registered account without a room) / สำหรับคนที่ยังไม่มีห้อง: ดูและจองห้องว่าง — /explore (ไม่ต้อง login) และ /app/rent (สมัครบัญชีแล้วแต่ยังไม่มีห้อง)
 
 ## Entities and Relationships / Entity และความสัมพันธ์ (Spring Data JPA)
 
