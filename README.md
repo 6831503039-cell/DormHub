@@ -1,22 +1,22 @@
-# DormHub — ระบบจัดการหอพัก SJD แมนชั่น
+# DormHub — ระบบจัดการหอพัก
 
 DormHub เป็นเว็บแอปจัดการหอพักที่ใช้ได้ทั้งเจ้าของหอและผู้เช่า
-เจ้าของหอใช้จัดการห้อง ผู้เช่า บิลค่าเช่า ค่าน้ำ ค่าไฟ การชำระเงิน งานซ่อม พัสดุ และประกาศ ส่วนผู้เช่าใช้ดูบิล ส่งสลิป แจ้งซ่อม รับพัสดุ จองเครื่องซักผ้า และถามแชตบอตได้จากมือถือ
+เจ้าของหอใช้จัดการห้อง ผู้เช่า บิลค่าเช่า ค่าน้ำ ค่าไฟ การชำระเงิน งานซ่อม พัสดุ และประกาศ ส่วนผู้เช่าใช้ดูบิล ส่งสลิป แจ้งซ่อม รับพัสดุ จองเครื่องซักผ้า และถามแชตบอท
 
 โปรเจกต์นี้เป็นงานร่วมของ 3 วิชา ได้แก่ Web Application Development, Database Systems และ Software Requirement Analysis and Specification
 
-- **เว็บที่ deploy แล้ว (Google Cloud Run):** `<ใส่ลิงก์ Cloud Run>`
+- **เว็บที่ deploy แล้ว (Google Cloud Run):** `https://dormhub-621353901508.us-central1.run.app`
 - **Repository:** https://github.com/6831503039-cell/DormHub
 
 ## Group Members
 
-| # | รหัสนักศึกษา | ชื่อ - นามสกุล | หน้าที่ |
+| # | รหัสนักศึกษา | ชื่อ - นามสกุล |
 |---|---|---|---|
-| 1 | 6831503034 |Kanticha Sriruang | |
-| 2 | 6831503037 |Chawintorn Thanapreechanan | |
-| 3 | 6831503039 |Yanavut Thidnongwaeng | |
-| 4 | 6831503052 |Tawanrat Prasong | |
-| 5 | 6831503098 |Nithit Panthavongdecha | |
+| 1 | 6831503034 |Kanticha Sriruang 
+| 2 | 6831503037 |Chawintorn Thanapreechanan 
+| 3 | 6831503039 |Yanavut Thidnongwaeng 
+| 4 | 6831503052 |Tawanrat Prasong 
+| 5 | 6831503098 |Nithit Panthavongdecha 
 
 ## Tech Stack
 
