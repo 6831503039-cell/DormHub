@@ -2,7 +2,7 @@
 
 DormHub is a web application for managing a dormitory, used by both the dorm owner and the tenants. The owner manages rooms, tenants, monthly bills (rent, water and electricity), payments, repair requests, parcels and announcements. Tenants view and pay their bills with a QR code and upload the payment slip, report repairs, pick up parcels, use the laundry machines, book a vacant room and ask questions to a chatbot.
 
-- **เว็บที่ deploy แล้ว (Google Cloud Run):** https://dormhub-621353901508.us-central1.run.app
+- **Google Cloud Run:** https://dormhub-621353901508.us-central1.run.app
 - **Repository:** https://github.com/6831503039-cell/DormHub
 
 ## Group Members
@@ -14,7 +14,6 @@ DormHub is a web application for managing a dormitory, used by both the dorm own
 | 3 | 6831503039 |Yanavut Thidnongwaeng 
 | 4 | 6831503052 |Tawanrat Prasong 
 | 5 | 6831503098 |Nithit Panthavongdecha 
-
 -----
 ## How to Run / วิธีรันโปรเจกต์
 -----
