@@ -31,7 +31,7 @@ DormHub is a web application for managing a dormitory, used by both the dorm own
 git clone https://github.com/6831503039-cell/DormHub.git
 ```
 
-### Step 2 — Run (choose ONE way) / รันโปรเจกต์ (เลือกวิธีใดวิธีหนึ่ง)
+### Step 2 — Run (choose ONE way) 
 
 There are 2 ways to run it: Option A if Maven **is installed**, Option B if Maven is **not installed**. Both give the same result.
 
